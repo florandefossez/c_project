@@ -1,6 +1,9 @@
 # Content
 Some personal c/c++ projects for fun
 
+- Tic-Tac-Toe with Minimax
+- Mines Weeper
+
 ## Tic-Tac-Toe with Minimax
 
 This is a console-based implementation of the Tic-Tac-Toe game written in C, featuring an 'AI' opponent powered by the Minimax algorithm.
@@ -31,3 +34,8 @@ The Minimax algorithm is a decision-making algorithm commonly used in game theor
 the Minimax algorithm considers all possible moves by the computer player (Max) and the human player (Min). It assigns scores to terminal states (win, loss, or draw) and selects the move that maximizes the computer player's score while assuming that the human player will also make optimal moves.
 
 The score for a win is 10 minus the number of moves to reach the winning state, for a loss the score is -10 plus the number of moves, for a draw the score is 0.
+
+
+## Mines Weeper
+
+A CSFML based game of mines weeper
