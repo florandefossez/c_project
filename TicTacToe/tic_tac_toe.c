@@ -122,8 +122,8 @@ void playGame() {
     char currentPlayer = 'X';
 
     printf("Tic-Tac-Toe Game\n");
-    printf("Player  : X\n");
-    printf("Computer: O\n");
+    printf("Player  : O\n");
+    printf("Computer: X\n");
     printf("Enter the position to place your symbol (row column).\n");
 
     while (1) {
