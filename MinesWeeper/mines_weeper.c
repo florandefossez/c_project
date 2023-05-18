@@ -1,39 +1,62 @@
 #include <SFML/Graphics.h>
+#include <SFML/Window.h>
+#include <SFML/Audio.h>
+#include <SFML/Network.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "mines_weeper.h"
 
-void event_handler(sfMouseButtonEvent event);
+#define WIDTH 640
+#define HEIGHT 640
+
+void event_handler(sfMouseButtonEvent event, Grid grid[20][20]);
 void set_up(Grid grid[20][20]);
+void set_up_sprites(Ressources* ressources, sfTexture* texture);
+void draw_grid(Ressources* Ressources, Grid grid[20][20], sfRenderWindow* window);
+void free_ressources(Ressources* ressources);
 
 
 
 int main()
 {
-    sfVideoMode mode = {600, 600, 32};
-    sfRenderWindow* window = sfRenderWindow_create(mode, "Mines Weeper", sfClose, NULL);
+    sfVideoMode mode = {WIDTH, HEIGHT, 32};
+    sfRenderWindow* window = sfRenderWindow_create(mode, "Mines Weeper", sfTitlebar | sfClose, NULL);
+    sfRenderWindow_setFramerateLimit(window, 60);
 
     Grid grid[20][20];
 
     set_up(grid);
 
+    sfTexture* texture = sfTexture_createFromFile("minesweeper.png", NULL);
+    if (texture == NULL) {
+        printf("Fail to load texture");
+        return 1;
+    }
+    Ressources ressources;
+    set_up_sprites(&ressources, texture);
+
+
     while (sfRenderWindow_isOpen(window))
     {   
-
         sfEvent event;
         while (sfRenderWindow_pollEvent(window, &event))
-        {
+        {   
             if (event.type == sfEvtClosed)
                 sfRenderWindow_close(window);
-            if (event.type == sfEvtMouseButtonPressed)
-                event_handler(event.mouseButton);
+            if (event.type == sfEvtMouseButtonPressed) {
+
+                event_handler(event.mouseButton, grid);
+            
+            }
         }
 
         sfRenderWindow_clear(window, sfWhite);
+        draw_grid(&ressources, grid, window);
         sfRenderWindow_display(window);
     }
 
-
+    sfTexture_destroy(texture);
+    free_ressources(&ressources);
     sfRenderWindow_destroy(window);
 
     return 0;
@@ -46,6 +69,7 @@ void set_up(Grid grid[20][20]) {
         for (int j=0; j<20; j++) {
             grid[i][j].is_mine = false;
             grid[i][j].flag = false;
+            grid[i][j].revealed = false;
             grid[i][j].surrounding_mines = 0;
         }
     }
@@ -68,6 +92,60 @@ void set_up(Grid grid[20][20]) {
     }
 }
 
-void event_handler(sfMouseButtonEvent event) {
-    printf("%d %d\n", event.x, event.y);
+void set_up_sprites(Ressources* ressources, sfTexture* texture) {
+    sfVector2f scale = {2,2};
+    for (int i=0; i<8; i++) {
+        ressources->sprite_numbers[i] = sfSprite_create();
+        sfSprite_setTexture(ressources->sprite_numbers[i], texture, sfTrue);
+        sfIntRect rect = {16*(i%4),16+16*(i/4),16,16};
+        sfSprite_setTextureRect(ressources->sprite_numbers[i], rect);
+        sfSprite_setScale(ressources->sprite_numbers[i], scale);
+    }
+
+    ressources->bomb = sfSprite_create();
+    sfSprite_setTexture(ressources->bomb, texture, sfTrue);
+    sfIntRect rect1 = {0,0,16,16};
+    sfSprite_setTextureRect(ressources->bomb, rect1);
+    sfSprite_setScale(ressources->bomb, scale);
+
+    ressources->masked = sfSprite_create();
+    sfSprite_setTexture(ressources->masked, texture, sfTrue);
+    sfIntRect rect2 = {32,48,16,16};
+    sfSprite_setTextureRect(ressources->masked, rect2);
+    sfSprite_setScale(ressources->masked, scale);
+
+}
+
+void draw_grid(Ressources* ressources, Grid grid[20][20], sfRenderWindow* window) {
+    sfSprite* sprite;
+    for (int i = 0; i<20; i++) {
+        for (int j=0; j<20; j++) {
+            sfVector2f position = {(float)(i*32), (float)(j*32)};
+            if (grid[i][j].revealed) {
+                if (grid[i][j].surrounding_mines > 0) {
+                    if (grid[i][j].is_mine) {
+                        sprite = ressources->bomb;
+                    } else {
+                        sprite = ressources->sprite_numbers[grid[i][j].surrounding_mines - 1];
+                    } 
+                } else {
+                    continue;
+                }
+            } else {
+                sprite = ressources->masked;
+            }
+            sfSprite_setPosition(sprite, position);
+            sfRenderWindow_drawSprite(window, sprite, NULL);
+        }
+    }
+}
+
+void event_handler(sfMouseButtonEvent event, Grid grid[20][20]) {
+    grid[event.x/32][event.y/32].revealed = true;
+}
+
+void free_ressources(Ressources* ressources) {
+    for (int i=0; i<8; i++) {
+        sfSprite_destroy(ressources->sprite_numbers[i]);
+    }
 }
