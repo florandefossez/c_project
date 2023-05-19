@@ -20,6 +20,21 @@ typedef struct {
     sfSprite* bomb;
     sfSprite* flag;
     sfSprite* masked;
+    sfSprite* button;
+    sfText* win;
+    sfText* loose;
+    sfTexture* texture_button;
+    sfTexture* texture_game;
 } Ressources;
+
+typedef struct {
+    Grid grid[20][20];
+    bool display_button;
+    bool win;
+    int n_mines;
+    int n_left_cells;
+    sfRenderWindow* window;
+    sfColor color;
+} Game;
 
 # endif
