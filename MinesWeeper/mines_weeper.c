@@ -13,6 +13,7 @@ void event_handler(sfMouseButtonEvent event, Grid grid[20][20]);
 void set_up(Grid grid[20][20]);
 void set_up_sprites(Ressources* ressources, sfTexture* texture);
 void draw_grid(Ressources* Ressources, Grid grid[20][20], sfRenderWindow* window);
+void reveal(int row, int col, Grid grid[20][20]);
 void free_ressources(Ressources* ressources);
 
 
@@ -141,8 +142,23 @@ void draw_grid(Ressources* ressources, Grid grid[20][20], sfRenderWindow* window
 }
 
 void event_handler(sfMouseButtonEvent event, Grid grid[20][20]) {
-    grid[event.x/32][event.y/32].revealed = true;
+    reveal(event.x/32, event.y/32, grid);
 }
+
+void reveal(int row, int col, Grid grid[20][20]) {
+    if (grid[row][col].revealed) {return;}
+    grid[row][col].revealed = true;
+    if (grid[row][col].surrounding_mines == 0) {
+        for (int i=-1; i<2; i++) {
+            for (int j=-1; j<2; j++) {
+                if (row+i<0 || col+j<0 || row+i>19 || col+j>19)
+                    continue;
+                reveal(i+row,j+col,grid);
+            }
+        }
+    }
+}
+
 
 void free_ressources(Ressources* ressources) {
     for (int i=0; i<8; i++) {
