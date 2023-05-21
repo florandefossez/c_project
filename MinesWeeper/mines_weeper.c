@@ -62,7 +62,6 @@ int main()
         sfRenderWindow_display(game.window);
     }
 
-    // sfTexture_destroy(texture);
     free_ressources(&ressources);
     sfRenderWindow_destroy(game.window);
 
@@ -233,4 +232,12 @@ void free_ressources(Ressources* ressources) {
     for (int i=0; i<8; i++) {
         sfSprite_destroy(ressources->sprite_numbers[i]);
     }
+    sfSprite_destroy(ressources->bomb);
+    sfSprite_destroy(ressources->button);
+    sfSprite_destroy(ressources->flag);
+    sfSprite_destroy(ressources->masked);
+    sfText_destroy(ressources->loose);
+    sfText_destroy(ressources->win);
+    sfTexture_destroy(ressources->texture_button);
+    sfTexture_destroy(ressources->texture_game);
 }
