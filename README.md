@@ -1,10 +1,12 @@
 # Content
 Some personal c/c++ projects for fun
 
-- Tic-Tac-Toe with Minimax
-- Mines Weeper
+- [Tic-Tac-Toe with Minimax](#tic-tac-toe-with-minimax)
+- [Mines Weeper](#mines-weeper)
+- 
 
-## Tic-Tac-Toe with Minimax
+
+# Tic-Tac-Toe with Minimax
 
 This is a console-based implementation of the Tic-Tac-Toe game written in C, featuring an 'AI' opponent powered by the Minimax algorithm.
 
@@ -36,6 +38,33 @@ the Minimax algorithm considers all possible moves by the computer player (Max) 
 The score for a win is 10 minus the number of moves to reach the winning state, for a loss the score is -10 plus the number of moves, for a draw the score is 0.
 
 
-## Mines Weeper
+# Mines Weeper
 
-A CSFML based game of mines weeper
+This is a Minesweeper game implemented using CSFML (C Simple and Fast Multimedia Library).
+
+
+Minesweeper is a classic single-player puzzle game where the objective is to clear a rectangular board without detonating any hidden mines. The board is divided into cells, some of which contain mines. The player must uncover cells to reveal numbers indicating the number of adjacent mines. Using this information, the player can deduce the locations of mines and mark them to avoid detonation. The game is won when all non-mine cells are uncovered.
+
+![text](screenshots/minesweeper.png)
+
+### Features
+
+- 20 by 20 grid with 40 randomly hidden mines
+- revealing a cell without an adjacent mine will recursively reveal adjacent cells as well
+- Flag system to mark cells
+- When the game ends, another one starts after a mouse click.
+
+### How to Play
+
+You need the CSFML library installed or you can include it at the build.
+
+```
+cd Minesweeper
+gcc -Wall -g -o mines_weeper mines_weeper.c -lcsfml-graphics -lcsfml-window -lcsfml-system
+./mines_weeper
+```
+
+- Left-click: Reveal a cell
+- Right-click: Mark a cell as a mine (right click again to remove the flag)
+
+Game assets designed by Kia https://kia.itch.io/16x16-tileset-for-minesweeper

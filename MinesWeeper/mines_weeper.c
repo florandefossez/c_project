@@ -12,10 +12,11 @@
 void event_handler(sfMouseButtonEvent event, Game* game);
 void set_up(Game* game);
 void set_up_sprites(Ressources* ressources);
+sfSprite* load_tile(int x, int y, sfTexture* texture);
+sfText* load_test(char* text);
 void draw_grid(Game* game, Ressources* Ressources);
 void reveal(int row, int col, Game* game);
 void set_flag(int row, int col, Game* game);
-// void end(Game* game, bool win);
 void free_ressources(Ressources* ressources);
 
 
@@ -102,67 +103,51 @@ void set_up(Game* game) {
     }
 }
 
+sfSprite* load_tile(int x, int y, sfTexture* texture) {
+    sfSprite* res = sfSprite_create();
+    sfSprite_setTexture(res, texture, sfTrue);
+    sfIntRect rect = {x, y, 16, 16};
+    sfSprite_setTextureRect(res, rect);
+    sfSprite_setScale(res, (sfVector2f) {2,2});
+    return res;
+}
+
+sfText* load_test(char* text) {
+    sfFont* font = sfFont_createFromFile("arial.ttf");
+    sfColor fontColor = {246, 205, 38, 255};
+    sfText* res = sfText_create();
+    sfText_setString(res, text);
+    sfText_setFont(res, font);
+    sfText_setCharacterSize(res, 24);
+    sfText_setColor(res, fontColor);
+    sfFloatRect textBounds = sfText_getLocalBounds(res);
+    sfText_setPosition(res, (sfVector2f) {
+        WIDTH/2 - textBounds.width /2.f,
+        232.f - textBounds.height
+    });
+    return res;
+}
+
+
 void set_up_sprites(Ressources* ressources) {
     ressources->texture_game = sfTexture_createFromFile("minesweeper.png", NULL);
     ressources->texture_button = sfTexture_createFromFile("button.png", NULL);
 
-    sfVector2f scale = {2,2};
     for (int i=0; i<8; i++) {
-        ressources->sprite_numbers[i] = sfSprite_create();
-        sfSprite_setTexture(ressources->sprite_numbers[i], ressources->texture_game, sfTrue);
-        sfIntRect rect = {16*(i%4),16+16*(i/4),16,16};
-        sfSprite_setTextureRect(ressources->sprite_numbers[i], rect);
-        sfSprite_setScale(ressources->sprite_numbers[i], scale);
+        ressources->sprite_numbers[i] = load_tile(16*(i%4),16+16*(i/4), ressources->texture_game);
     }
-
-    ressources->bomb = sfSprite_create();
-    sfSprite_setTexture(ressources->bomb, ressources->texture_game, sfTrue);
-    sfIntRect rect1 = {0,48,16,16};
-    sfSprite_setTextureRect(ressources->bomb, rect1);
-    sfSprite_setScale(ressources->bomb, scale);
-
-    ressources->masked = sfSprite_create();
-    sfSprite_setTexture(ressources->masked, ressources->texture_game, sfTrue);
-    sfIntRect rect2 = {32,48,16,16};
-    sfSprite_setTextureRect(ressources->masked, rect2);
-    sfSprite_setScale(ressources->masked, scale);
-
-    ressources->flag = sfSprite_create();
-    sfSprite_setTexture(ressources->flag, ressources->texture_game, sfTrue);
-    sfIntRect rect3 = {32,0,16,16};
-    sfSprite_setTextureRect(ressources->flag, rect3);
-    sfSprite_setScale(ressources->flag, scale);
+    ressources->bomb = load_tile(0, 48, ressources->texture_game);
+    ressources->masked = load_tile(32, 48, ressources->texture_game);
+    ressources->flag = load_tile(32, 0, ressources->texture_game);
 
     ressources->button = sfSprite_create();
     sfSprite_setTexture(ressources->button, ressources->texture_button, sfTrue);
     sfSprite_setScale(ressources->button, (sfVector2f) {2.f, 2.f});
     sfSprite_setPosition(ressources->button, (sfVector2f){(float)(WIDTH/2 - 96), 200.f});
 
+    ressources->win = load_test("You win !");
+    ressources->loose = load_test("You Loose :(");
 
-    sfFont* font = sfFont_createFromFile("arial.ttf");
-    sfColor fontColor = {246, 205, 38, 255};
-
-    ressources->win = sfText_create();
-    sfText_setString(ressources->win, "You Win !");
-    sfText_setFont(ressources->win, font);
-    sfText_setCharacterSize(ressources->win, 24);
-    sfText_setColor(ressources->win, fontColor);
-    sfFloatRect textBounds = sfText_getLocalBounds(ressources->win);
-    sfText_setPosition(ressources->win, (sfVector2f) {
-        WIDTH/2 - textBounds.width /2.f,
-        232.f - textBounds.height
-    });
-
-    ressources->loose = sfText_create();
-    sfText_setString(ressources->loose, "You Loose :(");
-    sfText_setFont(ressources->loose, font);
-    sfText_setCharacterSize(ressources->loose, 24);
-    sfText_setColor(ressources->loose, fontColor);
-    textBounds = sfText_getLocalBounds(ressources->loose);
-    sfText_setPosition(ressources->loose, (sfVector2f) {
-        WIDTH/2 - textBounds.width / 2.f,
-        232.f - textBounds.height
-    });
 }
 
 void draw_grid(Game* game, Ressources* ressources) {
