@@ -3,7 +3,7 @@ Some personal c/c++ projects for fun
 
 - [Tic-Tac-Toe with Minimax](#tic-tac-toe-with-minimax)
 - [Mines Weeper](#mines-weeper)
-- 
+- [Virtual Network](#virtual-network)
 
 
 # Tic-Tac-Toe with Minimax
@@ -68,3 +68,17 @@ gcc -Wall -g -o mines_weeper mines_weeper.c -lcsfml-graphics -lcsfml-window -lcs
 - Right-click: Mark a cell as a mine (right click again to remove the flag)
 
 Game assets designed by Kia https://kia.itch.io/16x16-tileset-for-minesweeper
+
+
+# Virtual Network
+
+It's still a WIP project !
+
+
+Implementation of a virtual network in C that simulates the exchange of packets between nodes. This project is based on the online video course from udemy.
+
+- MultiNode Topology Emulation of Routers and Switches
+- Implementation of the DataLink Layer (L2 routing), including ARP
+- L2 Switching (Mac-based Learning and Forwarding)
+- Vlan Based Mac learning and Forwarding
+- Network Layer (L3 routing)
