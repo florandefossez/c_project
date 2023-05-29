@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "net.h"
 #include <assert.h>
+#include <stdio.h>
 
 
 #define IF_NAME_SIZE 16
@@ -31,6 +32,8 @@ struct node_ {
     interface_t* intf[MAX_INTF_PER_NODE];
     glthread_t graph_glue;
     node_nw_prop_t node_nw_prop;
+    unsigned int udp_port_number;
+    int udp_sock_fd;
 };
 
 
@@ -57,10 +60,18 @@ static inline int get_node_intf_available_slot(node_t *node) {
 
 GLTHREAD_TO_STRUCT(graph_glue_to_node, node_t, graph_glue);
 
-static inline interface_t* get_node_if_by_name(node_t* node, char* if_name) {
-    for (int i = 0; i < MAX_INTF_PER_NODE; i++) {
-        if (strcmp(node->intf[i]->if_name, if_name) == 0) 
-            return node->intf[i];
+static inline interface_t *
+get_node_if_by_name(node_t *node, char *if_name){
+
+    int i ;
+    interface_t *intf;
+
+    for( i = 0 ; i < MAX_INTF_PER_NODE; i++){
+        intf = node->intf[i];
+        if(!intf) return NULL;
+        if(strncmp(intf->if_name, if_name, IF_NAME_SIZE) == 0){
+            return intf;
+        }
     }
     return NULL;
 }
