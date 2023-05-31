@@ -141,3 +141,26 @@ interface_t* node_get_matching_subnet_interface(node_t *node, char *ip_addr){
     }
 }
 
+char* pkt_buffer_shift_right(char *pkt, unsigned int pkt_size, 
+                       unsigned int total_buffer_size){
+
+    char *temp = NULL;
+    bool need_temp_memory = false;
+
+    if(pkt_size * 2 > total_buffer_size){
+        need_temp_memory = true;
+    }
+    
+    if(need_temp_memory){
+        temp = calloc(1, pkt_size);
+        memcpy(temp, pkt, pkt_size);
+        memset(pkt, 0, total_buffer_size);
+        memcpy(pkt + (total_buffer_size - pkt_size), temp, pkt_size);
+        free(temp);
+        return pkt + (total_buffer_size - pkt_size);
+    }
+    
+    memcpy(pkt + (total_buffer_size - pkt_size), pkt, pkt_size);
+    memset(pkt, 0, pkt_size);
+    return pkt + (total_buffer_size - pkt_size);
+}

@@ -13,6 +13,8 @@
 #include "net.h"
 #include <unistd.h> // for close
 
+extern void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned int* pkt_size);
+
 static unsigned int udp_port_number = 40000;
 static char recv_buffer[MAX_PACKET_BUFFER_SIZE];
 static char send_buffer[MAX_PACKET_BUFFER_SIZE];
@@ -37,6 +39,11 @@ static void _pkt_receive(node_t *receving_node,
 int pkt_receive(node_t *node, interface_t *interface,
             char *pkt, unsigned int pkt_size){
     printf("msg received %s, on node %s, intf %s\n", pkt, node->node_name, interface->if_name);
+    // make room in the packet buffer by shifting the data towards right
+    pkt = pkt_buffer_shift_right(pkt, pkt_size, MAX_PACKET_BUFFER_SIZE - IF_NAME_SIZE);
+
+    // entry point of stack from bottom
+    layer2_frame_recv(node, interface, pkt, pkt_size);
     return 0;
 }
 

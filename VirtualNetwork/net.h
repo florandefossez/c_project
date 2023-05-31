@@ -74,7 +74,10 @@ interface_t* node_get_matching_subnet_interface(node_t *node, char *ip_addr);
 
 
 unsigned int convert_ip_from_str_to_int(char *ip_addr);
+char* pkt_buffer_shift_right(char *pkt, unsigned int pkt_size, 
+                       unsigned int total_buffer_size);
 
+#define IS_INTF_L3_MODE(intf_ptr) intf_ptr->intf_nw_props.is_ipadd_config
 
 
 #endif
