@@ -3,6 +3,8 @@
 
 #include "../net.h"
 #include "../gluethread/glthread.h"
+#include "../tcpconst.h"
+#include "../comm.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -91,8 +93,8 @@ static inline ethernet_hdr_t* ALLOC_ETH_HDR_WITH_PAYLOAD(char *pkt, unsigned int
 
 static inline bool l2_frame_recv_qualify_on_interface(
     interface_t *interface, 
-    ethernet_hdr_t *ethernet_hdr,
-    unsigned int *output_vlan_id) {
+    ethernet_hdr_t *ethernet_hdr) {
+    // unsigned int *output_vlan_id) {
 
     // *output_vlan_id = 0;
 
@@ -200,7 +202,28 @@ static inline bool l2_frame_recv_qualify_on_interface(
     return false;
 }
 
-void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned int* pkt_size);
+
+static inline char* GET_ETHERNET_HDR_PAYLOAD(ethernet_hdr_t *ethernet_hdr){
+//    if(is_pkt_vlan_tagged(ethernet_hdr)){
+//         return ((vlan_ethernet_hdr_t *)(ethernet_hdr))->payload;
+//    }
+//    else
+       return ethernet_hdr->payload;
+}
+
+void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned int pkt_size);
+void init_arp_table(arp_table_t **arp_table);
+
+arp_entry_t* arp_table_lookup(arp_table_t *arp_table, char *ip_addr);
+void delete_arp_table_entry(arp_table_t *arp_table, char *ip_addr);
+void delete_arp_entry(arp_entry_t *arp_entry);
+bool arp_table_entry_add(arp_table_t *arp_table, arp_entry_t *arp_entry);
+void arp_table_update_from_arp_reply(arp_table_t *arp_table, arp_hdr_t *arp_hdr, interface_t *iif);
+void dump_arp_table(arp_table_t *arp_table);
+void send_arp_broadcast_request(node_t *node, interface_t *oif, char *ip_addr);
+static void send_arp_reply_msg(ethernet_hdr_t *ethernet_hdr_in, interface_t *oif);
+static void process_arp_reply_msg(node_t *node, interface_t *iif, ethernet_hdr_t *ethernet_hdr);
+static void process_arp_broadcast_request(node_t *node, interface_t *iif, ethernet_hdr_t *ethernet_hdr);
 
 
 #endif

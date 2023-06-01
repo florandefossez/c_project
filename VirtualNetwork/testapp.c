@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <unistd.h> // for sleep function
 
+// extern graph_t *linear_node_topo();
 extern graph_t *linear_node_topo();
 extern void nw_init_cli();
 graph_t *topo = NULL;

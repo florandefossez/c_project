@@ -8,7 +8,10 @@
 typedef struct graph_ graph_t;
 typedef struct interface_ interface_t;
 typedef struct node_ node_t;
+typedef struct arp_table_ arp_table_t;
 
+
+#pragma pack (push,1)
 typedef struct ip_addr_ {
     unsigned char ip_addr[16];
 } ip_add_t;
@@ -16,17 +19,21 @@ typedef struct ip_addr_ {
 typedef struct mac_add_ {
     unsigned char mac[6];
 } mac_add_t;
+#pragma pack(pop)
 
 typedef struct node_nw_prop_{
     bool is_lb_addr_config;
     ip_add_t lb_addr;
 
+    arp_table_t* arp_table;
 } node_nw_prop_t;
 
+extern void init_arp_table(arp_table_t **arp_table);
 
 static inline void init_node_nw_prop(node_nw_prop_t* node_nw_prop) {
     node_nw_prop->is_lb_addr_config = false;
     memset(node_nw_prop->lb_addr.ip_addr, 0, 16);
+    init_arp_table(&(node_nw_prop->arp_table));
 }
 
 
@@ -78,6 +85,8 @@ char* pkt_buffer_shift_right(char *pkt, unsigned int pkt_size,
                        unsigned int total_buffer_size);
 
 #define IS_INTF_L3_MODE(intf_ptr) intf_ptr->intf_nw_props.is_ipadd_config
+#define NODE_ARP_TABLE(node_ptr)    (node_ptr->node_nw_prop.arp_table)
 
+interface_t* node_get_matching_subnet_interface(node_t *node, char *ip_addr);
 
 #endif

@@ -13,7 +13,7 @@
 #include "net.h"
 #include <unistd.h> // for close
 
-extern void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned int* pkt_size);
+extern void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned int pkt_size);
 
 static unsigned int udp_port_number = 40000;
 static char recv_buffer[MAX_PACKET_BUFFER_SIZE];
