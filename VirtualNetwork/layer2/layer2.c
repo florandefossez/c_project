@@ -1,15 +1,70 @@
-
 #include <stdio.h>
 #include "layer2.h"
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <arpa/inet.h> /*for inet_ntop & inet_pton*/
 
+extern void l2_switch_recv_frame(interface_t *interface, char *pkt, unsigned int pkt_size);
 
-static void promote_pkt_to_layer2(node_t *node, interface_t *iif,
-        ethernet_hdr_t *ethernet_hdr,
-        uint32_t pkt_size){
 
+void interface_set_l2_mode(node_t *node, interface_t *interface, char *l2_mode_option) {
+    intf_l2_mode_t intf_l2_mode;
+
+    if(strncmp(l2_mode_option, "access", strlen("access")) == 0) {
+        intf_l2_mode = ACCESS;    
+    }
+    else if(strncmp(l2_mode_option, "trunk", strlen("trunk")) ==0) {
+        intf_l2_mode = TRUNK;
+    }
+    else{
+        printf("Invalid mode %s\n", l2_mode_option);
+        assert(0);
+    }
+    /*Case 1 : if interface is working in L3 mode, i.e. IP address is configured.
+     * then disable ip address, and set interface in L2 mode*/
+    if(IS_INTF_L3_MODE(interface)){
+        // interface->intf_nw_props.is_ipadd_config_backup = TRUE;
+        interface->intf_nw_props.is_ipadd_config = false;
+        IF_L2_MODE(interface) = intf_l2_mode;
+        return;
+    }
+    /*Case 2 : if interface is working neither in L2 mode or L3 mode, then
+     * apply L2 config*/
+    if(IF_L2_MODE(interface) == L2_MODE_UNKNOWN) {
+        IF_L2_MODE(interface) = intf_l2_mode;
+        return;
+    }
+    /*case 3 : if interface is operating in same mode, and user config same mode
+     * again, then do nothing*/
+    if(IF_L2_MODE(interface) == intf_l2_mode){
+        return;
+    }
+    /*case 4 : if interface is operating in access mode, and user config trunk mode,
+     * then overwrite*/
+    if(IF_L2_MODE(interface) == ACCESS && intf_l2_mode == TRUNK) {
+        IF_L2_MODE(interface) = intf_l2_mode;
+        return;
+    }
+    /* case 5 : if interface is operating in trunk mode, and user config access mode,
+     * then overwrite, remove all vlans from interface, user must enable vlan again 
+     * on interface*/
+    if(IF_L2_MODE(interface) == TRUNK && intf_l2_mode == ACCESS) {
+        IF_L2_MODE(interface) = intf_l2_mode;
+        // unsigned int i = 0;
+        // for ( ; i < MAX_VLAN_MEMBERSHIP; i++){
+        //     interface->intf_nw_props.vlans[i] = 0;
+        // }
+    }
+}
+
+// used during topology creation
+void node_set_intf_l2_mode(node_t *node, char *intf_name, intf_l2_mode_t intf_l2_mode) {
+    interface_t *interface = get_node_if_by_name(node, intf_name);
+    assert(interface);
+    interface_set_l2_mode(node, interface, intf_l2_mode_str(intf_l2_mode));
+}
+
+static void promote_pkt_to_layer2(node_t *node, interface_t *iif, ethernet_hdr_t *ethernet_hdr, uint32_t pkt_size){
     switch(ethernet_hdr->type){
         case ARP_MSG:
             {
@@ -38,6 +93,7 @@ static void promote_pkt_to_layer2(node_t *node, interface_t *iif,
     }
 }
 
+
 // entry point of the stack
 void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned int pkt_size) {
     // unsigned int vlan_id_to_tag = 0;
@@ -53,11 +109,9 @@ void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned
 
     /*Handle Reception of a L2 Frame on L3 Interface*/
     if(IS_INTF_L3_MODE(interface)){
-
        promote_pkt_to_layer2(node, interface, ethernet_hdr, pkt_size);
     }
-    // else if(IF_L2_MODE(interface) == ACCESS ||
-    //             IF_L2_MODE(interface) == TRUNK){
+    else if(IF_L2_MODE(interface) == ACCESS || IF_L2_MODE(interface) == TRUNK) {
 
     //     unsigned int new_pkt_size = 0;
 
@@ -67,12 +121,30 @@ void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned
     //                                             &new_pkt_size);
     //         assert(new_pkt_size != pkt_size);
     //     }
-    //     l2_switch_recv_frame(interface, pkt, vlan_id_to_tag ? new_pkt_size : pkt_size);
-    // }
+
+        l2_switch_recv_frame(interface, pkt, pkt_size);
+    }
     // else
     //     return; /*Do nothing, drop the packet*/
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ARP STUFF
 
 void init_arp_table(arp_table_t **arp_table) {
     *arp_table = calloc(1, sizeof(arp_table_t));
@@ -243,15 +315,7 @@ void dump_arp_table(arp_table_t *arp_table)  {
     } ITERATE_GLTHREAD_END(&arp_table->arp_entries, curr);
 }
 
-
-
-
-
-
-
-
 void send_arp_broadcast_request(node_t *node, interface_t *oif, char *ip_addr){
-
     /*Take memory which can accomodate Ethernet hdr + ARP hdr*/
     unsigned int payload_size = sizeof(arp_hdr_t);
     ethernet_hdr_t *ethernet_hdr = (ethernet_hdr_t *)calloc(1, ETH_HDR_SIZE_EXCL_PAYLOAD + payload_size);

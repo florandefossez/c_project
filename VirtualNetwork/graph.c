@@ -77,7 +77,7 @@ void dump_node(node_t *node) {
     unsigned int i = 0;
     interface_t *intf;
 
-    printf("Node Name = %s : \n", node->node_name);
+    printf("Node Name = %s | bind to port %d : \n", node->node_name, node->udp_port_number);
     for( ; i < MAX_INTF_PER_NODE; i++){
         
         intf = node->intf[i];

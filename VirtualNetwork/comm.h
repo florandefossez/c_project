@@ -10,11 +10,7 @@ typedef struct interface_ interface_t;
 // int get_next_udp_port_number();
 void init_udp_socket(node_t* node);
 
-
-
 int send_pkt_out(char *pkt, unsigned int pkt_size, interface_t *interface);
-
-int pkt_receive(node_t *node, interface_t *interface, 
-            char *pkt, unsigned int pkt_size);
+int pkt_receive(node_t *node, interface_t *interface, char *pkt, unsigned int pkt_size);
 
 #endif

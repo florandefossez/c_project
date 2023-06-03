@@ -107,9 +107,12 @@ static inline bool l2_frame_recv_qualify_on_interface(
 
     /* case 10 : If receiving interface is neither working in L3 mode
      * nor in L2 mode, then reject the packet*/
-    if(!IS_INTF_L3_MODE(interface) /*&& IF_L2_MODE(interface) == L2_MODE_UNKNOWN*/ ){
-
+    if(!IS_INTF_L3_MODE(interface) && IF_L2_MODE(interface) == L2_MODE_UNKNOWN ){
         return false;
+    }
+
+    if(!IS_INTF_L3_MODE(interface) && (IF_L2_MODE(interface) == ACCESS || IF_L2_MODE(interface) == TRUNK)) {
+        return true;
     }
 
 
@@ -186,8 +189,8 @@ static inline bool l2_frame_recv_qualify_on_interface(
     if(IS_INTF_L3_MODE(interface) &&
         memcmp(IF_MAC(interface), 
         ethernet_hdr->dst_mac.mac, 
-        sizeof(mac_add_t)) == 0){
-        /*case 1*/
+        sizeof(mac_add_t)) == 0) {
+
         return true;
     }
 
@@ -224,6 +227,7 @@ void send_arp_broadcast_request(node_t *node, interface_t *oif, char *ip_addr);
 static void send_arp_reply_msg(ethernet_hdr_t *ethernet_hdr_in, interface_t *oif);
 static void process_arp_reply_msg(node_t *node, interface_t *iif, ethernet_hdr_t *ethernet_hdr);
 static void process_arp_broadcast_request(node_t *node, interface_t *iif, ethernet_hdr_t *ethernet_hdr);
+void node_set_intf_l2_mode(node_t *node, char *intf_name, intf_l2_mode_t intf_l2_mode);
 
 
 #endif

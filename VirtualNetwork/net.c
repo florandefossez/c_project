@@ -66,7 +66,7 @@ bool node_unset_intf_ip_address(node_t* node, char* intf_name) {
 
 void dump_node_nw_props(node_t *node) {
 
-    printf("\nNode Name = %s\n", node->node_name);
+    printf("\nNode Name = %s | bind to port %d : \n", node->node_name, node->udp_port_number);
     if(node->node_nw_prop.is_lb_addr_config){
         printf("\t  lo addr : %s/32", NODE_LO_ADDR(node));
     }
@@ -83,7 +83,8 @@ void dump_intf_props(interface_t *interface){
             IF_MAC(interface)[0], IF_MAC(interface)[1],
             IF_MAC(interface)[2], IF_MAC(interface)[3],
             IF_MAC(interface)[4], IF_MAC(interface)[5]);
-
+    } else {
+        printf("\t opperate in %s mode\n", intf_l2_mode_str(interface->intf_nw_props.intf_l2_mode));
     }
 }
 
