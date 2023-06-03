@@ -30,10 +30,8 @@ static int show_nw_topology_handler(param_t *param, ser_buff_t *tlv_buf, op_mode
 
 // for '?' support
 void display_graph_nodes(param_t *param, ser_buff_t *tlv_buf){
-
     node_t *node;
     glthread_t *curr;
-
     ITERATE_GLTHREAD_BEGIN(&topo->node_list, curr){
 
         node = graph_glue_to_node(curr);
@@ -42,7 +40,6 @@ void display_graph_nodes(param_t *param, ser_buff_t *tlv_buf){
 }
 
 int validate_node_extistence(char *node_name){
-
     node_t *node = get_node_by_node_name(topo, node_name);
     if(node)
         return VALIDATION_SUCCESS;
@@ -50,43 +47,50 @@ int validate_node_extistence(char *node_name){
     return VALIDATION_FAILED;
 }
 
-static int arp_handler(param_t *param, ser_buff_t *tlv_buf,
-                op_mode enable_or_disable){
 
+// ARP
+static int arp_handler(param_t *param, ser_buff_t *tlv_buf, op_mode enable_or_disable) {
     node_t *node;
     char *node_name;
     char *ip_addr;
     tlv_struct_t *tlv = NULL;
 
     TLV_LOOP_BEGIN(tlv_buf, tlv){
-
         if(strncmp(tlv->leaf_id, "node-name", strlen("node-name")) ==0)
             node_name = tlv->value;
         else if(strncmp(tlv->leaf_id, "ip-address", strlen("ip-address")) ==0)
             ip_addr = tlv->value;
     } TLV_LOOP_END;
-
     node = get_node_by_node_name(topo, node_name);
     send_arp_broadcast_request(node, NULL, ip_addr);
     return 0;
 }
-
-static int show_arp_handler(param_t *param, ser_buff_t *tlv_buf, 
-                    op_mode enable_or_disable) {
-
+static int show_arp_handler(param_t *param, ser_buff_t *tlv_buf, op_mode enable_or_disable) {
     node_t *node;
     char *node_name;
     tlv_struct_t *tlv = NULL;
-    
     TLV_LOOP_BEGIN(tlv_buf, tlv){
-
         if(strncmp(tlv->leaf_id, "node-name", strlen("node-name")) ==0)
             node_name = tlv->value;
-
     }TLV_LOOP_END;
-
     node = get_node_by_node_name(topo, node_name);
     dump_arp_table(NODE_ARP_TABLE(node));
+    return 0;
+}
+
+// MAC TABLE
+typedef struct mac_table_ mac_table_t;
+extern void dump_mac_table(mac_table_t *mac_table);
+static int show_mac_handler(param_t *param, ser_buff_t *tlv_buf, op_mode enable_or_disable) {
+    node_t *node;
+    char *node_name;
+    tlv_struct_t *tlv = NULL;    
+    TLV_LOOP_BEGIN(tlv_buf, tlv){
+        if(strncmp(tlv->leaf_id, "node-name", strlen("node-name")) ==0)
+            node_name = tlv->value;
+    }TLV_LOOP_END;
+    node = get_node_by_node_name(topo, node_name);
+    dump_mac_table(NODE_MAC_TABLE(node));
     return 0;
 }
 
@@ -126,13 +130,13 @@ void nw_init_cli() {
                     libcli_register_param(&node_name, &arp);
                     set_param_cmd_code(&arp, CMDCODE_SHOW_NODE_ARP_TABLE);
                  }
-            //      {
-            //         /*show node <node-name> mac*/
-            //         static param_t mac;
-            //         init_param(&mac, CMD, "mac", show_mac_handler, 0, INVALID, 0, "Dump Mac Table");
-            //         libcli_register_param(&node_name, &mac);
-            //         set_param_cmd_code(&mac, CMDCODE_SHOW_NODE_MAC_TABLE);
-            //      }
+                 {
+                    /*show node <node-name> mac*/
+                    static param_t mac;
+                    init_param(&mac, CMD, "mac", show_mac_handler, 0, INVALID, 0, "Dump Mac Table");
+                    libcli_register_param(&node_name, &mac);
+                    set_param_cmd_code(&mac, CMDCODE_SHOW_NODE_MAC_TABLE);
+                 }
             //      {
             //         /*show node <node-name> rt*/
             //         static param_t rt;

@@ -17,10 +17,6 @@ int main(int argc, char **argv) {
 
     sleep(2);
 
-    node_t *node = get_node_by_node_name(topo, "R1");    interface_t *oif = get_node_if_by_name(node, "eth0/1");
-
-    char msg[] = "Hello world\0";
-    send_pkt_out(msg, strlen(msg), oif);
 
     start_shell();
     return 0;
