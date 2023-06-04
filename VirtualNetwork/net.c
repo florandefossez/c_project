@@ -84,7 +84,14 @@ void dump_intf_props(interface_t *interface){
             IF_MAC(interface)[2], IF_MAC(interface)[3],
             IF_MAC(interface)[4], IF_MAC(interface)[5]);
     } else {
-        printf("\t opperate in %s mode\n", intf_l2_mode_str(interface->intf_nw_props.intf_l2_mode));
+        printf("\t l2 mode = %s", intf_l2_mode_str(IF_L2_MODE(interface)));
+        printf("\t vlan membership : ");
+        for(int i = 0; i < MAX_VLAN_MEMBERSHIP; i++){
+            if(interface->intf_nw_props.vlans[i]){
+                printf("%u  ", interface->intf_nw_props.vlans[i]);
+            }
+        }
+        printf("\n");
     }
 }
 

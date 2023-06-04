@@ -54,12 +54,15 @@ typedef enum{
     L2_MODE_UNKNOWN
 } intf_l2_mode_t;
 
+#define MAX_VLAN_MEMBERSHIP 10
+
 typedef struct intf_nw_props_ {
     mac_add_t mac_add;
     bool is_ipadd_config; 
     ip_add_t ip_add;
     char mask;
     intf_l2_mode_t intf_l2_mode;
+    unsigned int vlans[MAX_VLAN_MEMBERSHIP]; /*If the interface is operating in Trunk mode, it can be a member of these vlans*/
 } intf_nw_props_t;
 
 

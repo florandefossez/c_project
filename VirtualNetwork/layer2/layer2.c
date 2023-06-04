@@ -50,10 +50,9 @@ void interface_set_l2_mode(node_t *node, interface_t *interface, char *l2_mode_o
      * on interface*/
     if(IF_L2_MODE(interface) == TRUNK && intf_l2_mode == ACCESS) {
         IF_L2_MODE(interface) = intf_l2_mode;
-        // unsigned int i = 0;
-        // for ( ; i < MAX_VLAN_MEMBERSHIP; i++){
-        //     interface->intf_nw_props.vlans[i] = 0;
-        // }
+        for (int i=0 ; i < MAX_VLAN_MEMBERSHIP; i++){
+            interface->intf_nw_props.vlans[i] = 0;
+        }
     }
 }
 
@@ -126,6 +125,149 @@ void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned
     }
     // else
     //     return; /*Do nothing, drop the packet*/
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// VLAN STUFF
+
+ethernet_hdr_t* tag_pkt_with_vlan_id(ethernet_hdr_t *ethernet_hdr, unsigned int total_pkt_size, int vlan_id, unsigned int* new_pkt_size) {
+    unsigned int payload_size  = 0 ;
+    *new_pkt_size = 0;
+
+    /*If the pkt is already tagged, replace it*/
+    vlan_8021q_hdr_t *vlan_8021q_hdr = is_pkt_vlan_tagged(ethernet_hdr);
+    if(vlan_8021q_hdr){
+        payload_size = total_pkt_size - VLAN_ETH_HDR_SIZE_EXCL_PAYLOAD;
+        vlan_8021q_hdr->tci_vid = (short)vlan_id;
+        /*Update checksum, however not used*/
+        SET_COMMON_ETH_FCS(ethernet_hdr, payload_size, 0);
+        *new_pkt_size = total_pkt_size;
+        return ethernet_hdr;
+    }
+
+    /*If the pkt is not already tagged, tag it*/
+    ethernet_hdr_t ethernet_hdr_old;
+    memcpy(
+        (char *)&ethernet_hdr_old,
+        (char *)ethernet_hdr, 
+        ETH_HDR_SIZE_EXCL_PAYLOAD - sizeof(ethernet_hdr_old.FCS)
+    );
+    payload_size = total_pkt_size - ETH_HDR_SIZE_EXCL_PAYLOAD; 
+    vlan_ethernet_hdr_t *vlan_ethernet_hdr = (vlan_ethernet_hdr_t *)((char *)ethernet_hdr - sizeof(vlan_8021q_hdr_t));
+    memset(
+        (char *)vlan_ethernet_hdr,
+        0, 
+        VLAN_ETH_HDR_SIZE_EXCL_PAYLOAD - sizeof(vlan_ethernet_hdr->FCS)
+    );
+    memcpy(vlan_ethernet_hdr->dst_mac.mac, ethernet_hdr_old.dst_mac.mac, sizeof(mac_add_t));
+    memcpy(vlan_ethernet_hdr->src_mac.mac, ethernet_hdr_old.src_mac.mac, sizeof(mac_add_t));
+
+    /*Come to 802.1Q vlan hdr*/
+    vlan_ethernet_hdr->vlan_8021q_hdr.tpid = VLAN_8021Q_PROTO;
+    vlan_ethernet_hdr->vlan_8021q_hdr.tci_pcp = 0;
+    vlan_ethernet_hdr->vlan_8021q_hdr.tci_dei = 0;
+    vlan_ethernet_hdr->vlan_8021q_hdr.tci_vid = (short)vlan_id;
+
+    /*Type field*/
+    vlan_ethernet_hdr->type = ethernet_hdr_old.type;
+
+    /*Update checksum, however not used*/
+    SET_COMMON_ETH_FCS((ethernet_hdr_t *)vlan_ethernet_hdr, payload_size, 0 );
+    *new_pkt_size = total_pkt_size  + sizeof(vlan_8021q_hdr_t);
+    return (ethernet_hdr_t *)vlan_ethernet_hdr;
+}
+
+/* Return new packet size if pkt is untagged with the existing
+ * vlan 801.1q hdr*/
+ethernet_hdr_t* untag_pkt_with_vlan_id(ethernet_hdr_t *ethernet_hdr, unsigned int total_pkt_size, unsigned int *new_pkt_size) {
+    *new_pkt_size = 0;
+
+    vlan_8021q_hdr_t *vlan_8021q_hdr = is_pkt_vlan_tagged(ethernet_hdr);
+    /*Not tagged already, do nothing*/    
+    if(!vlan_8021q_hdr){
+        *new_pkt_size = total_pkt_size;
+        return ethernet_hdr;
+    }
+
+    vlan_ethernet_hdr_t vlan_ethernet_hdr_old;
+    memcpy((char *)&vlan_ethernet_hdr_old, (char *)ethernet_hdr, 
+                VLAN_ETH_HDR_SIZE_EXCL_PAYLOAD - sizeof(vlan_ethernet_hdr_old.FCS));
+    ethernet_hdr = (ethernet_hdr_t *)((char *)ethernet_hdr + sizeof(vlan_8021q_hdr_t));
+    memcpy(ethernet_hdr->dst_mac.mac, vlan_ethernet_hdr_old.dst_mac.mac, sizeof(mac_add_t));
+    memcpy(ethernet_hdr->src_mac.mac, vlan_ethernet_hdr_old.src_mac.mac, sizeof(mac_add_t));
+    ethernet_hdr->type = vlan_ethernet_hdr_old.type;
+    
+    /*No need to copy data*/
+    unsigned int payload_size = total_pkt_size - VLAN_ETH_HDR_SIZE_EXCL_PAYLOAD;
+    /*Update checksum, however not used*/
+    SET_COMMON_ETH_FCS(ethernet_hdr, payload_size, 0);
+    
+    *new_pkt_size = total_pkt_size - sizeof(vlan_8021q_hdr_t);
+    return ethernet_hdr;
+}
+
+void interface_set_vlan(node_t *node, interface_t *interface, unsigned int vlan_id) {
+    /* Case 1 : Cant set vlans on interface configured with ip address*/
+    if(IS_INTF_L3_MODE(interface)){
+        printf("Error : Interface %s : L3 mode enabled\n", interface->if_name);
+        return;
+    }
+    /*Case 2 : Cant set vlan on interface not operating in L2 mode*/
+    if(IF_L2_MODE(interface) != ACCESS && IF_L2_MODE(interface) != TRUNK){
+        printf("Error : Interface %s : L2 mode not Enabled\n", interface->if_name);
+        return;
+    }
+    /*case 3 : Can set only one vlan on interface operating in ACCESS mode*/
+    if(interface->intf_nw_props.intf_l2_mode == ACCESS){
+        // unsigned int i = 0, *vlan = NULL;    
+        // for( ; i < MAX_VLAN_MEMBERSHIP; i++){
+        //     if(interface->intf_nw_props.vlans[i]){
+        //         vlan = &interface->intf_nw_props.vlans[i];
+        //     }
+        // }
+        // if(vlan){
+        //     *vlan = vlan_id;
+        //     return;
+        // }
+        interface->intf_nw_props.vlans[0] = vlan_id;
+    }
+    /*case 4 : Add vlan membership on interface operating in TRUNK mode*/
+    if(interface->intf_nw_props.intf_l2_mode == TRUNK){
+        unsigned int* vlan = NULL;
+        for(int i = 0 ; i < MAX_VLAN_MEMBERSHIP; i++) {
+            if(!vlan && interface->intf_nw_props.vlans[i] == 0) {
+                vlan = &interface->intf_nw_props.vlans[i];
+            } else if(interface->intf_nw_props.vlans[i] == vlan_id){
+                return;
+            }
+        }
+        if(vlan){
+            *vlan = vlan_id;
+            return;
+        }
+        printf("Error : Interface %s : Max Vlan membership limit reached", interface->if_name);
+    }
+}
+
+void node_set_intf_vlan_membsership(node_t *node, char *intf_name, unsigned int vlan_id) {
+    interface_t *interface = get_node_if_by_name(node, intf_name);
+    assert(interface);
+    interface_set_vlan(node, interface, vlan_id);
 }
 
 
@@ -357,8 +499,7 @@ void send_arp_broadcast_request(node_t *node, interface_t *oif, char *ip_addr){
     inet_pton(AF_INET, ip_addr, &arp_hdr->dst_ip);
     arp_hdr->dst_ip = htonl(arp_hdr->dst_ip);
 
-    // SET_COMMON_ETH_FCS(ethernet_hdr, sizeof(arp_hdr_t), 0); /*Not used*/
-    ETH_FCS(ethernet_hdr,  sizeof(arp_hdr_t)) = 0;
+    SET_COMMON_ETH_FCS(ethernet_hdr, sizeof(arp_hdr_t), 0); /*Not used*/
 
     /*STEP 3 : Now dispatch the ARP Broadcast Request Packet out of interface*/
     send_pkt_out((char *)ethernet_hdr, ETH_HDR_SIZE_EXCL_PAYLOAD + payload_size, oif);
@@ -392,8 +533,7 @@ static void send_arp_reply_msg(ethernet_hdr_t *ethernet_hdr_in, interface_t *oif
     memcpy(arp_hdr_reply->dst_mac.mac, arp_hdr_in->src_mac.mac, sizeof(mac_add_t));
     arp_hdr_reply->dst_ip = arp_hdr_in->src_ip;
   
-    // SET_COMMON_ETH_FCS(ethernet_hdr_reply, sizeof(arp_hdr_t), 0); /*Not used*/
-    ETH_FCS(ethernet_hdr_reply,  sizeof(arp_hdr_t)) = 0;
+    SET_COMMON_ETH_FCS(ethernet_hdr_reply, sizeof(arp_hdr_t), 0); /*Not used*/
 
     unsigned int total_pkt_size = ETH_HDR_SIZE_EXCL_PAYLOAD + sizeof(arp_hdr_t);
 
