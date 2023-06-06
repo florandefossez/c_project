@@ -172,3 +172,22 @@ char* pkt_buffer_shift_right(char *pkt, unsigned int pkt_size,
     memset(pkt, 0, pkt_size);
     return pkt + (total_buffer_size - pkt_size);
 }
+
+unsigned int get_access_intf_operating_vlan_id(interface_t *interface) {
+    if(IF_L2_MODE(interface) != ACCESS){
+        assert(0);
+    }
+    return interface->intf_nw_props.vlans[0];
+}
+
+bool is_trunk_interface_vlan_enabled(interface_t *interface, unsigned int vlan_id) {
+    if(IF_L2_MODE(interface) != TRUNK) {
+        assert(0);
+    }
+    for (int i=0; i<MAX_VLAN_MEMBERSHIP; i++) {
+        if (interface->intf_nw_props.vlans[i] == vlan_id) {
+            return true;
+        }
+    }
+    return false;
+}

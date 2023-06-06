@@ -95,36 +95,34 @@ static void promote_pkt_to_layer2(node_t *node, interface_t *iif, ethernet_hdr_t
 
 // entry point of the stack
 void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned int pkt_size) {
-    // unsigned int vlan_id_to_tag = 0;
-
+    unsigned int vlan_id_to_tag = 0;
     ethernet_hdr_t *ethernet_hdr = (ethernet_hdr_t *)pkt;
     
-    if(!l2_frame_recv_qualify_on_interface(interface, ethernet_hdr)){
+    if (!l2_frame_recv_qualify_on_interface(interface, ethernet_hdr, &vlan_id_to_tag)){
         printf("L2 Frame Rejected on node %s\n", node->node_name);
         return;
     }
-
     printf("L2 Frame Accepted on node %s\n", node->node_name);
 
     /*Handle Reception of a L2 Frame on L3 Interface*/
-    if(IS_INTF_L3_MODE(interface)){
+    if (IS_INTF_L3_MODE(interface)) {
        promote_pkt_to_layer2(node, interface, ethernet_hdr, pkt_size);
-    }
-    else if(IF_L2_MODE(interface) == ACCESS || IF_L2_MODE(interface) == TRUNK) {
-
-    //     unsigned int new_pkt_size = 0;
-
-    //     if(vlan_id_to_tag){
-    //         pkt = (char *)tag_pkt_with_vlan_id((ethernet_hdr_t *)pkt,
-    //                                             pkt_size, vlan_id_to_tag,
-    //                                             &new_pkt_size);
-    //         assert(new_pkt_size != pkt_size);
-    //     }
-
+    } else if (IF_L2_MODE(interface) == ACCESS || IF_L2_MODE(interface) == TRUNK) {
+        unsigned int new_pkt_size = 0;
+        if(vlan_id_to_tag) {
+            pkt = (char *)tag_pkt_with_vlan_id(
+                (ethernet_hdr_t *)pkt,
+                pkt_size, vlan_id_to_tag,
+                &new_pkt_size
+            );
+            assert(new_pkt_size != pkt_size);
+            l2_switch_recv_frame(interface, pkt, new_pkt_size);
+            return;
+        }
         l2_switch_recv_frame(interface, pkt, pkt_size);
+    } else {
+        return; /*Do nothing, drop the packet*/
     }
-    // else
-    //     return; /*Do nothing, drop the packet*/
 }
 
 
