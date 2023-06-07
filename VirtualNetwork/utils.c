@@ -3,6 +3,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 
+/* apply mask on prefix and put the result in str_prefix */
 void apply_mask(char *prefix, char mask, char *str_prefix) {
     
     uint32_t binary_prefix = 0;
