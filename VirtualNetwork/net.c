@@ -5,6 +5,8 @@
 #include <stdlib.h>
 
 
+extern void rt_table_add_direct_route(rt_table_t *rt_table, char *ip_addr, char mask); 
+
 /*Just some Random number generator*/
 static unsigned int
 hash_code(void *ptr, unsigned int size){
@@ -42,7 +44,7 @@ bool node_set_loopback_address(node_t* node, char* ipaddr) {
     node->node_nw_prop.is_lb_addr_config = true;
     strncpy(NODE_LO_ADDR(node), ipaddr, 16);
     NODE_LO_ADDR(node)[15] = '\0';
-
+    rt_table_add_direct_route(NODE_RT_TABLE(node), ipaddr, 32);
     return true;
 }
 
@@ -55,6 +57,7 @@ bool node_set_intf_ip_address(node_t* node, char* intf_name, char* ip_addr, char
     IF_IP(interface)[15] = '\0';
     interface->intf_nw_props.mask = mask; 
     interface->intf_nw_props.is_ipadd_config = true;
+    rt_table_add_direct_route(NODE_RT_TABLE(node), ip_addr, mask);
     return true;
 };
 

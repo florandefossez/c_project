@@ -124,7 +124,22 @@ void rt_table_add_route(rt_table_t *rt_table, char *dst, char mask, char *gw, ch
     }
 }
 
-
 void rt_table_add_direct_route(rt_table_t *rt_table, char *dst, char mask) {
     rt_table_add_route(rt_table, dst, mask, 0, 0);
+}
+
+void dump_rt_table(rt_table_t *rt_table) {
+    glthread_t *curr = NULL;
+    l3_route_t *l3_route = NULL;
+    printf("L3 Routing Table:\n");
+    ITERATE_GLTHREAD_BEGIN(&rt_table->route_list, curr){
+        l3_route = rt_glue_to_l3_route(curr);
+        printf(
+            "\t%-18s %-4d %-18s %s\n", 
+            l3_route->dest,
+            l3_route->mask,
+            l3_route->is_direct ? "NA" : l3_route->gw_ip, 
+            l3_route->is_direct ? "NA" : l3_route->oif
+        );
+    } ITERATE_GLTHREAD_END(&rt_table->route_list, curr); 
 }

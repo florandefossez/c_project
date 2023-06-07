@@ -15,7 +15,7 @@ extern int send_pkt_out(char *pkt, unsigned int pkt_size, interface_t *interface
 int main(int argc, char **argv) {
 
     nw_init_cli();
-    topo = build_dualswitch_topo();
+    topo = linear_node_topo();
 
     sleep(2);
 
