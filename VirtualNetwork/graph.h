@@ -97,7 +97,8 @@ void insert_link_between_two_nodes(
     node_t* node2,
     char* from_if_name,
     char* to_if_name,
-    unsigned int cost);
+    unsigned int cost
+);
 void dump_graph(graph_t *graph);
 void dump_node(node_t *node);
 void dump_interface(interface_t *interface);

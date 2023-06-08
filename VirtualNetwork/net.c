@@ -24,11 +24,8 @@ hash_code(void *ptr, unsigned int size){
 
 
 /*Heuristics, Assign a unique mac address to interface*/
-void
-interface_assign_mac_address(interface_t *interface){
-
+void interface_assign_mac_address(interface_t *interface){
     node_t *node = interface->att_node;
-    
     if(!node)
         return;
 
@@ -99,7 +96,6 @@ void dump_intf_props(interface_t *interface){
 }
 
 void dump_nw_graph(graph_t *graph){
-
     node_t *node;
     glthread_t *curr;
     interface_t *interface;
