@@ -57,6 +57,7 @@ CommandParser/libcli.a:
 clean:
 	rm -f *.o
 	rm -f layer2/*.o
+	rm -f layer3/*.o
 	rm -f gluethread/glthread.o
 	rm -f *exe
 	(cd CommandParser; make clean)
