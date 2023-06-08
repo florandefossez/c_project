@@ -55,9 +55,6 @@ l3_route_t* l3rib_lookup_lpm(rt_table_t *rt_table, unsigned int dest_ip) {
         l3_route = rt_glue_to_l3_route(curr);
         memset(subnet, 0, 16);
         apply_mask(dest_ip_str, l3_route->mask, subnet);
-        // if(strncmp("0.0.0.0", l3_route->dest, 16) == 0 && l3_route->mask == 0) {
-        //     default_l3_rt = l3_route;
-        // } else 
         if (
             strncmp(subnet, l3_route->dest, strlen(subnet)) == 0 &&
             l3_route->mask > longest_mask
@@ -225,15 +222,12 @@ void demote_packet_to_layer3(
 }
 
 bool is_layer3_local_delivery(node_t *node, unsigned int dst_ip){
-
     /* Check if dst_ip exact matches with any locally configured
      * ip address of the router*/
 
     /*checking with node's loopback address*/
     char dest_ip_str[16];
     dest_ip_str[15] = '\0';
-    char *intf_addr = NULL;
-
     dst_ip = htonl(dst_ip);
     inet_ntop(AF_INET, &dst_ip, dest_ip_str, 16);
 
@@ -241,21 +235,14 @@ bool is_layer3_local_delivery(node_t *node, unsigned int dst_ip){
         return true;
 
     /*checking with interface IP Addresses*/
-
-    unsigned int i = 0;
     interface_t *intf;
-
-    for( ; i < MAX_INTF_PER_NODE; i++){
-        
+    for(int i = 0; i < MAX_INTF_PER_NODE; i++){
         intf = node->intf[i];
-        if(!intf) return false;
-
+        if(!intf) 
+            return false;
         if(intf->intf_nw_props.is_ipadd_config == false)
             continue;
-
-        intf_addr = IF_IP(intf);
-
-        if(strncmp(intf_addr, dest_ip_str, 16) == 0)
+        if(strncmp(IF_IP(intf), dest_ip_str, 16) == 0)
             return true;
     }
     return false;
@@ -269,16 +256,12 @@ static void layer3_ip_pkt_recv_from_bottom(
 
     char *l4_hdr, *l5_hdr;
     char dest_ip_addr[16];
-
     ip_hdr_t *ip_hdr = pkt;
-
     unsigned int dst_ip = htonl(ip_hdr->dst_ip);
     inet_ntop(AF_INET, &dst_ip, dest_ip_addr, 16);
 
     /*Implement Layer 3 forwarding functionality*/
-
     l3_route_t *l3_route = l3rib_lookup_lpm(NODE_RT_TABLE(node), ip_hdr->dst_ip);
-
     if(!l3_route){
         /*Router do not know what to do with the pkt. drop it*/
         printf("Router %s : Cannot Route IP : %s\n", 
@@ -290,50 +273,25 @@ static void layer3_ip_pkt_recv_from_bottom(
      * case 1 : pkt is destined to self(this router only)
      * case 2 : pkt is destined for host machine connected to directly attached subnet
      * case 3 : pkt is to be forwarded to next router*/
-
     if(l3_route->is_direct) {
-        /* case 1 and case 2 are possible here*/
-
         /* case 1 : local delivery:  dst ip address in pkt must exact match with
          * ip of any local interface of the router, including loopback*/
-
         if(is_layer3_local_delivery(node, ip_hdr->dst_ip)){
 
             l4_hdr = (char *)INCREMENT_IPHDR(ip_hdr);
             l5_hdr = l4_hdr;
 
             switch(ip_hdr->protocol){
-                /* chop off the L3 hdr and promote the pkt to transport layer. If transport Layer
-                 * Protocol is not specified, then promote the packet directly to application layer
-                 * */
-                // case MTCP:
-                //     promote_pkt_to_layer4(node, interface, l4_hdr,
-                //             IP_HDR_PAYLOAD_SIZE(ip_hdr),
-                //             ip_hdr->protocol);
-                //     break;
-                // case USERAPP1:
-                //     promote_pkt_to_layer5(node, interface, l5_hdr,
-                //             IP_HDR_PAYLOAD_SIZE(ip_hdr),
-                //             ip_hdr->protocol);
-                //     break;
                 case ICMP_PRO:
                     printf("IP Address : %s, ping success\n", dest_ip_addr);
                     break;
-                case IP_IN_IP:
-                    /*Packet has reached ERO, now set the packet onto its new 
-                      Journey from ERO to final destination*/
-                    layer3_ip_pkt_recv_from_bottom(node, interface, 
-                            (ip_hdr_t *)INCREMENT_IPHDR(ip_hdr),
-                            IP_HDR_PAYLOAD_SIZE(ip_hdr));
-                    return;
                 default:
-                    ;
+                    printf("Protocol not supported yet\n");
             }
             return;
         }
         /* case 2 : It means, the dst ip address lies in direct connected
          * subnet of this router, time for l2 routing*/
-
         demote_pkt_to_layer2(
                 node,           /*Current processing node*/
                 0,              /*Dont know next hop IP as dest is present in local subnet*/
@@ -345,7 +303,6 @@ static void layer3_ip_pkt_recv_from_bottom(
     }
 
     /*case 3 : L3 forwarding case*/
-
     ip_hdr->ttl--;
 
     if(ip_hdr->ttl == 0){
@@ -368,19 +325,19 @@ static void layer3_ip_pkt_recv_from_bottom(
 }
 
 static void layer3_pkt_recv_from_bottom(
-    node_t *node,
-    interface_t *interface,
-    char *pkt,
+    node_t* node,
+    interface_t* interface,
+    char* pkt,
     unsigned int pkt_size, 
     int L3_protocol_type) {
 
     switch(L3_protocol_type){
         case ETH_IP:
-        case IP_IN_IP:
             layer3_ip_pkt_recv_from_bottom(node, interface, (ip_hdr_t *)pkt, pkt_size);
             break;
         default:
-            ;
+            printf("L3 protocol not supported\n");
+            break;
     }
 }
 
@@ -405,34 +362,3 @@ void layer5_ping_fn(node_t *node, char *dst_ip_addr) {
     addr_int = htonl(addr_int);
     demote_packet_to_layer3(node, NULL, 0, ICMP_PRO, addr_int);
 }
-
-
-// void layer3_ero_ping_fn(node_t *node, char *dst_ip_addr, char *ero_ip_address) {
-//     ip_hdr_t *inner_ip_hdr = calloc(1, sizeof(ip_hdr_t));
-//     initialize_ip_hdr(inner_ip_hdr);
-//     inner_ip_hdr->total_length = sizeof(ip_hdr_t)/4;
-//     inner_ip_hdr->protocol = ICMP_PRO;
-
-//     unsigned int addr_int = 0;
-//     inet_pton(AF_INET, NODE_LO_ADDR(node), &addr_int);
-//     addr_int = htonl(addr_int);
-//     inner_ip_hdr->src_ip = addr_int;
-
-//     addr_int = 0;
-//     inet_pton(AF_INET, dst_ip_addr, &addr_int);
-//     addr_int = htonl(addr_int);
-//     inner_ip_hdr->dst_ip = addr_int;
-
-//     addr_int = 0;
-//     inet_pton(AF_INET, ero_ip_address, &addr_int);
-//     addr_int = htonl(addr_int);
-
-//     demote_packet_to_layer3(
-//         node,
-//         (char *)inner_ip_hdr,
-//         inner_ip_hdr->total_length * 4,
-//         IP_IN_IP, addr_int
-//     );
-
-//     free(inner_ip_hdr);
-// }

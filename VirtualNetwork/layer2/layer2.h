@@ -25,7 +25,6 @@ typedef struct arp_hdr_{
 } arp_hdr_t;
 
 typedef struct ethernet_hdr_{
-
     mac_add_t dst_mac;
     mac_add_t src_mac;
     unsigned short type;
@@ -58,44 +57,21 @@ typedef struct arp_table_{
     glthread_t arp_entries;
 } arp_table_t;
 
-// typedef struct arp_pending_entry_ arp_pending_entry_t;
-typedef struct arp_entry_ arp_entry_t;
-// typedef void (*arp_processing_fn)(node_t *, 
-//                                   interface_t *oif,
-//                                   arp_entry_t *, 
-//                                   arp_pending_entry_t *);
-// struct arp_pending_entry_{
+// typedef struct arp_entry_ arp_entry_t;
 
-//     glthread_t arp_pending_entry_glue;
-//     arp_processing_fn cb;
-//     unsigned int pkt_size;  /*Including ether net hdr*/
-//     char pkt[0];
-// };
-// GLTHREAD_TO_STRUCT(arp_pending_entry_glue_to_arp_pending_entry, \
-//     arp_pending_entry_t, arp_pending_entry_glue);
-
-
-struct arp_entry_{
-
+typedef struct arp_entry_{
     ip_add_t ip_addr;   /*key*/
     mac_add_t mac_addr;
     char oif_name[IF_NAME_SIZE];
     glthread_t arp_glue;
-    // bool is_sane;
-    /* List of packets which are pending for
-     * this ARP resolution*/
-    // glthread_t arp_pending_list;
-};
+} arp_entry_t;
 
 GLTHREAD_TO_STRUCT(arp_glue_to_arp_entry, arp_entry_t, arp_glue);
-// GLTHREAD_TO_STRUCT(arp_pending_list_to_arp_entry, arp_entry_t, arp_pending_list);
 
 static inline vlan_8021q_hdr_t* is_pkt_vlan_tagged(ethernet_hdr_t *ethernet_hdr) {
     /*Check the 13th and 14th byte of the ethernet hdr,
      *      * if is value is 0x8100 then it is vlan tagged*/
-
-    vlan_8021q_hdr_t *vlan_8021q_hdr =
-        (vlan_8021q_hdr_t *)((char *)ethernet_hdr + (sizeof(mac_add_t) * 2));
+    vlan_8021q_hdr_t *vlan_8021q_hdr = (vlan_8021q_hdr_t *)((char *)ethernet_hdr + (sizeof(mac_add_t) * 2));
 
     if(vlan_8021q_hdr->tpid == VLAN_8021Q_PROTO)
         return vlan_8021q_hdr;

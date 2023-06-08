@@ -30,7 +30,6 @@ void interface_set_l2_mode(node_t *node, interface_t *interface, char *l2_mode_o
     /*Case 1 : if interface is working in L3 mode, i.e. IP address is configured.
      * then disable ip address, and set interface in L2 mode*/
     if(IS_INTF_L3_MODE(interface)){
-        // interface->intf_nw_props.is_ipadd_config_backup = TRUE;
         interface->intf_nw_props.is_ipadd_config = false;
         IF_L2_MODE(interface) = intf_l2_mode;
         return;
@@ -167,57 +166,27 @@ static void l2_forward_ip_packet(
 
         if (!arp_entry){
             printf("Unable to find mac address for %s\nConsider running arp", next_hop_ip_str);
-        } else {
-            goto l2_frame_prepare;
+            return;
         }
-    }
-   
-    // /*Case 4 : Self ping*/
-    // if(is_layer3_local_delivery(node, next_hop_ip)){
-
-    //     promote_pkt_to_layer3(node, 0, GET_ETHERNET_HDR_PAYLOAD(ethernet_hdr),
-    //             pkt_size - GET_ETH_HDR_SIZE_EXCL_PAYLOAD(ethernet_hdr),
-    //             ethernet_hdr->type);
-    //     return;
-    // }
-
-    /* case 2 : Direct host Delivery
-       L2 has to forward the frame to machine on local connected subnet */
-    oif = node_get_matching_subnet_interface(node, next_hop_ip_str);
-    if(!oif){
-        printf(
-            "%s : Error : Local matching subnet for IP : %s could not be found\n",
-            node->node_name,
-            next_hop_ip_str
-        );
-        return;
+    } else {
+        /* case 2 : Direct host Delivery
+        L2 has to forward the frame to machine on local connected subnet */
+        oif = node_get_matching_subnet_interface(node, next_hop_ip_str);
+        if(!oif){
+            printf(
+                "%s : Error : Local matching subnet for IP : %s could not be found\n",
+                node->node_name,
+                next_hop_ip_str
+            );
+            return;
+        }
+        arp_entry = arp_table_lookup(NODE_ARP_TABLE(node), next_hop_ip_str);
     }
 
-    arp_entry = arp_table_lookup(NODE_ARP_TABLE(node), next_hop_ip_str);
-
-    // if (!arp_entry){
-    //     /*Time for ARP resolution*/
-    //     arp_entry = create_arp_sane_entry(NODE_ARP_TABLE(node),
-    //             next_hop_ip_str);
-
-    //     add_arp_pending_entry(arp_entry,
-    //             pending_arp_processing_callback_function,
-    //             (char *)pkt, pkt_size);
-
-    //     send_arp_broadcast_request(node, oif, next_hop_ip_str);
-    //     return;
-    // }
-    // else if(arp_entry_sane(arp_entry)){
-    //     add_arp_pending_entry(arp_entry,
-    //             pending_arp_processing_callback_function,
-    //             (char *)pkt, pkt_size);
-    //     return;
-    // }
-    l2_frame_prepare:
-        memcpy(ethernet_hdr->dst_mac.mac, arp_entry->mac_addr.mac, sizeof(mac_add_t));
-        memcpy(ethernet_hdr->src_mac.mac, IF_MAC(oif), sizeof(mac_add_t));
-        SET_COMMON_ETH_FCS(ethernet_hdr, ethernet_payload_size, 0);
-        send_pkt_out((char *)ethernet_hdr, pkt_size, oif);
+    memcpy(ethernet_hdr->dst_mac.mac, arp_entry->mac_addr.mac, sizeof(mac_add_t));
+    memcpy(ethernet_hdr->src_mac.mac, IF_MAC(oif), sizeof(mac_add_t));
+    SET_COMMON_ETH_FCS(ethernet_hdr, ethernet_payload_size, 0);
+    send_pkt_out((char *)ethernet_hdr, pkt_size, oif);
 }
 
 static void layer2_pkt_receieve_from_top(
@@ -362,16 +331,6 @@ void interface_set_vlan(node_t *node, interface_t *interface, unsigned int vlan_
     }
     /*case 3 : Can set only one vlan on interface operating in ACCESS mode*/
     if(interface->intf_nw_props.intf_l2_mode == ACCESS){
-        // unsigned int i = 0, *vlan = NULL;    
-        // for( ; i < MAX_VLAN_MEMBERSHIP; i++){
-        //     if(interface->intf_nw_props.vlans[i]){
-        //         vlan = &interface->intf_nw_props.vlans[i];
-        //     }
-        // }
-        // if(vlan){
-        //     *vlan = vlan_id;
-        //     return;
-        // }
         interface->intf_nw_props.vlans[0] = vlan_id;
     }
     /*case 4 : Add vlan membership on interface operating in TRUNK mode*/
@@ -437,40 +396,20 @@ arp_entry_t* arp_table_lookup(arp_table_t *arp_table, char *ip_addr) {
 }
 
 void delete_arp_entry(arp_entry_t *arp_entry) {
-    
-    // glthread_t *curr;
-    // arp_pending_entry_t *arp_pending_entry;
     remove_glthread(&arp_entry->arp_glue);
-
-    // ITERATE_GLTHREAD_BEGIN(&arp_entry->arp_pending_list, curr){
-
-    //     arp_pending_entry = arp_pending_entry_glue_to_arp_pending_entry(curr);
-    //     delete_arp_pending_entry(arp_pending_entry);
-    // } ITERATE_GLTHREAD_END(&arp_entry->arp_pending_list, curr);
-
     free(arp_entry);
 }
 
 void delete_arp_table_entry(arp_table_t *arp_table, char *ip_addr) {
-
     arp_entry_t *arp_entry = arp_table_lookup(arp_table, ip_addr);
-    
     if(!arp_entry)
         return;
-
     delete_arp_entry(arp_entry);
 }
 
 
-bool arp_table_entry_add(arp_table_t *arp_table, arp_entry_t *arp_entry
-                    /*glthread_t **arp_pending_list*/){
-
-    // if(arp_pending_list){
-    //     assert(*arp_pending_list == NULL);   
-    // }
-
-    arp_entry_t *arp_entry_old = arp_table_lookup(arp_table, 
-            arp_entry->ip_addr.ip_addr);
+bool arp_table_entry_add(arp_table_t *arp_table, arp_entry_t *arp_entry) {
+    arp_entry_t *arp_entry_old = arp_table_lookup(arp_table, arp_entry->ip_addr.ip_addr);
 
     /* Case 0 : if ARP table do not exist already, then add it
      * and return true*/
@@ -479,7 +418,6 @@ bool arp_table_entry_add(arp_table_t *arp_table, arp_entry_t *arp_entry
         return true;
     }
     
-
     /*Case 1 : If existing and new ARP entries are full and equal, then
      * do nothing*/
     if(arp_entry_old && memcmp(arp_entry_old, arp_entry, sizeof(arp_entry_t))==0) {
@@ -495,47 +433,12 @@ bool arp_table_entry_add(arp_table_t *arp_table, arp_entry_t *arp_entry
         glthread_add_next(&arp_table->arp_entries, &arp_entry->arp_glue);
         return true;
     }
-
-    /*Case 3 : if existing ARP table entry is sane, and new one is also
-     * sane, then move the pending arp list from new to old one and return false*/
-    // if(arp_entry_old &&
-    //     arp_entry_sane(arp_entry_old) &&
-    //     arp_entry_sane(arp_entry)){
-    
-    //     if(!IS_GLTHREAD_LIST_EMPTY(&arp_entry->arp_pending_list)){
-    //         glthread_add_next(&arp_entry_old->arp_pending_list,
-    //                 arp_entry->arp_pending_list.right);
-    //     }
-    //     if(arp_pending_list)
-    //         *arp_pending_list = &arp_entry_old->arp_pending_list;
-    //     return false;
-    // }
-
-    /*Case 4 : If existing ARP table entry is sane, but new one if full,
-     * then copy contents of new ARP entry to old one, return FALSE*/
-    // if(arp_entry_old && 
-    //     arp_entry_sane(arp_entry_old) && 
-    //     !arp_entry_sane(arp_entry)){
-
-    //     strncpy(arp_entry_old->mac_addr.mac, arp_entry->mac_addr.mac, sizeof(mac_add_t));
-    //     strncpy(arp_entry_old->oif_name, arp_entry->oif_name, IF_NAME_SIZE);
-    //     arp_entry_old->oif_name[IF_NAME_SIZE -1] = '\0';
-
-    //     if(arp_pending_list)
-    //         *arp_pending_list = &arp_entry_old->arp_pending_list;
-    //     return false;
-    // }
-
     return false;
 }
 
 
-void arp_table_update_from_arp_reply(arp_table_t *arp_table, 
-                                arp_hdr_t *arp_hdr, interface_t *iif) {
+void arp_table_update_from_arp_reply(arp_table_t *arp_table, arp_hdr_t *arp_hdr, interface_t *iif) {
     unsigned int src_ip = 0;
-    // glthread_t *arp_pending_list = NULL;
-    // assert(arp_hdr->op_code == ARP_REPLY);
-
     arp_entry_t *arp_entry = calloc(1, sizeof(arp_entry_t));
     src_ip = htonl(arp_hdr->src_ip);
     inet_ntop(AF_INET, &src_ip, arp_entry->ip_addr.ip_addr, 16);
@@ -543,23 +446,8 @@ void arp_table_update_from_arp_reply(arp_table_t *arp_table,
     memcpy(arp_entry->mac_addr.mac, arp_hdr->src_mac.mac, sizeof(mac_add_t));
     strncpy(arp_entry->oif_name, iif->if_name, IF_NAME_SIZE);
 
-    // arp_entry->is_sane = FALSE;
-    bool rc = arp_table_entry_add(arp_table, arp_entry);//, &arp_pending_list);
-
-    // glthread_t *curr;
-    // arp_pending_entry_t *arp_pending_entry;
-    // if(arp_pending_list){
-    //     ITERATE_GLTHREAD_BEGIN(arp_pending_list, curr){
-    //         arp_pending_entry = arp_pending_entry_glue_to_arp_pending_entry(curr);
-    //         remove_glthread(&arp_pending_entry->arp_pending_entry_glue);
-    //         process_arp_pending_entry(iif->att_node, iif, arp_entry, arp_pending_entry);
-    //         delete_arp_pending_entry(arp_pending_entry);
-    //     } ITERATE_GLTHREAD_END(arp_pending_list, curr);
-    //     (arp_pending_list_to_arp_entry(arp_pending_list))->is_sane = FALSE;
-    // }
-
+    bool rc = arp_table_entry_add(arp_table, arp_entry);
     if(rc == false){
-        // delete_arp_entry(arp_entry);
         free(arp_entry);
     }
 }
