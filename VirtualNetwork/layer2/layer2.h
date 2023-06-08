@@ -259,6 +259,7 @@ ethernet_hdr_t* tag_pkt_with_vlan_id(ethernet_hdr_t *ethernet_hdr, unsigned int 
 ethernet_hdr_t* untag_pkt_with_vlan_id(ethernet_hdr_t *ethernet_hdr, unsigned int total_pkt_size, unsigned int *new_pkt_size);
 void interface_set_vlan(node_t *node, interface_t *interface, unsigned int vlan_id);
 void node_set_intf_vlan_membsership(node_t *node, char *intf_name, unsigned int vlan_id);
+void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned int pkt_size);
 
 
 #endif

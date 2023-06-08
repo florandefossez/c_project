@@ -5,6 +5,13 @@
 #include <arpa/inet.h> /*for inet_ntop & inet_pton*/
 
 extern void l2_switch_recv_frame(interface_t *interface, char *pkt, unsigned int pkt_size);
+extern void promote_pkt_to_layer3(
+    node_t *node,
+    interface_t *interface,
+    char *pkt,
+    unsigned int pkt_size,
+    int L3_protocol_type
+);
 
 
 void interface_set_l2_mode(node_t *node, interface_t *interface, char *l2_mode_option) {
@@ -81,11 +88,14 @@ static void promote_pkt_to_layer2(node_t *node, interface_t *iif, ethernet_hdr_t
                 }
             }
             break;
-        // case ETH_IP:
-        //     promote_pkt_to_layer3(node, iif,
-        //             GET_ETHERNET_HDR_PAYLOAD(ethernet_hdr),
-        //             pkt_size - GET_ETH_HDR_SIZE_EXCL_PAYLOAD(ethernet_hdr),
-        //             ethernet_hdr->type);
+        case ETH_IP:
+            promote_pkt_to_layer3(
+                node,
+                iif,
+                GET_ETHERNET_HDR_PAYLOAD(ethernet_hdr),
+                pkt_size - GET_ETH_HDR_SIZE_EXCL_PAYLOAD(ethernet_hdr),
+                ethernet_hdr->type
+            );
             break;
         default:
             ;
@@ -126,10 +136,130 @@ void layer2_frame_recv(node_t* node, interface_t* interface, char* pkt, unsigned
 }
 
 
+// LAYER3 CONNECTION
+static void l2_forward_ip_packet(
+    node_t *node,
+    unsigned int next_hop_ip,
+    char *outgoing_intf,
+    ethernet_hdr_t *pkt, 
+    unsigned int pkt_size) {
 
+    interface_t *oif = NULL;
+    char next_hop_ip_str[16];
+    arp_entry_t * arp_entry = NULL;
+    ethernet_hdr_t *ethernet_hdr = (ethernet_hdr_t *)pkt;
+    unsigned int ethernet_payload_size = pkt_size - ETH_HDR_SIZE_EXCL_PAYLOAD;
 
+    next_hop_ip = htonl(next_hop_ip);
+    inet_ntop(AF_INET, &next_hop_ip, next_hop_ip_str, 16);
+    
+    /*restore again, since htonl reverses the byte order*/
+    next_hop_ip = htonl(next_hop_ip);
 
+    if(outgoing_intf) {
+        /* Case 1 : Forwarding Case
+         * It means, L3 has resolved the nexthop, So its 
+         * time to L2 forward the pkt out of this interface*/
+        oif = get_node_if_by_name(node, outgoing_intf);
+        assert(oif);
 
+        arp_entry = arp_table_lookup(NODE_ARP_TABLE(node), next_hop_ip_str);
+
+        if (!arp_entry){
+            printf("Unable to find mac address for %s\nConsider running arp", next_hop_ip_str);
+        } else {
+            goto l2_frame_prepare;
+        }
+    }
+   
+    // /*Case 4 : Self ping*/
+    // if(is_layer3_local_delivery(node, next_hop_ip)){
+
+    //     promote_pkt_to_layer3(node, 0, GET_ETHERNET_HDR_PAYLOAD(ethernet_hdr),
+    //             pkt_size - GET_ETH_HDR_SIZE_EXCL_PAYLOAD(ethernet_hdr),
+    //             ethernet_hdr->type);
+    //     return;
+    // }
+
+    /* case 2 : Direct host Delivery
+       L2 has to forward the frame to machine on local connected subnet */
+    oif = node_get_matching_subnet_interface(node, next_hop_ip_str);
+    if(!oif){
+        printf(
+            "%s : Error : Local matching subnet for IP : %s could not be found\n",
+            node->node_name,
+            next_hop_ip_str
+        );
+        return;
+    }
+
+    arp_entry = arp_table_lookup(NODE_ARP_TABLE(node), next_hop_ip_str);
+
+    // if (!arp_entry){
+    //     /*Time for ARP resolution*/
+    //     arp_entry = create_arp_sane_entry(NODE_ARP_TABLE(node),
+    //             next_hop_ip_str);
+
+    //     add_arp_pending_entry(arp_entry,
+    //             pending_arp_processing_callback_function,
+    //             (char *)pkt, pkt_size);
+
+    //     send_arp_broadcast_request(node, oif, next_hop_ip_str);
+    //     return;
+    // }
+    // else if(arp_entry_sane(arp_entry)){
+    //     add_arp_pending_entry(arp_entry,
+    //             pending_arp_processing_callback_function,
+    //             (char *)pkt, pkt_size);
+    //     return;
+    // }
+    l2_frame_prepare:
+        memcpy(ethernet_hdr->dst_mac.mac, arp_entry->mac_addr.mac, sizeof(mac_add_t));
+        memcpy(ethernet_hdr->src_mac.mac, IF_MAC(oif), sizeof(mac_add_t));
+        SET_COMMON_ETH_FCS(ethernet_hdr, ethernet_payload_size, 0);
+        send_pkt_out((char *)ethernet_hdr, pkt_size, oif);
+}
+
+static void layer2_pkt_receieve_from_top(
+    node_t *node, 
+    unsigned int next_hop_ip,
+    char *outgoing_intf,
+    char *pkt,
+    unsigned int pkt_size,
+    int protocol_number) {
+
+    assert(pkt_size < sizeof(((ethernet_hdr_t *)0)->payload));
+
+    if(protocol_number == ETH_IP) {
+        ethernet_hdr_t *empty_ethernet_hdr = ALLOC_ETH_HDR_WITH_PAYLOAD(pkt, pkt_size); 
+        empty_ethernet_hdr->type = ETH_IP;
+        l2_forward_ip_packet(
+            node,
+            next_hop_ip, 
+            outgoing_intf,
+            empty_ethernet_hdr,
+            pkt_size + ETH_HDR_SIZE_EXCL_PAYLOAD
+        );
+    }
+}
+
+void demote_pkt_to_layer2(
+    node_t *node, /*Currenot node*/ 
+    unsigned int next_hop_ip,  /*If pkt is forwarded to next router, then this is Nexthop IP address (gateway) provided by L3 layer. L2 need to resolve ARP for this IP address*/
+    char *outgoing_intf,       /*The oif obtained from L3 lookup if L3 has decided to forward the pkt. If NULL, then L2 will find the appropriate interface*/
+    char *pkt,                  /*higher level payload*/
+    unsigned int pkt_size,
+    int protocol_number) {      /*Higher Layer need to tell L2 what value need to be feed in eth_hdr->type field*/
+
+    layer2_pkt_receieve_from_top(
+        node,
+        next_hop_ip,
+        outgoing_intf,
+        pkt,
+        pkt_size,
+        protocol_number
+    );
+}
 
 
 
