@@ -45,7 +45,7 @@ This is a Minesweeper game implemented using CSFML (C Simple and Fast Multimedia
 
 Minesweeper is a classic single-player puzzle game where the objective is to clear a rectangular board without detonating any hidden mines. The board is divided into cells, some of which contain mines. The player must uncover cells to reveal numbers indicating the number of adjacent mines. Using this information, the player can deduce the locations of mines and mark them to avoid detonation. The game is won when all non-mine cells are uncovered.
 
-![text](screenshots/minesweeper.png)
+![text](pictures/minesweeper.png)
 
 ### Features
 
@@ -72,13 +72,63 @@ Game assets designed by Kia https://kia.itch.io/16x16-tileset-for-minesweeper
 
 # Virtual Network
 
-It's still a WIP project !
-
-
 Implementation of a virtual network in C that simulates the exchange of packets between nodes. This project is based on the online video course from udemy.
+The purpose is to understand level 2 and 3 network protocols in more detail
+
+### Features
 
 - MultiNode Topology Emulation of Routers and Switches
 - Implementation of the DataLink Layer (L2 routing), including ARP
 - L2 Switching (Mac-based Learning and Forwarding)
 - Vlan Based Mac learning and Forwarding
 - Network Layer (L3 routing)
+- A CLI to manage the topology (add routes, resolve arp, ping a node, show the entire topology, display arp tables, display mac tables, display route tables..)
+
+
+Main supported commands :
+```
+show topology
+
+show node <node-name> arp   // for arp table
+show node <node-name> rt    // for route table
+show node <node-name> mac   // for mac table
+
+run node <node-name> resolve-arp <ip-address>
+run node <node-name> ping <dest-ip-address>
+
+config node <node-name> route <subnet-ip> <subnet-mask> <gateway-ip-address> <interface>
+```
+
+### How it works
+
+Communication between the nodes of the virtual network is via udp sockets. Each node is allocated a loopback port. When a packet has to cross a virtual link between two nodes, the packet is transmitted by the Linux kernel via the sockets.
+
+![text](pictures/vn_schema.png)
+
+Exemple of a topology of two nodes R1 and R2. If R1 wants to send a packet via the eth0/1 interface the packet is encapsulated by an udp socket which sends it to localhost 40001. To know from which interface a node has received a packet, an additional data is added in front of the packet to specify the receiving interface.
+
+### How to use it
+
+First, you need to choose or build a topology. Already built topologies can be found in `topologies.c`. Then you simply need to specify in `testapp.c` the name of the topology you want to load. By default, a linear topology of 3 routers is loaded.
+
+![text](pictures/vn_default_topo.png)
+
+
+In this linear topology, you may want to ping R3 from R1. As on-demand ARP resolution is not supported, you must manually execute the ARP resolution commands. In addition, you need to add the routes to forward the packet at Layer 3.
+
+To launch the app
+```
+make clean
+make
+sudo ./test.exe
+```
+
+In the app CLI
+```
+run node R1 resolve-arp 10.1.1.2
+run node R2 resolve-arp 11.1.1.1
+config node R1 route 122.1.1.3 32 10.1.1.2 eth0/1
+config node R2 route 122.1.1.3 32 11.1.1.1 eth0/3
+
+run node R1 ping 122.1.1.3
+```
