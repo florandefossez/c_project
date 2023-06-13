@@ -140,3 +140,11 @@ run node R1 ping 122.1.1.3
 This is still a WIP project !
 
 The goal is to build from scratch a full TCP/IP stack linked to local TAP interface to support a TCP socket. Unlike the Virtual Network project, the packets will travel on the real network system !
+
+To create the TAP interface and route the traffic:
+
+```
+sudo ip tuntap add name tap0 mode tap
+sudo ip link set dev tap0 up
+sudo ip route add <ip-address> dev tap0
+```
