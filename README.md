@@ -4,6 +4,7 @@ Some personal c/c++ projects for fun
 - [Tic-Tac-Toe with Minimax](#tic-tac-toe-with-minimax)
 - [Mines Weeper](#mines-weeper)
 - [Virtual Network](#virtual-network)
+- [Homemade TCP Socket](#homemade-tcp-socket)
 
 
 # Tic-Tac-Toe with Minimax
@@ -132,3 +133,10 @@ config node R2 route 122.1.1.3 32 11.1.1.1 eth0/3
 
 run node R1 ping 122.1.1.3
 ```
+
+
+# Homemade TCP Socket
+
+This is still a WIP project !
+
+The goal is to build from scratch a full TCP/IP stack linked to local TAP interface to support a TCP socket. Unlike the Virtual Network project, the packets will travel on the real network system !
