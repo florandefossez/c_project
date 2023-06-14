@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TAP_NAME="tap0"
-IP_ADDRESS="10.1.1.1"
+IP_ADDRESS="22.22.22.22"
 NETMASK="32"
 
 # Check if the tap interface already exists
@@ -19,12 +19,6 @@ fi
 ip link set dev "$TAP_NAME" up
 if [[ $? -ne 0 ]]; then
     echo "Failed to set tap interface $TAP_NAME up."
-    exit 1
-fi
-
-ip addr add "$IP_ADDRESS"/"$NETMASK" dev "$TAP_NAME"
-if [[ $? -ne 0 ]]; then
-    echo "Failed to bind IP address $IP_ADDRESS to tap interface $TAP_NAME."
     exit 1
 fi
 
