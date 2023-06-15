@@ -8,9 +8,10 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/select.h>
-#include <netinet/in.h>
 #include <errno.h>
 #include <netdb.h>
+
+#include "ether.h"
 
 
 #define BUFFER_SIZE 65535
@@ -48,6 +49,7 @@ int main() {
         }
         
         printf("Packet captured! Length: %zd\n", bytes_read);
+        parse_eth(buffer, bytes_read);
         
         
     }
