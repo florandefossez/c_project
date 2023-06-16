@@ -6,6 +6,9 @@
 #include <string.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <stdlib.h>
+
+#define MAX_PACKET_SIZE 2048
 
 
 // ethertype

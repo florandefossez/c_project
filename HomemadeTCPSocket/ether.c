@@ -1,5 +1,9 @@
 # include "ether.h"
 
+extern int tapdev;
+extern const u_int8_t MYMAC[6];
+extern const char MYIP[16];
+
 void print_layer2(eth_hdr_t* eth_hdr) {
     char type_name[10];
     u_int16_t type = ntohs(eth_hdr->ethertype);
@@ -68,7 +72,30 @@ void parse_eth(char* packet, ssize_t packet_size) {
 }
 
 void arp_handler(arp_hdr_t* arp_hdr) {
-        return;
+
+    eth_hdr_t* reply = (eth_hdr_t *) calloc(1, MAX_PACKET_SIZE);
+    memcpy(reply->smac, MYMAC, 6);
+    memcpy(reply->dmac, arp_hdr->smac, 6);
+    reply->ethertype = htons(ARP);
+
+    arp_hdr_t* arp_reply = (arp_hdr_t*) reply->payload;
+    memcpy(arp_reply->dmac, arp_hdr->smac, 6);
+    arp_reply->dip = arp_hdr->sip;
+    memcpy(arp_reply->smac, MYMAC, 6);
+    inet_pton(AF_INET, MYIP, &arp_reply->sip);
+    arp_reply->hw_type = htons(1);
+    arp_reply->hwsize = 6;
+    arp_reply->prosize = 4;
+    arp_reply->op_code = htons(2);
+    arp_reply->proto_type = htons(IPv4);
+
+    printf("ARP reply: ");
+    print_layer2(reply);
+    print_arp(arp_reply);
+    
+    write(tapdev, reply, sizeof(eth_hdr_t) - sizeof(((eth_hdr_t*)0)->payload) + sizeof(arp_hdr_t));
+
+    free(reply);
     }
 
 void print_arp(arp_hdr_t* arp_hdr) {
@@ -78,9 +105,11 @@ void print_arp(arp_hdr_t* arp_hdr) {
         return;
     }
     char psip[16];
+    char pdip[16];
     inet_ntop(AF_INET, &arp_hdr->sip, psip, 16);
+    inet_ntop(AF_INET, &arp_hdr->dip, pdip, 16);
     printf(
-        "\ttype: 0x%x | hwsize: %d | prosize: %d | op: %d | smac: %x:%x:%x:%x:%x:%x | sip: %s\n",
+        "\ttype: 0x%x | hwsize: %d | prosize: %d | op: %d | smac: %x:%x:%x:%x:%x:%x | sip: %s | dmac: %x:%x:%x:%x:%x:%x | dip: %s\n",
         type,
         arp_hdr->hwsize,
         arp_hdr->prosize,
@@ -91,6 +120,13 @@ void print_arp(arp_hdr_t* arp_hdr) {
         arp_hdr->smac[3],
         arp_hdr->smac[4],
         arp_hdr->smac[5],
-        psip        
+        psip,
+        arp_hdr->dmac[0],
+        arp_hdr->dmac[1],
+        arp_hdr->dmac[2],
+        arp_hdr->dmac[3],
+        arp_hdr->dmac[4],
+        arp_hdr->dmac[5],
+        pdip     
     );
 }

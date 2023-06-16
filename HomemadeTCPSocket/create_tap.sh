@@ -16,6 +16,8 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
+ip link set multicast off dev "$TAP_NAME"
+
 ip link set dev "$TAP_NAME" up
 if [[ $? -ne 0 ]]; then
     echo "Failed to set tap interface $TAP_NAME up."
