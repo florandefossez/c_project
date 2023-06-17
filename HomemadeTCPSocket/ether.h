@@ -21,7 +21,6 @@ typedef struct eth_hdr {
     u_int8_t dmac[6];
     u_int8_t smac[6];
     u_int16_t ethertype;
-    char payload[500];
 } eth_hdr_t;
 
 typedef struct arp_hdr_ {
