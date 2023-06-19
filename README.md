@@ -143,15 +143,27 @@ The goal is to build from scratch a full TCP/IP stack linked to local TAP interf
 
 ### How to use it
 
-The make file automaticaly create a tap interface, bind an ip (10.1.1.1 by default) and add a route entry to forward the traffic.
+The make file automaticaly create a tap interface, bind an ip (22.22.22.22 by default) and add a route entry to forward the traffic.
 
 ```
 cd HomemadeTCPSocket
 sudo make run
 ```
 
-Then you can start sending traffic to the TCP/IP stack with
+The stack support ICMP ping request, then you can ping the stack and get back the reply
+
+```
+ping 22.22.22.22
+```
+
+
+You can start sending traffic to the TCP/IP stack with ( !!! not working yet !!! )
 
 ````
-telnet 10.1.1.1
+telnet 22.22.22.22
+```
+
+Tip: To capture the traffic and visualise the packet content on wireshark
+```
+sudo tcpdump -XX -w capture_tap0 -i br0
 ```

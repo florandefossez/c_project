@@ -8,6 +8,8 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
+#include "ether.h"
+
 // transport protocols
 #define TCP     6
 #define UDP     17     
@@ -30,6 +32,6 @@ typedef struct ip4_hdr_ {
 #pragma pack(pop)
 
 void print_ip4(ip4_hdr_t* ip4_hdr);
-void ip4_handler(ip4_hdr_t* ip4_hdr);
+eth_hdr_t* ip4_handler(ip4_hdr_t* ip4_hdr);
 
 #endif

@@ -27,7 +27,7 @@ void print_layer2(eth_hdr_t* eth_hdr) {
     }
 
     printf(
-        "source mac: %x:%x:%x:%x:%x:%x | dest: %x:%x:%x:%x:%x:%x | ether type: %s\n",
+        "[ETH] source mac: %x:%x:%x:%x:%x:%x | dest: %x:%x:%x:%x:%x:%x | ether type: %s\n",
         eth_hdr->smac[0],
         eth_hdr->smac[1],
         eth_hdr->smac[2],
@@ -48,17 +48,18 @@ void print_layer2(eth_hdr_t* eth_hdr) {
 
 void parse_eth(char* packet, ssize_t packet_size) {
     eth_hdr_t *eth_hdr = (eth_hdr_t*) packet;
+    eth_hdr_t* reply_eth_hdr;
     print_layer2(eth_hdr);
     static const u_int8_t BROADCAST[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
     if (memcmp(eth_hdr->dmac, BROADCAST, 6) != 0 && memcmp(eth_hdr->dmac, MYMAC, 6) != 0) {
-        printf("Incorrect destination MAC - Drop the packet\n");
+        printf("\tIncorrect destination MAC - Drop the packet\n");
         return;
     }
 
     switch (ntohs(eth_hdr->ethertype)) {
     case IPv4:
         print_ip4((ip4_hdr_t *) (packet + sizeof(eth_hdr_t)));
-        ip4_handler((ip4_hdr_t *) (packet + sizeof(eth_hdr_t)));
+        reply_eth_hdr = ip4_handler((ip4_hdr_t *) (packet + sizeof(eth_hdr_t)));
         break;
     
     case ARP:
@@ -67,19 +68,28 @@ void parse_eth(char* packet, ssize_t packet_size) {
         break;
     
     default:
-        printf("protocol not supported - Drop the packet\n");
+        printf("\tProtocol not supported - Drop the packet\n");
         break;
     }
+    if (reply_eth_hdr) {
+        reply_eth_hdr->ethertype = eth_hdr->ethertype;
+        memcpy(reply_eth_hdr->smac, MYMAC, 6);
+        memcpy(reply_eth_hdr->dmac, eth_hdr->smac, 6);
+        
+        printf("SEND %lu bytes\n", sizeof(eth_hdr_t) + ntohs(((ip4_hdr_t *) (((char*) reply_eth_hdr) + sizeof(eth_hdr_t)))->len));
+        write(tapdev, (char *) reply_eth_hdr, sizeof(eth_hdr_t) + ntohs(((ip4_hdr_t *) (((char*) reply_eth_hdr) + sizeof(eth_hdr_t)))->len));
+        
+    }
 }
+
 
 void arp_handler(arp_hdr_t* arp_hdr) {
     u_int16_t type = ntohs(arp_hdr->proto_type);
     if (type != IPv4) {
-        printf("ARP 0x%x protocol is not supported - Drop the packet\n", type);
+        printf("\tARP 0x%x protocol is not supported - Drop the packet\n", type);
         return;
     }
     char* reply_packet = (char *) malloc(MAX_PACKET_SIZE);
-    // eth_hdr_t* reply = (eth_hdr_t *) calloc(1, MAX_PACKET_SIZE);
     eth_hdr_t* reply_eth_hdr = (eth_hdr_t *) reply_packet;
     memcpy(reply_eth_hdr->smac, MYMAC, 6);
     memcpy(reply_eth_hdr->dmac, arp_hdr->smac, 6);
@@ -96,10 +106,13 @@ void arp_handler(arp_hdr_t* arp_hdr) {
     reply_arp->op_code = htons(2);
     reply_arp->proto_type = htons(IPv4);
 
-    printf("ARP reply: ");
+    printf("[ARP reply]\n");
+    printf("\t");
     print_layer2(reply_eth_hdr);
+    printf("\t");
     print_arp(reply_arp);
     
+    printf("SEND %lu bytes\n", sizeof(eth_hdr_t) + sizeof(arp_hdr_t));
     write(tapdev, reply_packet, sizeof(eth_hdr_t) + sizeof(arp_hdr_t));
 
     free(reply_packet);
@@ -112,7 +125,7 @@ void print_arp(arp_hdr_t* arp_hdr) {
     inet_ntop(AF_INET, &arp_hdr->sip, psip, 16);
     inet_ntop(AF_INET, &arp_hdr->dip, pdip, 16);
     printf(
-        "\ttype: 0x%x | hwsize: %d | prosize: %d | op: %d | smac: %x:%x:%x:%x:%x:%x | sip: %s | dmac: %x:%x:%x:%x:%x:%x | dip: %s\n",
+        "[ARP] type: 0x%x | hwsize: %d | prosize: %d | op: %d | smac: %x:%x:%x:%x:%x:%x | sip: %s | dmac: %x:%x:%x:%x:%x:%x | dip: %s\n",
         type,
         arp_hdr->hwsize,
         arp_hdr->prosize,

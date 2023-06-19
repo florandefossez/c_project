@@ -1,10 +1,11 @@
 #!/bin/bash
 
 TAP_NAME="tap0"
+BRIDGE_NAME="br0"
 IP_ADDRESS="22.22.22.22"
 NETMASK="32"
 
-# Check if the tap interface already exists
+Check if the tap interface already exists
 if ip link show "$TAP_NAME" >/dev/null 2>&1; then
     echo "Tap interface $TAP_NAME already exists."
     exit 1
@@ -16,17 +17,33 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-ip link set multicast off dev "$TAP_NAME"
-
 ip link set dev "$TAP_NAME" up
 if [[ $? -ne 0 ]]; then
     echo "Failed to set tap interface $TAP_NAME up."
     exit 1
 fi
 
-ip route add "$IP_ADDRESS"/"$NETMASK" dev "$TAP_NAME"
+brctl addbr "$BRIDGE_NAME"
 if [[ $? -ne 0 ]]; then
-    echo "Failed to add the route entry "$IP_ADDRESS"/"$NETMASK" to tap interface $TAP_NAME."
+    echo "Failed to create bridge $BRIDGE_NAME."
+    exit 1
+fi
+
+brctl addif "$BRIDGE_NAME" "$TAP_NAME"
+if [[ $? -ne 0 ]]; then
+    echo "Failed to add the tap to the bridge"
+    exit 1
+fi
+
+ip link set "$BRIDGE_NAME" up
+if [[ $? -ne 0 ]]; then
+    echo "Failed to set bridge interface $BRIDGE_NAME up."
+    exit 1
+fi
+
+ip route add "$IP_ADDRESS" dev "$BRIDGE_NAME"
+if [[ $? -ne 0 ]]; then
+    echo "Failed to add route $IP_ADDRESS via $BRIDGE_NAME."
     exit 1
 fi
 

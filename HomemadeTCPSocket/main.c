@@ -17,7 +17,7 @@
 #define BUFFER_SIZE 65535
 
 int tapdev;
-const u_int8_t MYMAC[6]   = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
+const u_int8_t MYMAC[6]   = {0x02, 0x00, 0x00, 0x77, 0x77, 0x77};
 const char MYIP[16]       = "22.22.22.22";
 
 int main() {
