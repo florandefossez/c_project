@@ -2,7 +2,7 @@ CFLAGS = -Wall -Wextra
 CC = gcc
 TARGET:test.exe
 
-OBJS = ether.o ip4.o icmp.o utils.o
+OBJS = ether.o ip4.o icmp.o utils.o tcp.o
 
 test.exe:main.o ${OBJS}
 	${CC} ${CFLAGS} main.o ${OBJS} -o test.exe
@@ -22,6 +22,8 @@ icmp.o:icmp.c
 utils.o:utils.c
 	${CC} ${CFLAGS} -c -I . utils.c -o utils.o
 
+tcp.o:tcp.c
+	${CC} ${CFLAGS} -c -I . tcp.c -o tcp.o
 
 clean:
 	rm -f *.o

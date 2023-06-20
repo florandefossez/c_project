@@ -1,6 +1,7 @@
 #include "ip4.h"
 #include "icmp.h"
 #include "utils.h"
+#include "tcp.h"
 
 extern int tapdev;
 extern const u_int8_t MYMAC[6];
@@ -11,6 +12,9 @@ extern const char MYIP[16];
 eth_hdr_t* ip4_handler(ip4_hdr_t* ip4_hdr) {
     eth_hdr_t* reply_eth_hdr;
     u_int32_t myip;
+    ip4_pseudo_hdr_t pseudo_hdr;
+    reply_eth_hdr = NULL;
+
     inet_pton(AF_INET, MYIP, &myip);
     if (memcmp(&ip4_hdr->dip, &myip, 4) != 0) {
         printf("Invalid destination IP address - Drop the packet\n");
@@ -18,7 +22,16 @@ eth_hdr_t* ip4_handler(ip4_hdr_t* ip4_hdr) {
     }
     switch (ip4_hdr->proto) {
     case TCP:
-        printf("Not supported yet\n");
+        // ip4_pseudo_hdr_t* pseudo_hdr = (ip4_pseudo_hdr_t *) calloc(1, sizeof(ip4_pseudo_hdr_t));
+        pseudo_hdr.sip = ip4_hdr->sip;
+        pseudo_hdr.dip = ip4_hdr->dip;
+        pseudo_hdr.proto = ip4_hdr->proto;
+        pseudo_hdr.tcp_len = htons(ntohs(ip4_hdr->len) - 4*(ip4_hdr->version_ihl & 0x0F));
+        pseudo_hdr.fixed = 0;
+        print_tcp(
+            (tcp_hdr_t *) (((char *) ip4_hdr) + 4*(ip4_hdr->version_ihl & 0x0F)),
+            &pseudo_hdr
+        );
         break;
     
     case UDP:
