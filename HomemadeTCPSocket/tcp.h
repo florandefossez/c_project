@@ -10,6 +10,14 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
+// TCP states
+typedef enum TCP_state_ {
+    SYN_RCVD = 0,
+    ESTABLISHED = 1,
+    CLOSE_WAIT = 2,
+    LAST_ACK = 3,
+    CLOSED = 4
+} TCP_state_t;
 
 #pragma pack (push,1)
 typedef struct tcp_hdr_ {
@@ -34,9 +42,10 @@ typedef struct ip4_pseudo_hdr_ {
 #pragma pack(pop)
 
 typedef struct sockets_ {
-    u_int16_t local_port;
     u_int16_t remote_port;
-    u_int8_t state;
+    u_int32_t remote_ip;
+    TCP_state_t state;
+    u_int16_t window_size;
     u_int32_t seq;
     u_int32_t ack;
     struct sockets_* next;
@@ -44,5 +53,6 @@ typedef struct sockets_ {
 
 void print_tcp(tcp_hdr_t* tcp_hdr, ip4_pseudo_hdr_t* ip4_pseudo_hdr);
 eth_hdr_t* handle_tcp(tcp_hdr_t* tcp_hdr, ip4_pseudo_hdr_t* ip4_pseudo_hdr);
+u_int16_t tcp_ckecksum(tcp_hdr_t* tcp_hdr, ip4_pseudo_hdr_t* ip4_pseudo_hdr);
 
 #endif

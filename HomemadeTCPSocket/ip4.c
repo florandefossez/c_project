@@ -32,6 +32,10 @@ eth_hdr_t* ip4_handler(ip4_hdr_t* ip4_hdr) {
             (tcp_hdr_t *) (((char *) ip4_hdr) + 4*(ip4_hdr->version_ihl & 0x0F)),
             &pseudo_hdr
         );
+        reply_eth_hdr = handle_tcp(
+            (tcp_hdr_t *) (((char *) ip4_hdr) + 4*(ip4_hdr->version_ihl & 0x0F)),
+            &pseudo_hdr
+        );
         break;
     
     case UDP:
