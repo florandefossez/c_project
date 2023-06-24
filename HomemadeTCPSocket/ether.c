@@ -76,7 +76,7 @@ void parse_eth(char* packet, ssize_t packet_size) {
         memcpy(reply_eth_hdr->smac, MYMAC, 6);
         memcpy(reply_eth_hdr->dmac, eth_hdr->smac, 6);
         
-        printf("SEND %lu bytes\n", sizeof(eth_hdr_t) + ntohs(((ip4_hdr_t *) (((char*) reply_eth_hdr) + sizeof(eth_hdr_t)))->len));
+        printf("SEND %lu bytes\n\n", sizeof(eth_hdr_t) + ntohs(((ip4_hdr_t *) (((char*) reply_eth_hdr) + sizeof(eth_hdr_t)))->len));
         write(tapdev, (char *) reply_eth_hdr, sizeof(eth_hdr_t) + ntohs(((ip4_hdr_t *) (((char*) reply_eth_hdr) + sizeof(eth_hdr_t)))->len));
         
     }
