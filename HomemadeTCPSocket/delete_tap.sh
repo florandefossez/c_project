@@ -13,7 +13,7 @@ fi
 
 if ip link show "$BRIDGE_NAME" >/dev/null 2>&1; then
     ip link set dev "$BRIDGE_NAME" down
-    sudo ip link delete "$BRIDGE_NAME"
+    ip link delete "$BRIDGE_NAME"
 else
     echo "Bridge does not exist."
 fi

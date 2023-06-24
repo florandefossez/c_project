@@ -23,13 +23,13 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-brctl addbr "$BRIDGE_NAME"
+ip link add "$BRIDGE_NAME" type bridge
 if [[ $? -ne 0 ]]; then
     echo "Failed to create bridge $BRIDGE_NAME."
     exit 1
 fi
 
-brctl addif "$BRIDGE_NAME" "$TAP_NAME"
+ip link set "$TAP_NAME" master "$BRIDGE_NAME"
 if [[ $? -ne 0 ]]; then
     echo "Failed to add the tap to the bridge"
     exit 1

@@ -141,9 +141,15 @@ This is still a WIP project !
 
 The goal is to build from scratch a full TCP/IP stack linked to local TAP interface to support a TCP socket. Unlike the Virtual Network project, the packets will travel on the real network system !
 
+### Features
+
+- ARP reply
+- ICMP echo reply
+- TCP echo service listening on 22.22.22.22:1234
+
 ### How to use it
 
-The make file automaticaly create a tap interface, bind an ip (22.22.22.22 by default) and add a route entry to forward the traffic.
+The make file automaticaly creates a tap interface linked to a bridge and adds a route entry to forward the traffic for 22.22.22.22/32 to that bridge.
 
 ```
 cd HomemadeTCPSocket
@@ -157,13 +163,19 @@ ping 22.22.22.22
 ```
 
 
-You can start sending traffic to the TCP/IP stack with ( !!! not working yet !!! )
+You can create a TCP connection by reqesting the echo service on port 1234. If you send `exit` the tcp server will actively close the connection.
 
-````
-telnet 22.22.22.22
+```
+telnet 22.22.22.22 1234
 ```
 
 Tip: To capture the traffic and visualise the packet content on wireshark
+
 ```
 sudo tcpdump -XX -w capture_tap0 -i br0
 ```
+
+### Incomming features
+
+- IPv6 support
+- TCP retransmission
