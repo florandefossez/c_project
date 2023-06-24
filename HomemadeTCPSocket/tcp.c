@@ -86,6 +86,13 @@ eth_hdr_t* handle_tcp(tcp_hdr_t* tcp_hdr, ip4_pseudo_hdr_t* ip4_pseudo_hdr) {
                 // FIN
                 if (tcp_hdr->flags & 0x1) {
                     printf("Client wants to close connection.\n");
+                    eth_hdr_t* reply_eth_hdr = (eth_hdr_t *) calloc(1, MAX_PACKET_SIZE);
+                    s->ack += 1;
+                    s->state = LAST_ACK;
+                    // reply FIN ACK
+                    fill_reply(s, reply_eth_hdr, &reply_pseudo_hdr, 0x11, NULL, 0);
+                    s->seq += 1;
+                    return reply_eth_hdr;
                     break;
                 }
 
@@ -126,7 +133,17 @@ eth_hdr_t* handle_tcp(tcp_hdr_t* tcp_hdr, ip4_pseudo_hdr_t* ip4_pseudo_hdr) {
 
                     return reply_eth_hdr;
                     break;
+                } else {
+                    printf("Expected a FIN\n");
                 }
+                break;
+            
+            case LAST_ACK:
+                printf("Received last ack\n");
+                s->state = CLOSED;
+                free(s);
+                sockets[socket_index] = NULL;
+                break;
 
             
             default:
