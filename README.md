@@ -137,8 +137,6 @@ run node R1 ping 122.1.1.3
 
 # Homemade TCP Socket
 
-This is still a WIP project !
-
 The goal is to build from scratch a full TCP/IP stack linked to local TAP interface to support a TCP socket. Unlike the Virtual Network project, the packets will travel on the real network system !
 
 ### Features
@@ -169,11 +167,17 @@ You can create a TCP connection by reqesting the echo service on port 1234. If y
 telnet 22.22.22.22 1234
 ```
 
+![text](pictures/telnet.png)
+
+
 Tip: To capture the traffic and visualise the packet content on wireshark
 
 ```
 sudo tcpdump -XX -w capture_tap0 -i br0
 ```
+
+![text](pictures/wireshark.png)
+
 
 ### Incomming features
 
