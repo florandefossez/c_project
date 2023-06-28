@@ -5,6 +5,7 @@ Some personal c/c++ projects for fun
 - [Mines Weeper](#mines-weeper)
 - [Virtual Network](#virtual-network)
 - [Homemade TCP Socket](#homemade-tcp-socket)
+- [Balls](#balls)
 
 
 # Tic-Tac-Toe with Minimax
@@ -183,3 +184,21 @@ sudo tcpdump -XX -w capture_tap0 -i br0
 
 - IPv6 support
 - TCP retransmission
+
+
+# Balls
+
+A very basic 2D physics engine that simulates gas particles in an enclosed space with gravity. The simulation is written in C with CFSML as the graphics library.
+
+<p align="center">
+  <img src="pictures/balls.gif" width="400"/>
+</p>
+
+The engine simulates perfect elastic collisions based on the conservation of momentum and energy.
+
+3 next steps to improve the engine:
+- Integration of Verlet for improved stability
+- space partitioning to avoid collision detection between distant balls
+- multithreading the collision solver based on space partitioning
+
+
