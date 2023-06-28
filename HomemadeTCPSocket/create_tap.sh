@@ -5,7 +5,7 @@ BRIDGE_NAME="br0"
 IP_ADDRESS="22.22.22.22"
 NETMASK="32"
 
-Check if the tap interface already exists
+# Check if the tap interface already exists
 if ip link show "$TAP_NAME" >/dev/null 2>&1; then
     echo "Tap interface $TAP_NAME already exists."
     exit 1
