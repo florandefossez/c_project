@@ -198,7 +198,7 @@ The engine simulates perfect elastic collisions based on the conservation of mom
 
 3 next steps to improve the engine:
 - Integration of Verlet for improved stability
-- space partitioning to avoid collision detection between distant balls
+- space partitioning to avoid collision detection between distant balls (DONE !)
 - multithreading the collision solver based on space partitioning
 
 
