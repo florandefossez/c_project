@@ -6,6 +6,7 @@ Some personal c/c++ projects for fun
 - [Virtual Network](#virtual-network)
 - [Homemade TCP Socket](#homemade-tcp-socket)
 - [Balls](#balls)
+- [Flappy Bird](#flappy-bird)
 
 
 # Tic-Tac-Toe with Minimax
@@ -202,3 +203,13 @@ The engine simulates perfect elastic collisions based on the conservation of mom
 - multithreading the collision solver based on space partitioning
 
 
+# Flappy Bird
+
+WIP !
+
+A clone of the famous flappy bird game written in c++ with SFML
+
+```
+g++ -o flappybird.exe main.cpp -lsfml-graphics -lsfml-window -lsfml-system
+./flappybird.exe
+```
