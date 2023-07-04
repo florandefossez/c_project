@@ -1,5 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <vector>
+
 
 #define SCALE 3
 
@@ -9,11 +11,16 @@ const int WINDOW_HEIGHT = 255*SCALE;
 const float GRAVITY = 0.5f;
 const float JUMP_VELOCITY = 10.0f;
 
+typedef struct assets_ {
+    sf::Texture global_texture;
+} assets_t;
+
+
 class Bird {
 public:
-    Bird(sf::Texture* globalTexture) {
-        birdSprite.setTexture(*globalTexture);
-        birdSprite.setTextureRect(sf::IntRect(3,491,17,12));
+    Bird(assets_t* assets) {
+        birdSprite.setTexture(assets->global_texture);
+        birdSprite.setTextureRect(sf::IntRect(145,226,17,12));
         birdSprite.scale(VECTOR_SCALE);
         reset_position();
     }
@@ -23,11 +30,11 @@ public:
         velocityY = 0;
     }
 
-    bool update() {
+    void update() {
         velocityY += GRAVITY;
         birdSprite.move(0, velocityY);
         if (birdSprite.getPosition().y < 0) birdSprite.setPosition(sf::Vector2f(SCALE*50, 0));
-        return (birdSprite.getPosition().y > WINDOW_HEIGHT);
+        if (birdSprite.getPosition().y > SCALE*189) birdSprite.setPosition(sf::Vector2f(SCALE*50, SCALE*189));
     }
 
     void flap() {
@@ -39,9 +46,54 @@ public:
     }
 
 private:
-    sf::Texture birdTexture;
     sf::Sprite birdSprite;
     float velocityY = 0;
+};
+
+
+class Pipes {
+public:
+    Pipes(assets_t* assets) : assets(assets) {}
+
+    void create_pipe() {
+        sf::Sprite top_pipe;
+        top_pipe.setTexture(assets->global_texture);
+        top_pipe.setTextureRect(sf::IntRect(287,0,26,160));
+        top_pipe.setPosition(sf::Vector2f(WINDOW_WIDTH, 0));
+        top_pipe.setScale(VECTOR_SCALE);
+
+        top_pipes.push_back(top_pipe);
+    }
+
+    void update() {
+        static int frame = 0;
+        frame++;
+        if (frame%100 == 0) {
+            create_pipe();
+            frame = 1;
+        }
+
+        for (int i = 0; i < top_pipes.size(); i++) {
+			if (top_pipes.at(i).getPosition().x < 0) {
+				top_pipes.erase(top_pipes.begin() + i);
+	        }
+			else {
+				sf::Vector2f position = top_pipes.at(i).getPosition();
+				top_pipes.at(i).move(-1*SCALE, 0);
+			}
+		}
+    }
+
+    void draw(sf::RenderWindow* window) {
+        for (int i = 0; i < top_pipes.size(); i++) {
+            window->draw(top_pipes.at(i));
+        }
+    }
+
+private:
+    std::vector<sf::Sprite> top_pipes;
+    std::vector<sf::Sprite> bottom_pipes;
+    assets_t* assets;
 };
 
 
@@ -55,14 +107,15 @@ public:
         window.setPosition(sf::Vector2i((desktop.width - WINDOW_WIDTH) / 2, (desktop.height - WINDOW_HEIGHT) / 2));
         window.setFramerateLimit(60);
 
-        if (!globalTexture.loadFromFile("texture.png")) {
+        if (!assets.global_texture.loadFromFile("texture.png")) {
             throw std::runtime_error("Failed to load the texture");
         }
-        backgroundSprite.setTexture(globalTexture);
+        backgroundSprite.setTexture(assets.global_texture);
         backgroundSprite.setTextureRect(sf::IntRect(0,0,143,255));
         backgroundSprite.scale(VECTOR_SCALE);
         
-        bird = new Bird(&globalTexture);
+        bird = new Bird(&assets);
+        pipes = new Pipes(&assets);
     }
 
     void run() {
@@ -75,9 +128,10 @@ public:
 
 private:
     sf::RenderWindow window;
-    sf::Texture globalTexture;
     sf::Sprite backgroundSprite;
     Bird* bird;
+    Pipes* pipes;
+    assets_t assets;
 
     void handleEvents() {
         sf::Event event;
@@ -94,16 +148,15 @@ private:
     }
 
     void update() {
-        if(bird->update()) {
-            std::cout << "You loose\n";
-            bird->reset_position();
-        }
+        bird->update();
+        pipes->update();
     }
 
     void render() {
         window.clear();
         window.draw(backgroundSprite);
         window.draw(bird->getSprite());
+        pipes->draw(&window);
         window.display();
     }
 };
