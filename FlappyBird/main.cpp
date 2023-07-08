@@ -9,11 +9,17 @@ const sf::Vector2f VECTOR_SCALE = sf::Vector2f(SCALE, SCALE);
 const int WINDOW_WIDTH = 143*SCALE;
 const int WINDOW_HEIGHT = 255*SCALE;
 const float GRAVITY = 0.5f;
-const float JUMP_VELOCITY = 10.0f;
+const float JUMP_VELOCITY = 9.0f;
 
 typedef struct assets_ {
     sf::Texture global_texture;
 } assets_t;
+
+typedef enum state_ {
+    Startwait,
+    Playing,
+    GameOver
+} state_t;
 
 
 class Bird {
@@ -54,15 +60,25 @@ private:
 class Pipes {
 public:
     Pipes(assets_t* assets) : assets(assets) {}
+    std::vector<sf::Sprite> top_pipes;
+    std::vector<sf::Sprite> bottom_pipes;
+    assets_t* assets;
 
     void create_pipe() {
+        int h = rand()%100 + 20;
         sf::Sprite top_pipe;
+        sf::Sprite bottom_pipe;
         top_pipe.setTexture(assets->global_texture);
+        bottom_pipe.setTexture(assets->global_texture);
         top_pipe.setTextureRect(sf::IntRect(287,0,26,160));
-        top_pipe.setPosition(sf::Vector2f(WINDOW_WIDTH, 0));
+        bottom_pipe.setTextureRect(sf::IntRect(315,0,26,h));
+        top_pipe.setPosition(sf::Vector2f(WINDOW_WIDTH, -10*SCALE -h*SCALE));
+        bottom_pipe.setPosition(sf::Vector2f(WINDOW_WIDTH, 200*SCALE -h*SCALE));
         top_pipe.setScale(VECTOR_SCALE);
+        bottom_pipe.setScale(VECTOR_SCALE);
 
         top_pipes.push_back(top_pipe);
+        bottom_pipes.push_back(bottom_pipe);
     }
 
     void update() {
@@ -76,10 +92,14 @@ public:
         for (int i = 0; i < top_pipes.size(); i++) {
 			if (top_pipes.at(i).getPosition().x < 0) {
 				top_pipes.erase(top_pipes.begin() + i);
+				bottom_pipes.erase(bottom_pipes.begin() + i);
 	        }
 			else {
 				sf::Vector2f position = top_pipes.at(i).getPosition();
 				top_pipes.at(i).move(-1*SCALE, 0);
+
+                position = bottom_pipes.at(i).getPosition();
+				bottom_pipes.at(i).move(-1*SCALE, 0);
 			}
 		}
     }
@@ -87,13 +107,10 @@ public:
     void draw(sf::RenderWindow* window) {
         for (int i = 0; i < top_pipes.size(); i++) {
             window->draw(top_pipes.at(i));
+            window->draw(bottom_pipes.at(i));
         }
     }
 
-private:
-    std::vector<sf::Sprite> top_pipes;
-    std::vector<sf::Sprite> bottom_pipes;
-    assets_t* assets;
 };
 
 
@@ -105,7 +122,7 @@ public:
         sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
         window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Flappy Bird", sf::Style::Close);
         window.setPosition(sf::Vector2i((desktop.width - WINDOW_WIDTH) / 2, (desktop.height - WINDOW_HEIGHT) / 2));
-        window.setFramerateLimit(60);
+        window.setFramerateLimit(50);
 
         if (!assets.global_texture.loadFromFile("texture.png")) {
             throw std::runtime_error("Failed to load the texture");
@@ -113,9 +130,18 @@ public:
         backgroundSprite.setTexture(assets.global_texture);
         backgroundSprite.setTextureRect(sf::IntRect(0,0,143,255));
         backgroundSprite.scale(VECTOR_SCALE);
+        startSprite.setTexture(assets.global_texture);
+        startSprite.setTextureRect(sf::IntRect(145,176,57,42));
+        startSprite.scale(VECTOR_SCALE);
+        startSprite.setPosition((WINDOW_WIDTH-startSprite.getGlobalBounds().width)/2, (WINDOW_HEIGHT-startSprite.getGlobalBounds().height)/2);
+        titleSprite.setTexture(assets.global_texture);
+        titleSprite.setTextureRect(sf::IntRect(145,57,92,26));
+        titleSprite.scale(VECTOR_SCALE);
+        titleSprite.setPosition((WINDOW_WIDTH-titleSprite.getGlobalBounds().width)/2, (WINDOW_HEIGHT-titleSprite.getGlobalBounds().height)/4);
         
         bird = new Bird(&assets);
         pipes = new Pipes(&assets);
+        state = Startwait;
     }
 
     void run() {
@@ -129,9 +155,12 @@ public:
 private:
     sf::RenderWindow window;
     sf::Sprite backgroundSprite;
+    sf::Sprite startSprite;
+    sf::Sprite titleSprite;
     Bird* bird;
     Pipes* pipes;
     assets_t assets;
+    state_t state;
 
     void handleEvents() {
         sf::Event event;
@@ -141,22 +170,93 @@ private:
             }
             else if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Space) {
-                    bird->flap();
+
+                    switch (state) {
+                    case Startwait:
+                        state = Playing;
+                        break;
+                    case Playing:
+                        bird->flap();
+                        break;
+                    case GameOver:
+                        state = Startwait;
+                        pipes->bottom_pipes.clear();
+                        pipes->top_pipes.clear();
+                        bird->reset_position();
+                        titleSprite.setTextureRect(sf::IntRect(145,57,92,26));
+                        break;
+                    default:
+                        break;
+                    }
+
                 }
             }
         }
     }
 
+    bool collision() {
+        sf::FloatRect bird_rect = bird->getSprite().getGlobalBounds();
+        for (int i = 0; i < pipes->top_pipes.size(); i++) {
+            if (pipes->top_pipes.at(i).getGlobalBounds().intersects(bird_rect))
+                return true;
+        }
+        for (int i = 0; i < pipes->bottom_pipes.size(); i++) {
+            if (pipes->bottom_pipes.at(i).getGlobalBounds().intersects(bird_rect))
+                return true;
+        }
+        return false;
+    }
+
     void update() {
-        bird->update();
-        pipes->update();
+        switch (state) {
+        case Startwait:
+            break;
+        
+        case Playing:
+            bird->update();
+            pipes->update();
+            if(collision()) {
+                std::cout << "You loose\n";
+                state = GameOver;
+                titleSprite.setTextureRect(sf::IntRect(145,90,96,21));
+            }
+            break;
+        
+        case GameOver:
+            break;
+        
+        default:
+            break;
+        }
+        
     }
 
     void render() {
         window.clear();
         window.draw(backgroundSprite);
-        window.draw(bird->getSprite());
-        pipes->draw(&window);
+
+        switch (state) {
+        case Startwait:
+            window.draw(startSprite);
+            window.draw(titleSprite);
+            break;
+        
+        case Playing:
+            pipes->draw(&window);
+            window.draw(bird->getSprite());
+            break;
+        
+        case GameOver:
+            pipes->draw(&window);
+            window.draw(bird->getSprite());
+            window.draw(titleSprite);
+            break;
+        
+        default:
+            break;
+        }
+        
+        
         window.display();
     }
 };
