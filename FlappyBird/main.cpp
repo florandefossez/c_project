@@ -37,10 +37,20 @@ public:
     }
 
     void update() {
+        birdSprite.setTextureRect(sf::IntRect(145 + 18*wing_frame,226,17,12));
+        wing_frame = (wing_frame+1)%3;
         velocityY += GRAVITY;
         birdSprite.move(0, velocityY);
-        if (birdSprite.getPosition().y < 0) birdSprite.setPosition(sf::Vector2f(SCALE*50, 0));
-        if (birdSprite.getPosition().y > SCALE*189) birdSprite.setPosition(sf::Vector2f(SCALE*50, SCALE*189));
+        birdSprite.setRotation(1.5*velocityY);
+        if (birdSprite.getPosition().y < 0) {
+            birdSprite.setPosition(sf::Vector2f(SCALE*50, 0));
+            birdSprite.setRotation(0);
+        }
+        if (birdSprite.getPosition().y > SCALE*189) {
+            birdSprite.setPosition(sf::Vector2f(SCALE*50, SCALE*189));
+            birdSprite.setRotation(0);
+            velocityY = 0;
+        }
     }
 
     void flap() {
@@ -54,6 +64,7 @@ public:
 private:
     sf::Sprite birdSprite;
     float velocityY = 0;
+    int wing_frame = 0;
 };
 
 
@@ -216,7 +227,6 @@ private:
             bird->update();
             pipes->update();
             if(collision()) {
-                std::cout << "You loose\n";
                 state = GameOver;
                 titleSprite.setTextureRect(sf::IntRect(145,90,96,21));
             }
