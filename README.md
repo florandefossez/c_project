@@ -205,9 +205,14 @@ The engine simulates perfect elastic collisions based on the conservation of mom
 
 # Flappy Bird
 
-WIP !
+A clone of the famous flappy bird game written in c++ with SFML.
+Hit the space bar to make the bird fly !
 
-A clone of the famous flappy bird game written in c++ with SFML
+### Features
+
+- bird animation
+- score counter
+- random pipe position
 
 ```
 g++ -o flappybird.exe main.cpp -lsfml-graphics -lsfml-window -lsfml-system

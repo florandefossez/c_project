@@ -22,6 +22,42 @@ typedef enum state_ {
 } state_t;
 
 
+class Score {
+public:
+    Score(assets_t* assets) : assets(assets) {
+        for (int i=0; i<2; i++) {
+            digits[i].setTexture(assets->global_texture);
+            digits[i].setTextureRect(sf::IntRect(145,121,12,18));
+            digits[i].setScale(VECTOR_SCALE);
+            digits[i].setPosition(WINDOW_WIDTH/2, 10);
+        }
+        digits[1].move(-digits[1].getGlobalBounds().width - 2,0);
+    }
+
+    void increment() {
+        score++;
+        digits[0].setTextureRect(sf::IntRect(145 + 14*(score%10),121,12,18));
+        digits[1].setTextureRect(sf::IntRect(145 + 14*(score/10),121,12,18));
+    }
+
+    void reset() {
+        score = 0;
+        digits[0].setTextureRect(sf::IntRect(145,121,12,18));
+        digits[1].setTextureRect(sf::IntRect(145,121,12,18));
+    }
+
+    void draw(sf::RenderWindow* window) {
+        for (int i = 0; i < 2; i++) {
+            window->draw(digits[i]);
+        }
+    }
+
+private:
+    assets_t* assets;
+    sf::Sprite digits[2];
+    int score = 0;
+};
+
 class Bird {
 public:
     Bird(assets_t* assets) {
@@ -92,7 +128,8 @@ public:
         bottom_pipes.push_back(bottom_pipe);
     }
 
-    void update() {
+    bool update() {
+        bool res = false;
         static int frame = 0;
         frame++;
         if (frame%100 == 0) {
@@ -101,7 +138,7 @@ public:
         }
 
         for (int i = 0; i < top_pipes.size(); i++) {
-			if (top_pipes.at(i).getPosition().x < 0) {
+			if (top_pipes.at(i).getPosition().x < -top_pipes.at(i).getGlobalBounds().width) {
 				top_pipes.erase(top_pipes.begin() + i);
 				bottom_pipes.erase(bottom_pipes.begin() + i);
 	        }
@@ -109,10 +146,14 @@ public:
 				sf::Vector2f position = top_pipes.at(i).getPosition();
 				top_pipes.at(i).move(-1*SCALE, 0);
 
+				if (top_pipes.at(i).getPosition().x == SCALE*50)
+                    res = true;
+
                 position = bottom_pipes.at(i).getPosition();
 				bottom_pipes.at(i).move(-1*SCALE, 0);
 			}
 		}
+        return res;
     }
 
     void draw(sf::RenderWindow* window) {
@@ -152,6 +193,7 @@ public:
         
         bird = new Bird(&assets);
         pipes = new Pipes(&assets);
+        score = new Score(&assets);
         state = Startwait;
     }
 
@@ -170,6 +212,7 @@ private:
     sf::Sprite titleSprite;
     Bird* bird;
     Pipes* pipes;
+    Score* score;
     assets_t assets;
     state_t state;
 
@@ -185,6 +228,7 @@ private:
                     switch (state) {
                     case Startwait:
                         state = Playing;
+                        score->reset();
                         break;
                     case Playing:
                         bird->flap();
@@ -225,7 +269,8 @@ private:
         
         case Playing:
             bird->update();
-            pipes->update();
+            if (pipes->update())
+                score->increment();
             if(collision()) {
                 state = GameOver;
                 titleSprite.setTextureRect(sf::IntRect(145,90,96,21));
@@ -253,6 +298,7 @@ private:
         
         case Playing:
             pipes->draw(&window);
+            score->draw(&window);
             window.draw(bird->getSprite());
             break;
         
