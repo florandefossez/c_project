@@ -15,7 +15,8 @@ public:
     void update(std::array<std::array<cell_t, 32>, 32>* map);
 
 private:
+    void ray_casting(std::array<std::array<cell_t, 32>, 32>* map);
     sf::Sprite player_sprite;
     sf::Texture player_texture;
-
+    sf::CircleShape circle;
 };
