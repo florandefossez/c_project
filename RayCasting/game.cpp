@@ -57,8 +57,12 @@ void Game::render() {
             }
         }
     }
-
     player.draw(&window);
+
+    // display 3D
+    player.draw3D(&window);
+
+
     window.display();
 }
 

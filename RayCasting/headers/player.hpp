@@ -12,11 +12,15 @@ class Player {
 public:
     Player();
     void draw(sf::RenderWindow* window);
+    void draw3D(sf::RenderWindow* window);
     void update(std::array<std::array<cell_t, 32>, 32>* map);
 
 private:
     void ray_casting(std::array<std::array<cell_t, 32>, 32>* map);
     sf::Sprite player_sprite;
     sf::Texture player_texture;
-    sf::CircleShape circle;
+    sf::VertexArray vision_field;
+
+    float rays_lenght[100];
+    char collision_side[100];
 };
