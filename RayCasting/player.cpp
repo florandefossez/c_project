@@ -8,22 +8,24 @@
 Player::Player() {
 
     player_texture.loadFromFile("./ressources/player.png");
+    player_sprite.setScale(0.5, 0.5);
     player_sprite.setOrigin(16,16);
     player_sprite.setTexture(player_texture);
-    player_sprite.setPosition(sf::Vector2f(100,100));
-    vision_field.resize(101);
+    vision_field.resize(WINDOW_WIDTH + 1);
     vision_field.setPrimitiveType(sf::TriangleFan);
+
+    position_x = 2.0;
+    position_y = 3.0;
+    player_sprite.setPosition(position_x*MINIMAP/32.0, position_y*MINIMAP/32.0);
 }
 
 inline bool collide(std::array<std::array<cell_t, 32>, 32>* map, float x, float y) {
-    return ((*map)[(unsigned int) floor((x)*32/800)][(unsigned int) floor((y)*32/800)] == wall);
+    return ((*map)[(unsigned int) floor(x)][(unsigned int) floor(y)] == wall);
 }
 
 
 void Player::update(std::array<std::array<cell_t, 32>, 32>* map) {
 
-    float x = player_sprite.getPosition().x;
-    float y = player_sprite.getPosition().y;
 
     float move_x = 0;
     float move_y = 0;
@@ -49,24 +51,26 @@ void Player::update(std::array<std::array<cell_t, 32>, 32>* map) {
     }
 
     player_sprite.setColor(sf::Color::Green);
-    if (collide(map, move_x+x, y)) {
+    if (collide(map, move_x+position_x, position_y)) {
         player_sprite.setColor(sf::Color::Red);
         if (move_x>0) {
-            move_x = floor((x+move_x)*32/800)*800/32 - x - 0.01;
+            move_x = floor((position_x+move_x)) - position_x - 0.01;
         } else if (move_x<0) {
-            move_x = ceil((x+move_x)*32/800)*800/32 - x + 0.01;
+            move_x = ceil((position_x+move_x)) - position_x + 0.01;
         }
     }
-    if (collide(map, x, y+move_y)) {
+    if (collide(map, position_x, position_y+move_y)) {
         player_sprite.setColor(sf::Color::Red);
         if (move_y>0) {
-            move_y = floor((y+move_y)*32/800)*800/32 - y - 0.01;
+            move_y = floor((position_y+move_y)) - position_y - 0.01;
         } else if (move_y<0) {
-            move_y = ceil((y+move_y)*32/800)*800/32 - y + 0.01;
+            move_y = ceil((position_y+move_y)) - position_y + 0.01;
         }
     }
+    position_x += move_x;
+    position_y += move_y;
 
-    player_sprite.setPosition(move_x+x, move_y+y);
+    player_sprite.setPosition((position_x) * MINIMAP/32.0, (position_y) * MINIMAP/32.0);
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) 
         player_sprite.setRotation(player_sprite.getRotation() + PLAYER_ROTATION_VELOCITY);
@@ -78,8 +82,8 @@ void Player::update(std::array<std::array<cell_t, 32>, 32>* map) {
 }
 
 void Player::draw(sf::RenderWindow* window) {
-    player_sprite.setRotation(player_sprite.getRotation() + (sf::Mouse::getPosition(*window).x-WINDOW_WIDTH/2)/10);
-    sf::Mouse::setPosition(sf::Vector2i(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), *window);
+    // player_sprite.setRotation(player_sprite.getRotation() + (sf::Mouse::getPosition(*window).x-WINDOW_WIDTH/2)/10);
+    // sf::Mouse::setPosition(sf::Vector2i(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), *window);
     window->draw(vision_field);
     window->draw(player_sprite);
 }
@@ -87,14 +91,13 @@ void Player::draw(sf::RenderWindow* window) {
 void Player::draw3D(sf::RenderWindow* window) {
     sf::RectangleShape rect;
     rect.setFillColor(sf::Color::Green);
-    for (int r=0; r<100; r++) {
-        rect.setSize(sf::Vector2f(WINDOW_WIDTH/100, 50*WINDOW_HEIGHT/rays_lenght[r]));
-        rect.setPosition(sf::Vector2f(r*WINDOW_WIDTH/100, (WINDOW_HEIGHT - 50*WINDOW_HEIGHT/rays_lenght[r])/2));
+    for (int r=0; r<WINDOW_WIDTH; r++) {
+        rect.setSize(sf::Vector2f(1, 1.5*WINDOW_HEIGHT/rays_lenght[r]));
+        rect.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - 1.5*WINDOW_HEIGHT/rays_lenght[r])/2));
         if (collision_side[r] == 'x')
-            rect.setFillColor(sf::Color(0,255*(1-rays_lenght[r]/WINDOW_HEIGHT),0));
+            rect.setFillColor(sf::Color(0,255*(1-rays_lenght[r]/32),0));
         else
-            rect.setFillColor(sf::Color(0,0.5 * 255*(1-rays_lenght[r]/WINDOW_HEIGHT),0));
-            // rect.setFillColor(sf::Color(0,0,255*(1-rays_lenght[r]/WINDOW_HEIGHT)));
+            rect.setFillColor(sf::Color(0,0.5 * 255*(1-rays_lenght[r]/32),0));
 
         window->draw(rect);
     }
@@ -103,40 +106,38 @@ void Player::draw3D(sf::RenderWindow* window) {
 
 // DDA algorithm
 void Player::ray_casting(std::array<std::array<cell_t, 32>, 32>* map) {
-    float CELL_SIZE = 800/32;
     int step_x = 0;
     int step_y = 0;
 
+    float FOV = 70;
+
     vision_field[0].position = player_sprite.getPosition();
 
-    for (int r=0; r<100; r++) {
+    for (int r=0; r<WINDOW_WIDTH; r++) {
 
         float ray_length = 0;
         float x_ray_length = 0;
         float y_ray_length = 0;
 
-        float angle = (player_sprite.getRotation() + (r-50)*0.5 )/180*3.1416;
+        float angle = (player_sprite.getRotation() + ((float) r - (float) WINDOW_WIDTH/2.0)*FOV / WINDOW_WIDTH )/180.0*3.1416;
 
         float cos_ = cos(angle);
         float sin_ = sin(angle);
 
-        float x_ray_unit_length = CELL_SIZE / cos_;
-        float y_ray_unit_length = CELL_SIZE / sin_;
+        float x_ray_unit_length = 1 / cos_;
+        float y_ray_unit_length = 1 / sin_;
         x_ray_unit_length = x_ray_unit_length>0 ? x_ray_unit_length : -x_ray_unit_length;
         y_ray_unit_length = y_ray_unit_length>0 ? y_ray_unit_length : -y_ray_unit_length;
 
-        float current_cell_x = floor(player_sprite.getPosition().x / CELL_SIZE);
-        float current_cell_y = floor(player_sprite.getPosition().y / CELL_SIZE);
-
-        float x = player_sprite.getPosition().x;
-        float y = player_sprite.getPosition().y;
+        float current_cell_x = floor(position_x);
+        float current_cell_y = floor(position_y);
 
         if (cos_ > 0) { // we look at west
-            x_ray_length += x_ray_unit_length * (1 - (x/CELL_SIZE - current_cell_x));
+            x_ray_length += x_ray_unit_length * (1 - (position_x - current_cell_x));
             step_x = 1;
 
         } else if (cos_ < 0) { //we look at east
-            x_ray_length += x_ray_unit_length * (x/CELL_SIZE - current_cell_x);
+            x_ray_length += x_ray_unit_length * (position_x - current_cell_x);
             step_x = -1;
         
         } else {
@@ -144,11 +145,11 @@ void Player::ray_casting(std::array<std::array<cell_t, 32>, 32>* map) {
         }
 
         if (sin_ > 0) { // we look at south
-            y_ray_length += y_ray_unit_length * (1 - (y/CELL_SIZE - current_cell_y));
+            y_ray_length += y_ray_unit_length * (1 - (position_y - current_cell_y));
             step_y = 1;
             
         } else if (sin_ < 0) { //we look at north
-            y_ray_length += y_ray_unit_length * (y/CELL_SIZE - current_cell_y);
+            y_ray_length += y_ray_unit_length * (position_y - current_cell_y);
             step_y = -1;
 
         } else {
@@ -177,8 +178,9 @@ void Player::ray_casting(std::array<std::array<cell_t, 32>, 32>* map) {
             }
         }
 
-        vision_field[r+1].position = sf::Vector2f(x+ray_length*cos_, y+ray_length*sin_);
-        rays_lenght[r] = ray_length*cosf((r-50)*0.5/180*3.1416);
+        vision_field[r+1].position = sf::Vector2f((position_x+ray_length*cos_) * MINIMAP/32.0, (position_y+ray_length*sin_) * MINIMAP/32.0);
+
+        rays_lenght[r] = ray_length*cosf(((float) r - (float) WINDOW_WIDTH/2.0)*FOV / (float) WINDOW_WIDTH/180*3.1416);
     }
 
 }

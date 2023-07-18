@@ -2,8 +2,11 @@
 
 #include <array>
 
-constexpr int WINDOW_HEIGHT = 800;
-constexpr int WINDOW_WIDTH = 800;
+constexpr int WINDOW_HEIGHT = 720;
+constexpr int WINDOW_WIDTH = 1080;
+constexpr int MAP_HEIGHT = 32;
+constexpr int MAP_WIDTH = 32;
+constexpr int MINIMAP = 300;
 
 typedef enum cell_ : short {
     empty,

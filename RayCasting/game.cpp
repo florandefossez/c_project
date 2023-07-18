@@ -45,23 +45,22 @@ void Game::update() {
 void Game::render() {
     window.clear(sf::Color(50, 50, 50, 255));
 
+    // display 3D
+    player.draw3D(&window);
+
     // display the map
     sf::RectangleShape wall_rect;
     wall_rect.setFillColor(sf::Color::Black);
-    wall_rect.setSize(sf::Vector2f(WINDOW_WIDTH/32, WINDOW_HEIGHT/32));
+    wall_rect.setSize(sf::Vector2f((float) MINIMAP/ 32.0, (float) MINIMAP/32.0));
     for (unsigned int i=0; i<32; i++) {
         for (unsigned int j=0; j<32; j++) {
             if (map[i][j] == wall) {
-                wall_rect.setPosition(i*WINDOW_WIDTH/32, j*WINDOW_HEIGHT/32);
+                wall_rect.setPosition((float) MINIMAP/32.0 * i, (float) MINIMAP/32.0 * j);
                 window.draw(wall_rect);
             }
         }
     }
     player.draw(&window);
-
-    // display 3D
-    player.draw3D(&window);
-
 
     window.display();
 }

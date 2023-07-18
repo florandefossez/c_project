@@ -1,7 +1,7 @@
 #pragma once
 
-constexpr int PLAYER_VELOCITY = 5;
-constexpr int PLAYER_ROTATION_VELOCITY = 5;
+constexpr float PLAYER_VELOCITY = 0.15;
+constexpr float PLAYER_ROTATION_VELOCITY = 3.0;
 
 
 enum cell_ : short;
@@ -21,6 +21,8 @@ private:
     sf::Texture player_texture;
     sf::VertexArray vision_field;
 
-    float rays_lenght[100];
-    char collision_side[100];
+    float rays_lenght[1080];
+    char collision_side[1080];
+    float position_x;
+    float position_y;
 };
