@@ -1,7 +1,11 @@
 #pragma once
+#include <cmath>
 
 constexpr float PLAYER_VELOCITY = 0.15;
 constexpr float PLAYER_ROTATION_VELOCITY = 3.0;
+
+float const SIN_PLAYER_ROTATION = sinf(PLAYER_ROTATION_VELOCITY/180.0*3.14159);
+float const COS_PLAYER_ROTATION = cosf(PLAYER_ROTATION_VELOCITY/180.0*3.14159);
 
 
 enum cell_ : short;
@@ -23,6 +27,16 @@ private:
 
     float rays_lenght[1080];
     char collision_side[1080];
+
     float position_x;
     float position_y;
+    float position_z;
+
+    float dir_x;
+    float dir_y;
+    float dir_z;
+
+    float plane_x;
+    float plane_y;
+    float plane_z;
 };
