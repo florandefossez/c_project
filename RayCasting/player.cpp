@@ -123,21 +123,73 @@ void Player::draw(sf::RenderWindow* window) {
 
 void Player::draw3D(sf::RenderWindow* window) {
     // draw floor
-    sf::VertexArray lines(sf::Lines, 0);
-    for (int y=0; y<WINDOW_HEIGHT/2 - 1; y++) {
-        lines.append(sf::Vertex(sf::Vector2f(0,WINDOW_HEIGHT - y), sf::Color::Red));
-        lines.append(sf::Vertex(sf::Vector2f(WINDOW_WIDTH,WINDOW_HEIGHT - y), sf::Color::Red));
+    sf::Image floor_image;
+    floor_image.create(WINDOW_WIDTH, WINDOW_HEIGHT/2-1);
+
+    for (int i=0; i<WINDOW_WIDTH; i++) {
+        for (int j=0; j<WINDOW_HEIGHT/2-1; j++) {
+            floor_image.setPixel(i,j,sf::Color::Red);
+        }
     }
 
-    window->draw(lines);
+    // again we use rays to find the coordinate of the floor
+    float left_ray_x = dir_x - plane_x;
+    float left_ray_y = dir_y - plane_y;
+    float right_ray_x = dir_x + plane_x;
+    float right_ray_y = dir_y + plane_y;
+
+    // p index of the scanline from the center of the screen
+    for (int p=1; p<WINDOW_HEIGHT/2; p++) {
+
+        // horizontal distance from the player to the floor line (x distance of the ray)
+        float floor_distance = position_z*WINDOW_HEIGHT/p;
+
+        // floor coordinate of the left ray
+        float floor_x = position_x + floor_distance * left_ray_x;
+        float floor_y = position_y + floor_distance * left_ray_y;
+
+        // floor step to go to the next right pixel on the screen
+        float floor_step_x = floor_distance * (right_ray_x - left_ray_x) / WINDOW_WIDTH;
+        float floor_step_y = floor_distance * (right_ray_y - left_ray_y) / WINDOW_WIDTH;
+
+        for (int x=0; x < WINDOW_WIDTH; x++) {
+
+            // the cell coord is simply got from the integer parts of floorX and floorY
+            int current_cell_x = (int)(floor_x);
+            int current_cell_y = (int)(floor_y);
+
+            // get the texture coordinate from the fractional part
+            // int tx = (int)(texWidth * (floorX - current_cell_x)) & (texWidth - 1);
+            // int ty = (int)(texHeight * (floorY - current_cell_y)) & (texHeight - 1);
+
+            floor_x += floor_step_x;
+            floor_y += floor_step_y;
+
+            // choose texture and draw the pixel
+            if ((current_cell_x + current_cell_y)%2 == 1) {
+                floor_image.setPixel(x, p-1, sf::Color::Red);
+            } else {
+                floor_image.setPixel(x, p-1, sf::Color::Black);
+            }
+        }
+    }
+
+    sf::Texture t;
+    t.create(WINDOW_WIDTH, WINDOW_HEIGHT/2-1);
+    t.update(floor_image);
+    sf::Sprite floor_sprite;
+    floor_sprite.setTexture(t);
+    floor_sprite.setPosition(0, WINDOW_HEIGHT/2+1);
+
+    window->draw(floor_sprite);
 
 
     // draw walls
     sf::RectangleShape rect;
     rect.setFillColor(sf::Color::Green);
     for (int r=0; r<WINDOW_WIDTH; r++) {
-        rect.setSize(sf::Vector2f(1, WINDOW_WIDTH/rays_lenght[r]));
-        rect.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - 1.5*WINDOW_HEIGHT/rays_lenght[r])/2));
+        rect.setSize(sf::Vector2f(1, WINDOW_HEIGHT/rays_lenght[r]));
+        rect.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - WINDOW_HEIGHT/rays_lenght[r])/2));
         if (collision_side[r] == 'x')
             rect.setFillColor(sf::Color(0,255*(1-rays_lenght[r]/32),0));
         else
