@@ -3,9 +3,6 @@
 #include "headers/player.hpp"
 #include "headers/game.hpp"
 
-float FOV = 70.0;
-
-
 
 Player::Player() {
 
@@ -16,6 +13,10 @@ Player::Player() {
     vision_field.resize(WINDOW_WIDTH + 1);
     vision_field.setPrimitiveType(sf::TriangleFan);
 
+    brick_texture.loadFromFile("./ressources/redbrick.png");
+    stone.loadFromFile("./ressources/greystone.png");
+    mosse.loadFromFile("./ressources/mossy.png");
+
     position_x = 2.0;
     position_y = 3.0;
     position_z = 0.5;
@@ -23,12 +24,10 @@ Player::Player() {
 
     dir_x = 1.0;
     dir_y = 0.0;
-    dir_z = 0.0;
     player_sprite.setRotation(atanf(dir_y/dir_x)*3.1415/180.0);
 
     plane_x = 0.0;
     plane_y = 1.0;
-    plane_z = 0.0;
 }
 
 inline bool collide(std::array<std::array<cell_t, 32>, 32>* map, float x, float y) {
@@ -159,17 +158,17 @@ void Player::draw3D(sf::RenderWindow* window) {
             int current_cell_y = (int)(floor_y);
 
             // get the texture coordinate from the fractional part
-            // int tx = (int)(texWidth * (floorX - current_cell_x)) & (texWidth - 1);
-            // int ty = (int)(texHeight * (floorY - current_cell_y)) & (texHeight - 1);
+            unsigned int tx = (unsigned int) std::abs(64.0 * (floor_x - current_cell_x));
+            unsigned int ty = (unsigned int) std::abs(64.0 * (floor_y - current_cell_y));
 
             floor_x += floor_step_x;
             floor_y += floor_step_y;
 
             // choose texture and draw the pixel
             if ((current_cell_x + current_cell_y)%2 == 1) {
-                floor_image.setPixel(x, p-1, sf::Color::Red);
+                floor_image.setPixel(x, p-1, mosse.getPixel(tx,ty));
             } else {
-                floor_image.setPixel(x, p-1, sf::Color::Black);
+                floor_image.setPixel(x, p-1, stone.getPixel(tx,ty));
             }
         }
     }
@@ -185,23 +184,21 @@ void Player::draw3D(sf::RenderWindow* window) {
 
 
     // draw walls
-    sf::RectangleShape rect;
-    rect.setFillColor(sf::Color::Green);
+    sf::Sprite wall;
+    wall.setTexture(brick_texture);
     for (int r=0; r<WINDOW_WIDTH; r++) {
-        rect.setSize(sf::Vector2f(1, WINDOW_HEIGHT/rays_lenght[r]));
-        rect.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - WINDOW_HEIGHT/rays_lenght[r])/2));
-        if (collision_side[r] == 'x')
-            rect.setFillColor(sf::Color(0,255*(1-rays_lenght[r]/32),0));
-        else
-            rect.setFillColor(sf::Color(0,0.5 * 255*(1-rays_lenght[r]/32),0));
-
-        window->draw(rect);
+        wall.setTextureRect(sf::IntRect(texture_offset[r]*64.0, 0, 1, 64));
+        wall.setScale(sf::Vector2f(1, (float) WINDOW_HEIGHT/rays_lenght[r]/64.0));
+        wall.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - WINDOW_HEIGHT/rays_lenght[r])/2));
+        window->draw(wall);
     }
 }
 
 
 // DDA algorithm
 void Player::ray_casting(std::array<std::array<cell_t, 32>, 32>* map) {
+
+    char collision_side;
     
     for (int r=0; r<WINDOW_WIDTH; r++) {
 
@@ -263,14 +260,14 @@ void Player::ray_casting(std::array<std::array<cell_t, 32>, 32>* map) {
                 x_ray_length += x_ray_unit_length;
 
                 current_cell_x += step_x;
-                collision_side[r] = 'x';
+                collision_side = 'x';
             }
             else {
                 ray_length = y_ray_length;
                 y_ray_length += y_ray_unit_length;
 
                 current_cell_y += step_y;
-                collision_side[r] = 'y';
+                collision_side = 'y';
             }
             if (wall == (*map)[current_cell_x][current_cell_y]){
                 break;
@@ -283,10 +280,12 @@ void Player::ray_casting(std::array<std::array<cell_t, 32>, 32>* map) {
         );
 
         // we don't use the real ray length to avoid fisheye effect
-        if (collision_side[r] == 'x') {
+        if (collision_side == 'x') {
             rays_lenght[r] = x_ray_length - x_ray_unit_length;
+            texture_offset[r] = position_y + ray_length * ray_dir_y - (float) current_cell_y;
         } else {
             rays_lenght[r] = y_ray_length - y_ray_unit_length;
+            texture_offset[r] = position_x + ray_length * ray_dir_x - (float) current_cell_x;
         }
     }
 

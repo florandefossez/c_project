@@ -21,12 +21,18 @@ public:
 
 private:
     void ray_casting(std::array<std::array<cell_t, 32>, 32>* map);
+
+    // For the minimap
     sf::Sprite player_sprite;
     sf::Texture player_texture;
     sf::VertexArray vision_field;
 
+    // for the 3D rendering
+    sf::Texture brick_texture;
+    sf::Image stone;
+    sf::Image mosse;
     float rays_lenght[1080];
-    char collision_side[1080];
+    float texture_offset[1080];
 
     float position_x;
     float position_y;
@@ -34,9 +40,7 @@ private:
 
     float dir_x;
     float dir_y;
-    float dir_z;
 
     float plane_x;
     float plane_y;
-    float plane_z;
 };
