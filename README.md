@@ -7,6 +7,7 @@ Some personal c/c++ projects for fun
 - [Homemade TCP Socket](#homemade-tcp-socket)
 - [Balls](#balls)
 - [Flappy Bird](#flappy-bird)
+- [Ray Casting](#ray-casting)
 
 
 # Tic-Tac-Toe with Minimax
@@ -208,6 +209,10 @@ The engine simulates perfect elastic collisions based on the conservation of mom
 A clone of the famous flappy bird game written in c++ with SFML.
 Hit the space bar to make the bird fly !
 
+<p align="center">
+  <img src="pictures/flappyBird.gif" width="300"/>
+</p>
+
 ### Features
 
 - bird animation
@@ -219,7 +224,7 @@ g++ -o flappybird.exe main.cpp -lsfml-graphics -lsfml-window -lsfml-system
 ./flappybird.exe
 ```
 
-# RayCasting
+# Ray Casting
 
 Ray casting engine in C++ build with the SFML library. The objective is to build a retro game like Wolfenstein 3D without any external 3D rendering library. A great article to learn more about raycasting engine https://lodev.org/cgtutor/raycasting.html 
 
