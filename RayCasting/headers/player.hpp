@@ -11,28 +11,14 @@ float const COS_PLAYER_ROTATION = cosf(PLAYER_ROTATION_VELOCITY/180.0*3.14159);
 enum cell_ : short;
 typedef enum cell_ cell_t;
 
+class Game;
+
 class Player {
 
 public:
-    Player();
-    void draw(sf::RenderWindow* window);
-    void draw3D(sf::RenderWindow* window);
-    void update(std::array<std::array<cell_t, 32>, 32>* map);
-
-private:
-    void ray_casting(std::array<std::array<cell_t, 32>, 32>* map);
-
-    // For the minimap
-    sf::Sprite player_sprite;
-    sf::Texture player_texture;
-    sf::VertexArray vision_field;
-
-    // for the 3D rendering
-    sf::Texture brick_texture;
-    sf::Image stone;
-    sf::Image mosse;
-    float rays_lenght[1080];
-    float texture_offset[1080];
+    Player(Game* game);
+    void draw();
+    void update();
 
     float position_x;
     float position_y;
@@ -40,6 +26,17 @@ private:
 
     float dir_x;
     float dir_y;
+
+private:
+    void ray_casting();
+
+    Game* game;
+
+    sf::Texture brick_texture;
+    sf::Image stone;
+    sf::Image mosse;
+    float rays_lenght[1080];
+    float texture_offset[1080];
 
     float plane_x;
     float plane_y;

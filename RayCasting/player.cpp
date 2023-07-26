@@ -1,17 +1,11 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include "headers/map.hpp"
 #include "headers/player.hpp"
 #include "headers/game.hpp"
 
 
-Player::Player() {
-
-    player_texture.loadFromFile("./ressources/player.png");
-    player_sprite.setScale(0.5, 0.5);
-    player_sprite.setOrigin(16,16);
-    player_sprite.setTexture(player_texture);
-    vision_field.resize(WINDOW_WIDTH + 1);
-    vision_field.setPrimitiveType(sf::TriangleFan);
+Player::Player(Game* game) : game(game) {
 
     brick_texture.loadFromFile("./ressources/redbrick.png");
     stone.loadFromFile("./ressources/greystone.png");
@@ -20,23 +14,16 @@ Player::Player() {
     position_x = 2.0;
     position_y = 3.0;
     position_z = 0.5;
-    player_sprite.setPosition(position_x*MINIMAP/32.0, position_y*MINIMAP/32.0);
 
     dir_x = 1.0;
     dir_y = 0.0;
-    player_sprite.setRotation(atanf(dir_y/dir_x)*3.1415/180.0);
 
     plane_x = 0.0;
     plane_y = 1.0;
 }
 
-inline bool collide(std::array<std::array<cell_t, 32>, 32>* map, float x, float y) {
-    return ((*map)[(unsigned int) floor(x)][(unsigned int) floor(y)] == wall);
-}
 
-
-void Player::update(std::array<std::array<cell_t, 32>, 32>* map) {
-
+void Player::update() {
 
     float move_x = 0;
     float move_y = 0;
@@ -61,17 +48,14 @@ void Player::update(std::array<std::array<cell_t, 32>, 32>* map) {
         move_y += PLAYER_VELOCITY*dir_x;
     }
 
-    player_sprite.setColor(sf::Color::Green);
-    if (collide(map, move_x+position_x, position_y)) {
-        player_sprite.setColor(sf::Color::Red);
+    if (game->map.collide(move_x+position_x, position_y)) {
         if (move_x>0) {
             move_x = floor((position_x+move_x)) - position_x - 0.01;
         } else if (move_x<0) {
             move_x = ceil((position_x+move_x)) - position_x + 0.01;
         }
     }
-    if (collide(map, position_x, position_y+move_y)) {
-        player_sprite.setColor(sf::Color::Red);
+    if (game->map.collide(position_x, position_y+move_y)) {
         if (move_y>0) {
             move_y = floor((position_y+move_y)) - position_y - 0.01;
         } else if (move_y<0) {
@@ -80,8 +64,6 @@ void Player::update(std::array<std::array<cell_t, 32>, 32>* map) {
     }
     position_x += move_x;
     position_y += move_y;
-
-    player_sprite.setPosition((position_x) * MINIMAP/32.0, (position_y) * MINIMAP/32.0);
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
         float tmp_dir = COS_PLAYER_ROTATION*dir_x - SIN_PLAYER_ROTATION*dir_y;
@@ -102,25 +84,12 @@ void Player::update(std::array<std::array<cell_t, 32>, 32>* map) {
         plane_y = - SIN_PLAYER_ROTATION*plane_x + COS_PLAYER_ROTATION*plane_y;
         plane_x = tmp_dir;
     }
-
-    float angle = atanf(dir_y/dir_x)*180.0/3.14159;
-    if (dir_x < 0) angle -= 180;
-    if (angle < 0) angle += 360;
-    
-    player_sprite.setRotation(angle);
         
-    ray_casting(map);
+    ray_casting();
 }
 
-void Player::draw(sf::RenderWindow* window) {
-    // player_sprite.setRotation(player_sprite.getRotation() + (sf::Mouse::getPosition(*window).x-WINDOW_WIDTH/2)/10);
-    // sf::Mouse::setPosition(sf::Vector2i(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), *window);
-    vision_field[0].position = player_sprite.getPosition();
-    window->draw(vision_field);
-    window->draw(player_sprite);
-}
 
-void Player::draw3D(sf::RenderWindow* window) {
+void Player::draw() {
     // draw floor
     sf::Image floor_image;
     floor_image.create(WINDOW_WIDTH, WINDOW_HEIGHT/2-1);
@@ -180,7 +149,7 @@ void Player::draw3D(sf::RenderWindow* window) {
     floor_sprite.setTexture(t);
     floor_sprite.setPosition(0, WINDOW_HEIGHT/2+1);
 
-    window->draw(floor_sprite);
+    game->window.draw(floor_sprite);
 
 
     // draw walls
@@ -190,13 +159,13 @@ void Player::draw3D(sf::RenderWindow* window) {
         wall.setTextureRect(sf::IntRect(texture_offset[r]*64.0, 0, 1, 64));
         wall.setScale(sf::Vector2f(1, (float) WINDOW_HEIGHT/rays_lenght[r]/64.0));
         wall.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - WINDOW_HEIGHT/rays_lenght[r])/2));
-        window->draw(wall);
+        game->window.draw(wall);
     }
 }
 
 
 // DDA algorithm
-void Player::ray_casting(std::array<std::array<cell_t, 32>, 32>* map) {
+void Player::ray_casting() {
 
     char collision_side;
     
@@ -225,8 +194,8 @@ void Player::ray_casting(std::array<std::array<cell_t, 32>, 32>* map) {
         float y_ray_unit_length = std::abs(1 / ray_dir_y);
 
         // player cell location
-        int current_cell_x = int(position_x);
-        int current_cell_y = int(position_y);
+        unsigned int current_cell_x = (unsigned int) position_x;
+        unsigned int current_cell_y = (unsigned int) position_y;
 
         if (ray_dir_x > 0) { // we look at west
             x_ray_length += x_ray_unit_length * (1 - (position_x - (float) current_cell_x));
@@ -269,12 +238,12 @@ void Player::ray_casting(std::array<std::array<cell_t, 32>, 32>* map) {
                 current_cell_y += step_y;
                 collision_side = 'y';
             }
-            if (wall == (*map)[current_cell_x][current_cell_y]){
+            if (game->map.collide(current_cell_x,current_cell_y)){
                 break;
             }
         }
 
-        vision_field[r+1].position = sf::Vector2f(
+        game->map.vision_field[r+1].position = sf::Vector2f(
             (position_x + ray_length * ray_dir_x) * MINIMAP / 32.0,
             (position_y + ray_length * ray_dir_y) * MINIMAP / 32.0
         );
