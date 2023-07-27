@@ -1,5 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
+
+#include "headers/raycaster.hpp"
 #include "headers/map.hpp"
 #include "headers/player.hpp"
 #include "headers/game.hpp"
@@ -43,12 +45,7 @@ bool Map::collide(unsigned int x, unsigned int y) {
 
 void Map::update() {
     player_sprite.setPosition(game->player.position_x*MINIMAP/32.0, game->player.position_y*MINIMAP/32.0);
-
-    float angle = atanf(game->player.dir_y/game->player.dir_x)*180.0/3.14159;
-    if (game->player.dir_x < 0) angle -= 180;
-    if (angle < 0) angle += 360;
-    
-    player_sprite.setRotation(angle);
+    player_sprite.setRotation(game->player.get_angle());
 }
 
 void Map::draw() {

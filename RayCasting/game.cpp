@@ -3,11 +3,12 @@
 
 #include "headers/player.hpp"
 #include "headers/map.hpp"
+#include "headers/raycaster.hpp"
 #include "headers/game.hpp"
 
 
 
-Game::Game() : map(this), player(this) {
+Game::Game() : map(this), player(this), raycaster(this) {
     sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
     window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Ray casting !", sf::Style::Close);
     window.setPosition(sf::Vector2i((desktop.width - WINDOW_WIDTH) / 2, (desktop.height - WINDOW_HEIGHT) / 2));
@@ -41,12 +42,27 @@ void Game::handleEvents() {
 void Game::update() {
     map.update();
     player.update();
+    raycaster.update();
+
+    // display FPS
+    static int frame = 0;
+    if (frame%100 == 0) {
+        float FPS = 100.0 / clock.getElapsedTime().asSeconds();
+        window.setTitle(std::to_string((int) FPS));
+        frame = 0;
+        clock.restart();
+    }
+    frame++;
+
 }
 
 void Game::render() {
     window.clear(sf::Color(50, 50, 50, 255));
 
     // display 3D
+    raycaster.draw();
+
+    // display weapon
     player.draw();
 
     // display the map

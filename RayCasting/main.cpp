@@ -2,6 +2,7 @@
 
 #include "headers/player.hpp"
 #include "headers/map.hpp"
+#include "headers/raycaster.hpp"
 #include "headers/game.hpp"
 
 int main() {

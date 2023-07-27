@@ -14,6 +14,7 @@ public:
 
     Map map; 
     Player player;
+    Raycaster raycaster;
     sf::RenderWindow window;
 
 private:
@@ -22,4 +23,5 @@ private:
     void render();
     void load_map();
 
+    sf::Clock clock;
 };

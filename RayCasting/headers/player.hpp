@@ -19,6 +19,7 @@ public:
     Player(Game* game);
     void draw();
     void update();
+    float get_angle();
 
     float position_x;
     float position_y;
@@ -27,17 +28,11 @@ public:
     float dir_x;
     float dir_y;
 
+    float plane_x;
+    float plane_y;
+
 private:
-    void ray_casting();
 
     Game* game;
 
-    sf::Texture brick_texture;
-    sf::Image stone;
-    sf::Image mosse;
-    float rays_lenght[1080];
-    float texture_offset[1080];
-
-    float plane_x;
-    float plane_y;
 };
