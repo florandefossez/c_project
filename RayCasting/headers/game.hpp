@@ -16,6 +16,7 @@ public:
     Player player;
     Raycaster raycaster;
     sf::RenderWindow window;
+    float delta_time;
 
 private:
     void handleEvents();
@@ -24,4 +25,5 @@ private:
     void load_map();
 
     sf::Clock clock;
+    sf::Clock clock2;
 };

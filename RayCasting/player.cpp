@@ -52,6 +52,9 @@ void Player::update() {
         move_y += PLAYER_VELOCITY*dir_x;
     }
 
+    move_x *= game->delta_time;
+    move_y *= game->delta_time;
+
     if (game->map.collide(move_x+position_x, position_y)) {
         if (move_x>0) {
             move_x = floor((position_x+move_x)) - position_x - 0.01;
@@ -68,6 +71,9 @@ void Player::update() {
     }
     position_x += move_x;
     position_y += move_y;
+
+    float const SIN_PLAYER_ROTATION = sinf(PLAYER_ROTATION_VELOCITY/180.0*3.14159 * game->delta_time);
+    float const COS_PLAYER_ROTATION = cosf(PLAYER_ROTATION_VELOCITY/180.0*3.14159 * game->delta_time);
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
         float tmp_dir = COS_PLAYER_ROTATION*dir_x - SIN_PLAYER_ROTATION*dir_y;

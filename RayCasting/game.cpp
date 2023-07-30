@@ -12,9 +12,9 @@ Game::Game() : map(this), player(this), raycaster(this) {
     sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
     window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Ray casting !", sf::Style::Close);
     window.setPosition(sf::Vector2i((desktop.width - WINDOW_WIDTH) / 2, (desktop.height - WINDOW_HEIGHT) / 2));
-    window.setFramerateLimit(50);
     window.setKeyRepeatEnabled(false);
     window.setMouseCursorVisible(false);
+    delta_time = 1;
 }
 
 void Game::run() {
@@ -53,6 +53,8 @@ void Game::update() {
         clock.restart();
     }
     frame++;
+
+    delta_time = clock2.restart().asSeconds();
 
 }
 

@@ -1,11 +1,8 @@
 #pragma once
 #include <cmath>
 
-constexpr float PLAYER_VELOCITY = 0.15;
-constexpr float PLAYER_ROTATION_VELOCITY = 3.0;
-
-float const SIN_PLAYER_ROTATION = sinf(PLAYER_ROTATION_VELOCITY/180.0*3.14159);
-float const COS_PLAYER_ROTATION = cosf(PLAYER_ROTATION_VELOCITY/180.0*3.14159);
+constexpr float PLAYER_VELOCITY = 5.0;
+constexpr float PLAYER_ROTATION_VELOCITY = 90.0;
 
 
 enum cell_ : short;
