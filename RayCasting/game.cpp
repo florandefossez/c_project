@@ -4,11 +4,12 @@
 #include "headers/player.hpp"
 #include "headers/map.hpp"
 #include "headers/raycaster.hpp"
+#include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
 
 
 
-Game::Game() : map(this), player(this), raycaster(this) {
+Game::Game() : map(this), player(this), raycaster(this), entities_manager(this) {
     sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
     window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Ray casting !", sf::Style::Close);
     window.setPosition(sf::Vector2i((desktop.width - WINDOW_WIDTH) / 2, (desktop.height - WINDOW_HEIGHT) / 2));
@@ -43,18 +44,22 @@ void Game::update() {
     map.update();
     player.update();
     raycaster.update();
+    entities_manager.update();
+
+    delta_time = clock.restart().asSeconds();
 
     // display FPS
     static int frame = 0;
+    static float SPF = 0;
+
+    SPF += delta_time;
     if (frame%100 == 0) {
-        float FPS = 100.0 / clock.getElapsedTime().asSeconds();
-        window.setTitle(std::to_string((int) FPS));
+        window.setTitle(std::to_string((int) (100.0/SPF)));
         frame = 0;
+        SPF = 0;
         clock.restart();
     }
     frame++;
-
-    delta_time = clock2.restart().asSeconds();
 
 }
 
@@ -63,6 +68,7 @@ void Game::render() {
 
     // display 3D
     raycaster.draw();
+    entities_manager.draw();
 
     // display weapon
     player.draw();

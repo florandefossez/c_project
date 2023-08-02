@@ -8,6 +8,8 @@ public:
     void update();
     void draw();
 
+    float rays_lenght[1080];
+
 private:
     void raycast_wall();
     void raycast_floor();
@@ -27,7 +29,7 @@ private:
     sf::Image stone;
     sf::Image mosse;
 
-    float rays_lenght[1080];
+    float perp_rays_lenght[1080];
     float texture_offset[1080];
 
 };

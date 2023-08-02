@@ -3,7 +3,7 @@ CC = g++
 LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 TARGET:rayCasting.exe
 
-OBJS = game.o player.o map.o raycaster.o
+OBJS = game.o player.o map.o raycaster.o entities_manager.o
 
 rayCasting.exe:main.o ${OBJS}
 	${CC} ${CFLAGS} main.o ${OBJS} $(LDFLAGS) -o rayCasting.exe
@@ -22,6 +22,9 @@ map.o:map.cpp
 
 raycaster.o:raycaster.cpp
 	${CC} ${CFLAGS} -c raycaster.cpp -o raycaster.o
+
+entities_manager.o:entities_manager.cpp
+	${CC} ${CFLAGS} -c entities_manager.cpp -o entities_manager.o
 
 clean:
 	rm -f *.o

@@ -15,6 +15,8 @@ public:
     Map map; 
     Player player;
     Raycaster raycaster;
+    Object_manager entities_manager;
+    
     sf::RenderWindow window;
     float delta_time;
 
@@ -25,5 +27,4 @@ private:
     void load_map();
 
     sf::Clock clock;
-    sf::Clock clock2;
 };

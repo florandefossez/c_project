@@ -3,6 +3,7 @@
 #include "headers/raycaster.hpp"
 #include "headers/player.hpp"
 #include "headers/map.hpp"
+#include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
 
 
@@ -72,8 +73,10 @@ void Raycaster::raycast_floor() {
             // choose texture and draw the pixel on the image
             if ((current_cell_x + current_cell_y)%2 == 1) {
                 floor_image.setPixel(x, p-1, mosse.getPixel(tx,ty));
+                // floor_image.setPixel(x, p-1, sf::Color::Black);
             } else {
                 floor_image.setPixel(x, p-1, stone.getPixel(tx,ty));
+                // floor_image.setPixel(x, p-1, sf::Color::White);
             }
         }
     }
@@ -163,12 +166,15 @@ void Raycaster::raycast_wall() {
             (game->player.position_y + ray_length * ray_dir_y) * MINIMAP / 32.0
         );
 
+        rays_lenght[r] = ray_length;
+
+
         // we don't use the real ray length to avoid fisheye effect
         if (collision_side == 'x') {
-            rays_lenght[r] = x_ray_length - x_ray_unit_length;
+            perp_rays_lenght[r] = x_ray_length - x_ray_unit_length;
             texture_offset[r] = game->player.position_y + ray_length * ray_dir_y - (float) current_cell_y;
         } else {
-            rays_lenght[r] = y_ray_length - y_ray_unit_length;
+            perp_rays_lenght[r] = y_ray_length - y_ray_unit_length;
             texture_offset[r] = game->player.position_x + ray_length * ray_dir_x - (float) current_cell_x;
         }
     }
@@ -190,8 +196,8 @@ void Raycaster::draw_wall() {
     wall.setTexture(brick_texture);
     for (int r=0; r<WINDOW_WIDTH; r++) {
         wall.setTextureRect(sf::IntRect(texture_offset[r]*64.0, 0, 1, 64));
-        wall.setScale(sf::Vector2f(1, (float) WINDOW_HEIGHT/rays_lenght[r]/64.0));
-        wall.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - WINDOW_HEIGHT/rays_lenght[r])/2));
+        wall.setScale(sf::Vector2f(1, (float) WINDOW_HEIGHT/perp_rays_lenght[r]/64.0));
+        wall.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - WINDOW_HEIGHT/perp_rays_lenght[r])/2));
 
         game->window.draw(wall);
     }
