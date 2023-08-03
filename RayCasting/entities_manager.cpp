@@ -11,7 +11,7 @@
 Object_manager::Object_manager(Game* game) : game(game) {
     barrel_texture.loadFromFile("ressources/barrel.png");
     sprite_barrel.setTexture(barrel_texture);
-    entities.push_back(Entity(3.0,3.0));
+    entities.push_back(Entity(10.5,5.5));
     entities.push_back(Entity(4.0,3.0));
 }
 
@@ -39,34 +39,57 @@ void Object_manager::update() {
     std::sort(entities.begin(), entities.end(), [] (Entity a, Entity b) {return a.camera_y > b.camera_y;});
 }
 
+
 void Object_manager::draw() {
 
-    for (std::vector<Entity>::iterator entity = begin (entities); entity != end (entities); ++entity) {
+    sf::Sprite strip;
+
+    for (std::vector<Entity>::iterator entity = begin(entities); entity != end(entities); ++entity) {
 
         // from camera coords to film coords then to pixel coords
-        float pixel_x = 0.5 * (float) WINDOW_WIDTH * (1.0 + entity->camera_x / entity->camera_y);
-
+        int pixel_x = int(0.5 * WINDOW_WIDTH * (1.0 + entity->camera_x / entity->camera_y));
 
         // if the sprite is outside the camera field of view ignore the prite
-        if (pixel_x < 0 || pixel_x > WINDOW_WIDTH || entity->camera_y < 0) {
+        if (entity->camera_y < 0.5f) {
             continue;
         }
 
-        // if the entity is behind a wall
-        if (entity->camera_y > game->raycaster.rays_lenght[(unsigned int) pixel_x]) {
-            continue;
+        //calculate size of the sprite on screen, using 'camera_y' instead of the real distance to avoid fisheye
+        //this is the dimension in pixel
+        int sprite_size = int(WINDOW_HEIGHT / entity->camera_y);
+        
+        strip.setTexture(barrel_texture);
+        strip.setPosition(
+            pixel_x - sprite_size / 2,
+            -sprite_size/2 + WINDOW_HEIGHT / 2
+        );
+        
+        strip.setScale(sf::Vector2f(1, (float) sprite_size / (float) barrel_texture.getSize().y));
+
+        for (int i=0; i < sprite_size; i++) {
+
+            int x = pixel_x - sprite_size / 2 + i;
+
+            if ( x < 0 || x > WINDOW_WIDTH ) {
+                strip.move(1,0);
+                continue;
+            }
+            if (entity->camera_y > game->raycaster.rays_lenght[x]) {
+                strip.move(1,0);
+                continue;
+            }
+            
+            strip.setTextureRect(sf::IntRect(
+                i * barrel_texture.getSize().x / sprite_size,
+                0,
+                1,
+                barrel_texture.getSize().y
+            ));
+            
+            game->window.draw(strip);
+            strip.move(1,0);
         }
-
-        //calculate height of the sprite on screen, using 'camera_y' instead of the real distance to avoid fisheye
-        float sprite_height = 0.5 * std::abs((float) WINDOW_HEIGHT / entity->camera_y) / (float) barrel_texture.getSize().y;
-        float sprite_width = 0.5 * std::abs((float) WINDOW_HEIGHT / entity->camera_y) / (float) barrel_texture.getSize().x;
-
-        sprite_barrel.setScale(sf::Vector2f(sprite_width, sprite_height));
-        sprite_barrel.setPosition(pixel_x - 0.25 * std::abs((float) WINDOW_HEIGHT / entity->camera_y) , WINDOW_HEIGHT / 2.0 - 0.5 * sprite_height);
-        game->window.draw(sprite_barrel);
-
     }
-
 }
 
 
