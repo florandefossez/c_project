@@ -51,6 +51,7 @@ void Game::update() {
     // display FPS
     static int frame = 0;
     static float SPF = 0;
+    static float animationevent = 0;
 
     SPF += delta_time;
     if (frame%100 == 0) {
@@ -60,6 +61,13 @@ void Game::update() {
         clock.restart();
     }
     frame++;
+
+    animation = false;
+    animationevent += delta_time;
+    if (animationevent > 0.2) {
+        animationevent = 0;
+        animation = true;
+    }
 
 }
 

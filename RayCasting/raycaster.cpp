@@ -196,7 +196,7 @@ void Raycaster::draw_wall() {
     wall.setTexture(brick_texture);
     for (int r=0; r<WINDOW_WIDTH; r++) {
         wall.setTextureRect(sf::IntRect(texture_offset[r]*64.0, 0, 1, 64));
-        wall.setScale(sf::Vector2f(1, (float) WINDOW_HEIGHT/perp_rays_lenght[r]/64.0));
+        wall.setScale(sf::Vector2f(1, (float) WINDOW_HEIGHT/perp_rays_lenght[r]/brick_texture.getSize().y));
         wall.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - WINDOW_HEIGHT/perp_rays_lenght[r])/2));
 
         game->window.draw(wall);

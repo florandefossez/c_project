@@ -20,6 +20,8 @@ public:
     sf::RenderWindow window;
     float delta_time;
 
+    bool animation;
+
 private:
     void handleEvents();
     void update();
