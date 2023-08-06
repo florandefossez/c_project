@@ -1,85 +1,95 @@
-#include <SFML/Graphics.hpp>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 #include "headers/raycaster.hpp"
 #include "headers/player.hpp"
 #include "headers/map.hpp"
-#include "headers/entities_manager.hpp"
+// #include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
 
 
 
 Raycaster::Raycaster(Game* game) : game(game) {
 
-    brick_texture.loadFromFile("./ressources/redbrick.png");
-    stone.loadFromFile("./ressources/greystone.png");
-    mosse.loadFromFile("./ressources/mossy.png");
-    floor_image.create(WINDOW_WIDTH, WINDOW_HEIGHT/2-1);
-    floor_texture.create(WINDOW_WIDTH, WINDOW_HEIGHT/2-1);
+    // brick_texture.loadFromFile("./ressources/redbrick.png");
+    // stone.loadFromFile("./ressources/greystone.png");
+    // mosse.loadFromFile("./ressources/mossy.png");
+    // floor_image.create(WINDOW_WIDTH, WINDOW_HEIGHT/2-1);
+    // floor_texture.create(WINDOW_WIDTH, WINDOW_HEIGHT/2-1);
+    
+}
+
+
+void Raycaster::load() {
+    brick_surface = IMG_Load("ressources/redbrick.png");
+    scene = SDL_CreateTexture(game->renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
+    SDL_SetTextureBlendMode(scene, SDL_BLENDMODE_BLEND);
 }
 
 
 void Raycaster::update() {
-    raycast_floor();
+    // raycast_floor();
     raycast_wall();
 }
 
 void Raycaster::draw() {
-    draw_floor();
+    pixels.fill(255);
+    // draw_floor();
     draw_wall();
 }
 
 
 void Raycaster::raycast_floor() {
 
-    for (int i=0; i<WINDOW_WIDTH; i++) {
-        for (int j=0; j<WINDOW_HEIGHT/2-1; j++) {
-            floor_image.setPixel(i,j,sf::Color::Red);
-        }
-    }
+//     for (int i=0; i<WINDOW_WIDTH; i++) {
+//         for (int j=0; j<WINDOW_HEIGHT/2-1; j++) {
+//             floor_image.setPixel(i,j,sf::Color::Red);
+//         }
+//     }
 
-    // again we use rays to find the coordinate of the floor
-    float left_ray_x = game->player.dir_x - game->player.plane_x;
-    float left_ray_y = game->player.dir_y - game->player.plane_y;
-    float right_ray_x = game->player.dir_x + game->player.plane_x;
-    float right_ray_y = game->player.dir_y + game->player.plane_y;
+//     // again we use rays to find the coordinate of the floor
+//     float left_ray_x = game->player.dir_x - game->player.plane_x;
+//     float left_ray_y = game->player.dir_y - game->player.plane_y;
+//     float right_ray_x = game->player.dir_x + game->player.plane_x;
+//     float right_ray_y = game->player.dir_y + game->player.plane_y;
 
-    // p index of the scanline from the center of the screen
-    for (int p=1; p<WINDOW_HEIGHT/2; p++) {
+//     // p index of the scanline from the center of the screen
+//     for (int p=1; p<WINDOW_HEIGHT/2; p++) {
 
-        // horizontal distance from the player to the floor line (x distance of the ray)
-        float floor_distance = game->player.position_z*WINDOW_HEIGHT/p;
+//         // horizontal distance from the player to the floor line (x distance of the ray)
+//         float floor_distance = game->player.position_z*WINDOW_HEIGHT/p;
 
-        // floor coordinate of the left ray
-        float floor_x = game->player.position_x + floor_distance * left_ray_x;
-        float floor_y = game->player.position_y + floor_distance * left_ray_y;
+//         // floor coordinate of the left ray
+//         float floor_x = game->player.position_x + floor_distance * left_ray_x;
+//         float floor_y = game->player.position_y + floor_distance * left_ray_y;
 
-        // floor step to go to the next right pixel on the screen
-        float floor_step_x = floor_distance * (right_ray_x - left_ray_x) / WINDOW_WIDTH;
-        float floor_step_y = floor_distance * (right_ray_y - left_ray_y) / WINDOW_WIDTH;
+//         // floor step to go to the next right pixel on the screen
+//         float floor_step_x = floor_distance * (right_ray_x - left_ray_x) / WINDOW_WIDTH;
+//         float floor_step_y = floor_distance * (right_ray_y - left_ray_y) / WINDOW_WIDTH;
 
-        for (int x=0; x < WINDOW_WIDTH; x++) {
+//         for (int x=0; x < WINDOW_WIDTH; x++) {
 
-            // the cell coord is simply got from the integer parts of floorX and floorY
-            int current_cell_x = (int)(floor_x);
-            int current_cell_y = (int)(floor_y);
+//             // the cell coord is simply got from the integer parts of floorX and floorY
+//             int current_cell_x = (int)(floor_x);
+//             int current_cell_y = (int)(floor_y);
 
-            // get the texture coordinate from the fractional part
-            unsigned int tx = (unsigned int) std::abs(64.0 * (floor_x - current_cell_x));
-            unsigned int ty = (unsigned int) std::abs(64.0 * (floor_y - current_cell_y));
+//             // get the texture coordinate from the fractional part
+//             unsigned int tx = (unsigned int) std::abs(64.0 * (floor_x - current_cell_x));
+//             unsigned int ty = (unsigned int) std::abs(64.0 * (floor_y - current_cell_y));
 
-            floor_x += floor_step_x;
-            floor_y += floor_step_y;
+//             floor_x += floor_step_x;
+//             floor_y += floor_step_y;
 
-            // choose texture and draw the pixel on the image
-            if ((current_cell_x + current_cell_y)%2 == 1) {
-                floor_image.setPixel(x, p-1, mosse.getPixel(tx,ty));
-                // floor_image.setPixel(x, p-1, sf::Color::Black);
-            } else {
-                floor_image.setPixel(x, p-1, stone.getPixel(tx,ty));
-                // floor_image.setPixel(x, p-1, sf::Color::White);
-            }
-        }
-    }
+//             // choose texture and draw the pixel on the image
+//             if ((current_cell_x + current_cell_y)%2 == 1) {
+//                 floor_image.setPixel(x, p-1, mosse.getPixel(tx,ty));
+//                 // floor_image.setPixel(x, p-1, sf::Color::Black);
+//             } else {
+//                 floor_image.setPixel(x, p-1, stone.getPixel(tx,ty));
+//                 // floor_image.setPixel(x, p-1, sf::Color::White);
+//             }
+//         }
+//     }
 }
 
 
@@ -112,8 +122,8 @@ void Raycaster::raycast_wall() {
         float y_ray_unit_length = std::abs(1 / ray_dir_y);
 
         // player cell location
-        unsigned int current_cell_x = (unsigned int) game->player.position_x;
-        unsigned int current_cell_y = (unsigned int) game->player.position_y;
+        int current_cell_x = (int) game->player.position_x;
+        int current_cell_y = (int) game->player.position_y;
 
         if (ray_dir_x > 0) { // we look at west
             x_ray_length += x_ray_unit_length * (1 - (game->player.position_x - (float) current_cell_x));
@@ -161,10 +171,11 @@ void Raycaster::raycast_wall() {
             }
         }
 
-        game->map.vision_field[r+1].position = sf::Vector2f(
-            (game->player.position_x + ray_length * ray_dir_x) * MINIMAP / 32.0,
-            (game->player.position_y + ray_length * ray_dir_y) * MINIMAP / 32.0
-        );
+        game->map.vision_field_points[r] = {
+            static_cast<int>((game->player.position_x + ray_length * ray_dir_x) * MINIMAP / 32.f),
+            static_cast<int>((game->player.position_y + ray_length * ray_dir_y) * MINIMAP / 32.f)
+        };
+        
 
         rays_lenght[r] = ray_length;
 
@@ -183,22 +194,35 @@ void Raycaster::raycast_wall() {
 
 
 void Raycaster::draw_floor() {
-    sf::Sprite floor_sprite;
-    floor_texture.update(floor_image);
-    floor_sprite.setTexture(floor_texture);
-    floor_sprite.setPosition(0, WINDOW_HEIGHT/2+1);
+    // sf::Sprite floor_sprite;
+    // floor_texture.update(floor_image);
+    // floor_sprite.setTexture(floor_texture);
+    // floor_sprite.setPosition(0, WINDOW_HEIGHT/2+1);
 
-    game->window.draw(floor_sprite);
+    // game->window.draw(floor_sprite);
 }
 
 void Raycaster::draw_wall() {
-    sf::Sprite wall;
-    wall.setTexture(brick_texture);
+    // sf::Sprite wall;
+    // wall.setTexture(brick_texture);
     for (int r=0; r<WINDOW_WIDTH; r++) {
-        wall.setTextureRect(sf::IntRect(texture_offset[r]*64.0, 0, 1, 64));
-        wall.setScale(sf::Vector2f(1, (float) WINDOW_HEIGHT/perp_rays_lenght[r]/brick_texture.getSize().y));
-        wall.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - WINDOW_HEIGHT/perp_rays_lenght[r])/2));
-
-        game->window.draw(wall);
+    //     wall.setTextureRect(sf::IntRect(texture_offset[r]*64.0, 0, 1, 64));
+    //     wall.setScale(sf::Vector2f(1, (float) WINDOW_HEIGHT/perp_rays_lenght[r]/brick_texture.getSize().y));
+    //     wall.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - WINDOW_HEIGHT/perp_rays_lenght[r])/2));
+    int start,end;
+    if (perp_rays_lenght[r]<1) {
+        start = 0;
+        end = WINDOW_HEIGHT;
+    } else {
+        start = (WINDOW_HEIGHT - WINDOW_HEIGHT/perp_rays_lenght[r])/2;
+        end = start + WINDOW_HEIGHT/perp_rays_lenght[r];
     }
+
+    for (int y=start; y<end; y++) {
+            pixels[r + y * WINDOW_WIDTH] = 255<<24;
+        }
+    }
+    SDL_UpdateTexture(scene, nullptr, reinterpret_cast<void *>(pixels.data()), WINDOW_WIDTH*4);
+    SDL_RenderCopy(game->renderer, scene, NULL, NULL);
+
 }

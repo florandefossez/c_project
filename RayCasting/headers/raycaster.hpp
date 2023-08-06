@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 
 class Game;
 
@@ -10,6 +11,8 @@ public:
 
     float rays_lenght[1080];
 
+    void load();
+
 private:
     void raycast_wall();
     void raycast_floor();
@@ -20,16 +23,19 @@ private:
     Game* game;
 
     // floor
-    sf::Image floor_image;
-    sf::Texture floor_texture;
+    // sf::Image floor_image;
+    // sf::Texture floor_texture;
 
     // wall
 
-    sf::Texture brick_texture;
-    sf::Image stone;
-    sf::Image mosse;
+    SDL_Surface* brick_surface;
+    SDL_Texture* scene;
+    // sf::Image stone;
+    // sf::Image mosse;
 
     float perp_rays_lenght[1080];
     float texture_offset[1080];
+
+    std::array<uint32_t, 1080 * 720> pixels;
 
 };

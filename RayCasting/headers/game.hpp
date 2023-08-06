@@ -6,7 +6,6 @@ constexpr int MAP_HEIGHT = 32;
 constexpr int MAP_WIDTH = 32;
 constexpr int MINIMAP = 300;
 
-#include <SDL2/SDL.h>
 
 class Game {
 public:
@@ -20,15 +19,16 @@ public:
     // Object_manager entities_manager;
 
     bool animation;
+    SDL_Renderer* renderer;
 
-private:
     void handleEvents();
     void update();
     void render();
 
-    SDL_Window* window;
-    SDL_Renderer* renderer;
     float delta_time;
+private:
+
+    SDL_Window* window;
     bool running;
     Uint32 prev_ticks;
 };

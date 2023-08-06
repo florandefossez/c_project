@@ -1,9 +1,9 @@
 CFLAGS = -Wall -Wextra
 CC = g++
-LDFLAGS = -lSDL2
+LDFLAGS = -lSDL2 -lSDL2_image
 TARGET:rayCasting.exe
 
-OBJS = game.o raycaster.o
+OBJS = game.o map.o player.o raycaster.o
 
 rayCasting.exe:main.o ${OBJS}
 	${CC} ${CFLAGS} main.o ${OBJS} $(LDFLAGS) -o rayCasting.exe
@@ -29,8 +29,13 @@ entities_manager.o:entities_manager.cpp
 clean:
 	rm -f *.o
 	rm -f *.exe
+	rm -f index.*
 
 run:
 	make clean >/dev/null
 	make
 	./rayCasting.exe
+
+emcc:
+	em++ --bind main.cpp game.cpp map.cpp player.cpp raycaster.cpp -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s ALLOW_MEMORY_GROWTH=1 -s STACK_SIZE=10000000 --preload-file ressources -o index.html -std=c++17 -fsanitize=undefined
+	python3 -m http.server
