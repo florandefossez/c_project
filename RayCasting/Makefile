@@ -1,9 +1,9 @@
 CFLAGS = -Wall -Wextra
 CC = g++
-LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
+LDFLAGS = -lSDL2
 TARGET:rayCasting.exe
 
-OBJS = game.o player.o map.o raycaster.o entities_manager.o
+OBJS = game.o raycaster.o
 
 rayCasting.exe:main.o ${OBJS}
 	${CC} ${CFLAGS} main.o ${OBJS} $(LDFLAGS) -o rayCasting.exe
