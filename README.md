@@ -1,13 +1,49 @@
 # Content
 Some personal c/c++ projects for fun
 
+- [Ray Casting](#ray-casting)
 - [Tic-Tac-Toe with Minimax](#tic-tac-toe-with-minimax)
 - [Mines Weeper](#mines-weeper)
 - [Virtual Network](#virtual-network)
 - [Homemade TCP Socket](#homemade-tcp-socket)
 - [Balls](#balls)
 - [Flappy Bird](#flappy-bird)
-- [Ray Casting](#ray-casting)
+
+
+
+# Ray Casting
+
+The project is currently getting translated in SDL2 in order to make the code compatible with emscripten. The goal is to compile the c++ code in web assembly to be able to play directly in a browser ! Test on https://florandefossez.github.io :D
+
+
+Ray casting engine in C++ build with the SFML library. The objective is to build a retro game like Wolfenstein 3D without any external 3D rendering library. A great article to learn more about raycasting engine https://lodev.org/cgtutor/raycasting.html 
+
+<p align="center">
+  <img src="pictures/raycasting.png" width="500"/>
+</p>
+
+### Features
+
+- Collision detection
+- Walls raycasting with DDA algorithm
+- Floor raycasting using scanline approach
+- Walls & floor texture
+- Minimap so as not to get lost + the vision field
+
+
+### How to play
+
+Make sure you have SFML installed in your C++ library manager system, modify the Makefile if needed !
+```
+cd RayCasting
+make run
+```
+
+- Z to walk forward
+- S to walk backward
+- right arrow to rotate the camera right
+- left arrow to rotate the camera left
+
 
 
 # Tic-Tac-Toe with Minimax
@@ -223,34 +259,4 @@ Hit the space bar to make the bird fly !
 g++ -o flappybird.exe main.cpp -lsfml-graphics -lsfml-window -lsfml-system
 ./flappybird.exe
 ```
-
-# Ray Casting
-
-Ray casting engine in C++ build with the SFML library. The objective is to build a retro game like Wolfenstein 3D without any external 3D rendering library. A great article to learn more about raycasting engine https://lodev.org/cgtutor/raycasting.html 
-
-<p align="center">
-  <img src="pictures/raycasting.png" width="500"/>
-</p>
-
-### Features
-
-- Collision detection
-- Walls raycasting with DDA algorithm
-- Floor raycasting using scanline approach
-- Walls & floor texture
-- Minimap so as not to get lost + the vision field
-
-
-### How to play
-
-Make sure you have SFML installed in your C++ library manager system, modify the Makefile if needed !
-```
-cd RayCasting
-make run
-```
-
-- Z to walk forward
-- S to walk backward
-- right arrow to rotate the camera right
-- left arrow to rotate the camera left
 
