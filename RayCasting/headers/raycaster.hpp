@@ -15,7 +15,6 @@ public:
 
 private:
     void raycast_wall();
-    void raycast_floor();
 
     void draw_wall();
     void draw_floor();
@@ -23,19 +22,15 @@ private:
     Game* game;
 
     // floor
-    // sf::Image floor_image;
-    // sf::Texture floor_texture;
+    SDL_Surface* stone_surface;
+    SDL_Surface* mosse_surface;
 
     // wall
-
     SDL_Surface* brick_surface;
     SDL_Texture* scene;
-    // sf::Image stone;
-    // sf::Image mosse;
 
     float perp_rays_lenght[1080];
     float texture_offset[1080];
 
-    std::array<uint32_t, 1080 * 720> pixels;
-
+    std::array<uint32_t, 1080 * 720> scene_pixels;
 };
