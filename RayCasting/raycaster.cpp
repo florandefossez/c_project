@@ -1,4 +1,5 @@
-#include <SFML/Graphics.hpp>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 #include "headers/raycaster.hpp"
 #include "headers/player.hpp"
@@ -8,18 +9,25 @@
 
 
 
-Raycaster::Raycaster(Game* game) : game(game) {
+Raycaster::Raycaster(Game* game) : game(game) {}
 
-    brick_texture.loadFromFile("./ressources/redbrick.png");
-    stone.loadFromFile("./ressources/greystone.png");
-    mosse.loadFromFile("./ressources/mossy.png");
-    floor_image.create(WINDOW_WIDTH, WINDOW_HEIGHT/2-1);
-    floor_texture.create(WINDOW_WIDTH, WINDOW_HEIGHT/2-1);
+
+void Raycaster::load() {
+    SDL_Surface* tmp = IMG_Load("ressources/redbrick.png");
+    brick_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_ABGR8888, 0);
+    SDL_FreeSurface(tmp);
+
+    tmp = IMG_Load("ressources/mossy.png");
+    mosse_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_ABGR8888, 0);
+    SDL_FreeSurface(tmp);
+
+    tmp = IMG_Load("ressources/greystone.png");
+    stone_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_ABGR8888, 0);
+    SDL_FreeSurface(tmp);
 }
 
 
 void Raycaster::update() {
-    raycast_floor();
     raycast_wall();
 }
 
@@ -29,13 +37,10 @@ void Raycaster::draw() {
 }
 
 
-void Raycaster::raycast_floor() {
+void Raycaster::draw_floor() {
 
-    for (int i=0; i<WINDOW_WIDTH; i++) {
-        for (int j=0; j<WINDOW_HEIGHT/2-1; j++) {
-            floor_image.setPixel(i,j,sf::Color::Red);
-        }
-    }
+    Uint32* mosse_pixels = (Uint32*) mosse_surface->pixels;
+    Uint32* stone_pixels = (Uint32*) stone_surface->pixels;
 
     // again we use rays to find the coordinate of the floor
     float left_ray_x = game->player.dir_x - game->player.plane_x;
@@ -72,12 +77,11 @@ void Raycaster::raycast_floor() {
 
             // choose texture and draw the pixel on the image
             if ((current_cell_x + current_cell_y)%2 == 1) {
-                floor_image.setPixel(x, p-1, mosse.getPixel(tx,ty));
-                // floor_image.setPixel(x, p-1, sf::Color::Black);
+                game->scene_pixels[x + (p-1) * WINDOW_WIDTH + WINDOW_HEIGHT * WINDOW_WIDTH / 2] = mosse_pixels[tx + 64*ty];
             } else {
-                floor_image.setPixel(x, p-1, stone.getPixel(tx,ty));
-                // floor_image.setPixel(x, p-1, sf::Color::White);
+                game->scene_pixels[x + (p-1) * WINDOW_WIDTH + WINDOW_HEIGHT * WINDOW_WIDTH / 2] = stone_pixels[tx + 64*ty];
             }
+
         }
     }
 }
@@ -112,8 +116,8 @@ void Raycaster::raycast_wall() {
         float y_ray_unit_length = std::abs(1 / ray_dir_y);
 
         // player cell location
-        unsigned int current_cell_x = (unsigned int) game->player.position_x;
-        unsigned int current_cell_y = (unsigned int) game->player.position_y;
+        int current_cell_x = (int) game->player.position_x;
+        int current_cell_y = (int) game->player.position_y;
 
         if (ray_dir_x > 0) { // we look at west
             x_ray_length += x_ray_unit_length * (1 - (game->player.position_x - (float) current_cell_x));
@@ -161,13 +165,12 @@ void Raycaster::raycast_wall() {
             }
         }
 
-        game->map.vision_field[r+1].position = sf::Vector2f(
-            (game->player.position_x + ray_length * ray_dir_x) * MINIMAP / 32.0,
-            (game->player.position_y + ray_length * ray_dir_y) * MINIMAP / 32.0
-        );
-
+        game->map.vision_field_points[r] = {
+            static_cast<int>((game->player.position_x + ray_length * ray_dir_x) * MINIMAP / 32.f),
+            static_cast<int>((game->player.position_y + ray_length * ray_dir_y) * MINIMAP / 32.f)
+        };
+        
         rays_lenght[r] = ray_length;
-
 
         // we don't use the real ray length to avoid fisheye effect
         if (collision_side == 'x') {
@@ -181,24 +184,30 @@ void Raycaster::raycast_wall() {
 }
 
 
-
-void Raycaster::draw_floor() {
-    sf::Sprite floor_sprite;
-    floor_texture.update(floor_image);
-    floor_sprite.setTexture(floor_texture);
-    floor_sprite.setPosition(0, WINDOW_HEIGHT/2+1);
-
-    game->window.draw(floor_sprite);
-}
-
 void Raycaster::draw_wall() {
-    sf::Sprite wall;
-    wall.setTexture(brick_texture);
-    for (int r=0; r<WINDOW_WIDTH; r++) {
-        wall.setTextureRect(sf::IntRect(texture_offset[r]*64.0, 0, 1, 64));
-        wall.setScale(sf::Vector2f(1, (float) WINDOW_HEIGHT/perp_rays_lenght[r]/brick_texture.getSize().y));
-        wall.setPosition(sf::Vector2f(r, (WINDOW_HEIGHT - WINDOW_HEIGHT/perp_rays_lenght[r])/2));
 
-        game->window.draw(wall);
+    Uint32* brick_pixels = (Uint32*) brick_surface->pixels;
+
+    for (int r=0; r<WINDOW_WIDTH; r++) {
+
+        int start,end;
+        if (perp_rays_lenght[r]<1) {
+            start = 0;
+            end = WINDOW_HEIGHT;
+        } else {
+            start = (WINDOW_HEIGHT - WINDOW_HEIGHT/perp_rays_lenght[r])/2;
+            end = start + WINDOW_HEIGHT/perp_rays_lenght[r];
+        }
+
+        // How much to increase the texture coordinate per screen pixel
+        float step = 64.f / WINDOW_HEIGHT * perp_rays_lenght[r];
+        float texPos = (start - WINDOW_HEIGHT / 2 + WINDOW_HEIGHT/perp_rays_lenght[r] / 2) * step;
+
+        for (int y=start; y<end; y++) {
+            int texY = (int)texPos & (64 - 1);
+            texPos += step;
+            Uint32 color = brick_pixels[static_cast<unsigned int>(64.f * texY + texture_offset[r]*64.f)];
+            game->scene_pixels[r + y * WINDOW_WIDTH] = color;
+        }
     }
 }

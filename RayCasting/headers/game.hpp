@@ -10,23 +10,29 @@ constexpr int MINIMAP = 300;
 class Game {
 public:
     Game();
+    ~Game();
     void run();
 
-    Map map; 
+    Map map;
     Player player;
     Raycaster raycaster;
     Object_manager entities_manager;
-    
-    sf::RenderWindow window;
-    float delta_time;
 
     bool animation;
+    SDL_Renderer* renderer;
 
-private:
     void handleEvents();
     void update();
     void render();
-    void load_map();
 
-    sf::Clock clock;
+    float delta_time;
+
+    std::array<uint32_t, WINDOW_WIDTH * WINDOW_HEIGHT> scene_pixels;
+
+private:
+
+    SDL_Texture* scene;
+    SDL_Window* window;
+    bool running;
+    Uint32 prev_ticks;
 };

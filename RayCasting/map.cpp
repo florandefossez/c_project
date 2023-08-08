@@ -1,4 +1,5 @@
-#include <SFML/Graphics.hpp>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <cmath>
 
 #include "headers/raycaster.hpp"
@@ -7,27 +8,19 @@
 #include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
 
-
-
 Map::Map(Game* game) : game(game) {
-    load_map();
-
-    player_texture.loadFromFile("./ressources/player.png");
-    player_sprite.setScale(0.5, 0.5);
-    player_sprite.setOrigin(16,16);
-    player_sprite.setTexture(player_texture);
-    vision_field.resize(WINDOW_WIDTH + 1);
-    vision_field.setPrimitiveType(sf::TriangleFan);
+    player_texture_rect.w = 2 * MINIMAP / 32;
+    player_texture_rect.h = 2 * MINIMAP / 32;
 }
 
-void Map::load_map() {
-    sf::Image map_image;
-    map_image.loadFromFile("./ressources/map.png");
+void Map::load() {
+    player_texture = IMG_LoadTexture(game->renderer, "ressources/player.png");
+    SDL_Surface* map_surface = IMG_Load( "ressources/map.png");
 
-    for (unsigned int i=0; i<32; i++) {
-        for (unsigned int j=0; j<32; j++) {
-            // if pixel is not transparent this is a wall
-            if (map_image.getPixel(i,j).a == 255) {
+    for (unsigned int i = 0; i < 32; i++) {
+        for (unsigned int j = 0; j < 32; j++) {
+            Uint8* p = (Uint8*)map_surface->pixels + j * map_surface->pitch + i * 4;
+            if (p[3] == 255) {
                 this->map[i][j] = wall;
             } else {
                 this->map[i][j] = empty;
@@ -37,32 +30,38 @@ void Map::load_map() {
 }
 
 bool Map::collide(float x, float y) {
-    return (map[(unsigned int) floor(x)][(unsigned int) floor(y)] == wall);
+    if (x>=32 || x<0 || y>=32 || y<0) return true;
+    return (map[static_cast<unsigned int>(floor(x))][static_cast<unsigned int>(floor(y))] == wall);
 }
 
-bool Map::collide(unsigned int x, unsigned int y) {
+bool Map::collide(int x, int y) {
     return (map[x][y] == wall);
 }
 
 void Map::update() {
-    player_sprite.setPosition(game->player.position_x*MINIMAP/32.0, game->player.position_y*MINIMAP/32.0);
-    player_sprite.setRotation(game->player.get_angle());
+    player_texture_rect.x = static_cast<int>(game->player.position_x * MINIMAP / 32.0);
+    player_texture_rect.y = static_cast<int>(game->player.position_y * MINIMAP / 32.0);
+    player_sprite_angle = static_cast<double>(game->player.get_angle());
 }
 
 void Map::draw() {
-    sf::RectangleShape wall_rect;
-    wall_rect.setFillColor(sf::Color::Black);
-    wall_rect.setSize(sf::Vector2f((float) MINIMAP/ 32.0, (float) MINIMAP/32.0));
-    for (unsigned int i=0; i<32; i++) {
-        for (unsigned int j=0; j<32; j++) {
-            if (collide(i,j)) {
-                wall_rect.setPosition((float) MINIMAP/32.0 * i, (float) MINIMAP/32.0 * j);
-                game->window.draw(wall_rect);
+    SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
+
+    for (int i = 0; i < 32; i++) {
+        for (int j = 0; j < 32; j++) {
+            if (collide(i, j)) {
+                SDL_Rect wall_rect = {MINIMAP * i / 32, MINIMAP * j / 32, MINIMAP / 32 + 1, MINIMAP / 32 + 1};
+                SDL_RenderFillRect(game->renderer, &wall_rect);
             }
         }
     }
+    
+    SDL_SetRenderDrawColor(game->renderer, 255, 255, 255, 255);
+    for(int r=0; r<WINDOW_WIDTH; r+=10) {
+        SDL_RenderDrawLine(game->renderer, vision_field_points[r].x, vision_field_points[r].y, player_texture_rect.x, player_texture_rect.y);
+    }
+    player_texture_rect.x -= player_texture_rect.h / 2;
+    player_texture_rect.y -= player_texture_rect.h / 2;
 
-    vision_field[0].position = player_sprite.getPosition();
-    game->window.draw(vision_field);
-    game->window.draw(player_sprite);
+    SDL_RenderCopyEx(game->renderer, player_texture, nullptr, &player_texture_rect, player_sprite_angle, nullptr, SDL_FLIP_NONE);
 }

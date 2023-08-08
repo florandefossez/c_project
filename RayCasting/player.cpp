@@ -1,6 +1,5 @@
-#include <SFML/Graphics.hpp>
 #include <iostream>
-
+#include <SDL2/SDL.h>
 #include "headers/raycaster.hpp"
 #include "headers/map.hpp"
 #include "headers/player.hpp"
@@ -33,22 +32,24 @@ void Player::update() {
     float move_x = 0;
     float move_y = 0;
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+    const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
+
+    if (keyboardState[SDL_SCANCODE_W]) {
         move_x += PLAYER_VELOCITY*dir_x;
         move_y += PLAYER_VELOCITY*dir_y;
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+    if (keyboardState[SDL_SCANCODE_S]) {
         move_x += -PLAYER_VELOCITY*dir_x;
         move_y += -PLAYER_VELOCITY*dir_y;
     }
     
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
+    if (keyboardState[SDL_SCANCODE_A]) {
         move_x += PLAYER_VELOCITY*dir_y;
         move_y += -PLAYER_VELOCITY*dir_x;
     }
     
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+    if (keyboardState[SDL_SCANCODE_D]) {
         move_x += -PLAYER_VELOCITY*dir_y;
         move_y += PLAYER_VELOCITY*dir_x;
     }
@@ -76,7 +77,7 @@ void Player::update() {
     float const SIN_PLAYER_ROTATION = sinf(PLAYER_ROTATION_VELOCITY/180.0*3.14159 * game->delta_time);
     float const COS_PLAYER_ROTATION = cosf(PLAYER_ROTATION_VELOCITY/180.0*3.14159 * game->delta_time);
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+    if (keyboardState[SDL_SCANCODE_RIGHT]) {
         float tmp_dir = COS_PLAYER_ROTATION*dir_x - SIN_PLAYER_ROTATION*dir_y;
         dir_y = SIN_PLAYER_ROTATION*dir_x + COS_PLAYER_ROTATION*dir_y;
         dir_x = tmp_dir;
@@ -86,7 +87,7 @@ void Player::update() {
         plane_x = tmp_dir;
     }
     
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+    if (keyboardState[SDL_SCANCODE_LEFT]) {
         float tmp_dir = COS_PLAYER_ROTATION*dir_x + SIN_PLAYER_ROTATION*dir_y;
         dir_y = - SIN_PLAYER_ROTATION*dir_x + COS_PLAYER_ROTATION*dir_y;
         dir_x = tmp_dir;

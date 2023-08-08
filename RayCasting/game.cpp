@@ -1,5 +1,10 @@
 #include <iostream>
-#include <SFML/Graphics.hpp>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+#endif
+#include <unistd.h>
 
 #include "headers/player.hpp"
 #include "headers/map.hpp"
@@ -7,36 +12,65 @@
 #include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
 
+Game::Game() : player(this), map(this), raycaster(this), entities_manager(this) {
+    SDL_Init(SDL_INIT_VIDEO);
+    window = SDL_CreateWindow("Ray casting !", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_ShowCursor(SDL_DISABLE);
+    SDL_SetRelativeMouseMode(SDL_TRUE);
 
+    scene = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
+    SDL_SetTextureBlendMode(scene, SDL_BLENDMODE_BLEND);
 
-Game::Game() : map(this), player(this), raycaster(this), entities_manager(this) {
-    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-    window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Ray casting !", sf::Style::Close);
-    window.setPosition(sf::Vector2i((desktop.width - WINDOW_WIDTH) / 2, (desktop.height - WINDOW_HEIGHT) / 2));
-    window.setKeyRepeatEnabled(false);
-    window.setMouseCursorVisible(false);
     delta_time = 1;
+    running = true;
+
+    map.load();
+    raycaster.load();
+}
+
+Game::~Game() {
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
+void loop_handler(void *arg) {
+    Game *game = (Game*) arg;
+
+    game->handleEvents();
+    game->update();
+    game->render();
+
 }
 
 void Game::run() {
-    while (window.isOpen()) {
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop_arg(loop_handler, this, -1, 1);
+#else
+    while (running) {
         handleEvents();
         update();
         render();
     }
+#endif
 }
 
 void Game::handleEvents() {
-    sf::Event event;
-    while (window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed) {
-            window.close();
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            running = false;
         }
-        else if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::Escape) {
-                window.close();
+#ifdef __EMSCRIPTEN__
+#else
+        else if (event.type == SDL_KEYDOWN) {
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                running = false;
             }
         }
+#endif
     }
 }
 
@@ -46,21 +80,23 @@ void Game::update() {
     raycaster.update();
     entities_manager.update();
 
-    delta_time = clock.restart().asSeconds();
+    delta_time = static_cast<float>(SDL_GetTicks() - prev_ticks) / 1000.0f;
+    prev_ticks = SDL_GetTicks();
+
+    if (delta_time > 1.f) delta_time = 1.f;
 
     // display FPS
     static int frame = 0;
     static float SPF = 0;
     static float animationevent = 0;
 
-    SPF += delta_time;
-    if (frame%100 == 0) {
-        window.setTitle(std::to_string((int) (100.0/SPF)));
-        frame = 0;
-        SPF = 0;
-        clock.restart();
-    }
-    frame++;
+    // SPF += delta_time;
+    // if (frame % 100 == 0) {
+    //     SDL_SetWindowTitle(window, std::to_string(static_cast<int>(100.0 / SPF)).c_str());
+    //     frame = 0;
+    //     SPF = 0;
+    // }
+    // frame++;
 
     animation = false;
     animationevent += delta_time;
@@ -68,21 +104,25 @@ void Game::update() {
         animationevent = 0;
         animation = true;
     }
-
 }
 
 void Game::render() {
-    window.clear(sf::Color(50, 50, 50, 255));
+    SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+    SDL_RenderClear(renderer);
+    scene_pixels.fill(255);
 
-    // display 3D
+    // // display 3D
     raycaster.draw();
     entities_manager.draw();
 
-    // display weapon
-    player.draw();
+    // // display weapon
+    // player.draw(renderer);
 
-    // display the map
+    SDL_UpdateTexture(scene, nullptr, reinterpret_cast<void *>(scene_pixels.data()), WINDOW_WIDTH*4);
+    SDL_RenderCopy(renderer, scene, NULL, NULL);
+
+    // // display the map
     map.draw();
 
-    window.display();
+    SDL_RenderPresent(renderer);
 }
