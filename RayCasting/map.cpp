@@ -5,7 +5,7 @@
 #include "headers/raycaster.hpp"
 #include "headers/map.hpp"
 #include "headers/player.hpp"
-// #include "headers/entities_manager.hpp"
+#include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
 
 Map::Map(Game* game) : game(game) {
@@ -30,6 +30,7 @@ void Map::load() {
 }
 
 bool Map::collide(float x, float y) {
+    if (x>=32 || x<0 || y>=32 || y<0) return true;
     return (map[static_cast<unsigned int>(floor(x))][static_cast<unsigned int>(floor(y))] == wall);
 }
 

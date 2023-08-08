@@ -23,9 +23,9 @@ public:
     float camera_x;
     float camera_y;
 
-    sf::Texture* texture;
+    SDL_Surface* surface;
 
-    void draw(Game* game, sf::IntRect& rect, float size);
+    void draw(Game* game, SDL_Rect& rect, float size);
     virtual void draw(Game* game);
     virtual void update(Game* game);
 };
@@ -56,8 +56,8 @@ public:
     Soldier1(float x, float y);
 
 
-    static std::array<sf::IntRect, 4> walk_front_rects;
-    static std::array<sf::IntRect, 2> shoot_rects;
+    static std::array<SDL_Rect, 4> walk_front_rects;
+    static std::array<SDL_Rect, 2> shoot_rects;
     // static sf::IntRect pain;
     // static std::array<sf::IntRect, 9> death1;
     // static std::array<sf::IntRect, 6> death2;
@@ -65,7 +65,6 @@ public:
     void update(Game* game) override;
     void draw(Game* game) override;
     
-    int state;
 };
 
 
@@ -85,13 +84,13 @@ public:
     void update();
     void draw();
 
-    static sf::Texture* getTexture(std::string name);
+    static SDL_Surface* getSurface(std::string name);
 
 private:
     Game* game;
     std::vector<Entity*> entities;
 
-    static std::map<std::string, sf::Texture*> textures;
+    static std::map<std::string, SDL_Surface*> surfaces;
 
 };
 

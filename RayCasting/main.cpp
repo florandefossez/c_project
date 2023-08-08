@@ -6,7 +6,7 @@
 #include "headers/player.hpp"
 #include "headers/map.hpp"
 #include "headers/raycaster.hpp"
-// #include "headers/entities_manager.hpp"
+#include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
 
 int main() {

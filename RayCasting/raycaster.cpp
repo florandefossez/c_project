@@ -4,7 +4,7 @@
 #include "headers/raycaster.hpp"
 #include "headers/player.hpp"
 #include "headers/map.hpp"
-// #include "headers/entities_manager.hpp"
+#include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
 
 
@@ -24,9 +24,6 @@ void Raycaster::load() {
     tmp = IMG_Load("ressources/greystone.png");
     stone_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_ABGR8888, 0);
     SDL_FreeSurface(tmp);
-
-    scene = SDL_CreateTexture(game->renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
-    SDL_SetTextureBlendMode(scene, SDL_BLENDMODE_BLEND);
 }
 
 
@@ -35,7 +32,6 @@ void Raycaster::update() {
 }
 
 void Raycaster::draw() {
-    scene_pixels.fill(255);
     draw_floor();
     draw_wall();
 }
@@ -81,9 +77,9 @@ void Raycaster::draw_floor() {
 
             // choose texture and draw the pixel on the image
             if ((current_cell_x + current_cell_y)%2 == 1) {
-                scene_pixels[x + (p-1) * WINDOW_WIDTH + WINDOW_HEIGHT * WINDOW_WIDTH / 2] = mosse_pixels[tx + 64*ty];
+                game->scene_pixels[x + (p-1) * WINDOW_WIDTH + WINDOW_HEIGHT * WINDOW_WIDTH / 2] = mosse_pixels[tx + 64*ty];
             } else {
-                scene_pixels[x + (p-1) * WINDOW_WIDTH + WINDOW_HEIGHT * WINDOW_WIDTH / 2] = stone_pixels[tx + 64*ty];
+                game->scene_pixels[x + (p-1) * WINDOW_WIDTH + WINDOW_HEIGHT * WINDOW_WIDTH / 2] = stone_pixels[tx + 64*ty];
             }
 
         }
@@ -211,9 +207,7 @@ void Raycaster::draw_wall() {
             int texY = (int)texPos & (64 - 1);
             texPos += step;
             Uint32 color = brick_pixels[static_cast<unsigned int>(64.f * texY + texture_offset[r]*64.f)];
-            scene_pixels[r + y * WINDOW_WIDTH] = color;
+            game->scene_pixels[r + y * WINDOW_WIDTH] = color;
         }
     }
-    SDL_UpdateTexture(scene, nullptr, reinterpret_cast<void *>(scene_pixels.data()), WINDOW_WIDTH*4);
-    SDL_RenderCopy(game->renderer, scene, NULL, NULL);
 }

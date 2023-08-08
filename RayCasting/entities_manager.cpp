@@ -1,6 +1,9 @@
-#include <SFML/Graphics.hpp>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <stdlib.h>
 #include <iostream>
+#include <algorithm>
+
 
 #include "headers/raycaster.hpp"
 #include "headers/map.hpp"
@@ -11,30 +14,33 @@
 
 // initializatons
 
-std::map<std::string, sf::Texture*> Object_manager::textures;
+std::map<std::string, SDL_Surface*> Object_manager::surfaces;
 
-sf::Texture* Object_manager::getTexture(std::string name) {
-    if(textures.find(name) != textures.end()){
-        return textures[name];
+SDL_Surface* Object_manager::getSurface(std::string name) {
+    if(surfaces.find(name) != surfaces.end()){
+        return surfaces[name];
     } else {
         std::cout << "load new texture\n";
-        sf::Texture* texture = new sf::Texture();
-        texture->loadFromFile(name);
-        textures[name] = texture;
-        return textures[name];
+        SDL_Surface* new_surface = IMG_Load(name.c_str());
+        SDL_Surface* new_formated_surface = new SDL_Surface();
+        new_formated_surface = SDL_ConvertSurfaceFormat(new_surface, SDL_PIXELFORMAT_ABGR8888, 0);
+        SDL_FreeSurface(new_surface);
+        
+        surfaces[name] = new_formated_surface;
+        return surfaces[name];
     }
 }
 
-std::array<sf::IntRect, 4> Soldier1::walk_front_rects = {
-    sf::IntRect(5, 12, 43, 55),
-    sf::IntRect(54, 12, 43, 55),
-    sf::IntRect(103, 12, 43, 55),
-    sf::IntRect(151, 12, 43, 55)
+std::array<SDL_Rect, 4> Soldier1::walk_front_rects = {
+    SDL_Rect{5, 12, 43, 55},
+    SDL_Rect{54, 12, 43, 55},
+    SDL_Rect{103, 12, 43, 55},
+    SDL_Rect{151, 12, 43, 55}
 };
 
-std::array<sf::IntRect, 2> Soldier1::shoot_rects = {
-    sf::IntRect(204, 14, 32, 55),
-    sf::IntRect(256, 14, 32, 55)
+std::array<SDL_Rect, 2> Soldier1::shoot_rects = {
+    SDL_Rect{204, 14, 32, 55},
+    SDL_Rect{256, 14, 32, 55}
 };
 
 
@@ -87,13 +93,12 @@ void Entity::update(Game* game) {}
 
 
 void Entity::draw(Game* game) {
-    sf::IntRect rect = sf::IntRect(0, 0, texture->getSize().x, texture->getSize().y);
+    SDL_Rect rect = {0, 0, surface->w, surface->h};
     draw(game, rect, 1);
 }
 
 
-void Entity::draw(Game* game, sf::IntRect& rect, float size) {
-    sf::Sprite strip;
+void Entity::draw(Game* game, SDL_Rect& rect, float size) {
 
     // from camera coords to film coords then to pixel coords
     int pixel_x = int(0.5 * WINDOW_WIDTH * (1.0 + camera_x / camera_y));
@@ -106,44 +111,46 @@ void Entity::draw(Game* game, sf::IntRect& rect, float size) {
     //calculate size of the sprite on screen, using 'camera_y' instead of the real distance to avoid fisheye
     //this is the dimension in pixel
     int sprite_height = size * int(WINDOW_HEIGHT / camera_y);
-    int sprite_width = sprite_height * rect.width / rect.height;
+    int sprite_width = sprite_height * rect.w / rect.h;
     
-    strip.setTexture(*texture);
-    strip.setPosition(
-        pixel_x - sprite_width / 2,
-        (float) WINDOW_HEIGHT / 2.f - (float) WINDOW_WIDTH * (size - 0.5) / (1.7f * camera_y)
-    );
+    // strip.setTexture(*texture);
+    // strip.setPosition(
+    //     pixel_x - sprite_width / 2,
+    int y_offset = WINDOW_HEIGHT / 2 - static_cast<int>((float) WINDOW_WIDTH * (size - 0.5) / (1.7f * camera_y));
+    // );
     
-    strip.setScale(sf::Vector2f(1, (float) sprite_height / (float) rect.height));
+    float texture_step_x = (float) rect.w / (float) sprite_width;
+    float texture_step_y = (float) rect.h / (float) sprite_height;
+    // strip.setScale(sf::Vector2f(1, (float) sprite_height / (float) rect.height));
+
+    
 
     for (int i=0; i < sprite_width; i++) {
 
         int x = pixel_x - sprite_width / 2 + i;
+        int tex_x = rect.x + i*texture_step_x;
 
         if ( x < 0 || x > WINDOW_WIDTH ) {
-            strip.move(1,0);
             continue;
         }
         if (camera_y > game->raycaster.rays_lenght[x]) {
-            strip.move(1,0);
             continue;
         }
         
-        strip.setTextureRect(sf::IntRect(
-            i * rect.width / sprite_width + rect.left,
-            rect.top,
-            1,
-            rect.height
-        ));
-        
-        game->window.draw(strip);
-        strip.move(1,0);
+        for (int y=0; y<sprite_height; y++) {
+            if (y + y_offset >= WINDOW_HEIGHT) break;
+            if (y + y_offset < 0) continue;
+            int tex_y = rect.y + y*texture_step_y;
+            Uint32 color = ((Uint32*) surface->pixels)[tex_x + tex_y*surface->w];
+            if (!(color >> 24)) continue;
+            game->scene_pixels[x + (y + y_offset)*WINDOW_WIDTH] = color;
+        }
     }
 }
 
 
 Barrel::Barrel(float x, float y) : Entity(x,y) {
-    texture = Object_manager::getTexture("ressources/barrel.png");
+    surface = Object_manager::getSurface("ressources/barrel.png");
 }
 
 
@@ -185,8 +192,8 @@ void Enemy::update(Game* game) {
 }
 
 
-Soldier1::Soldier1(float x, float y) : Enemy(x,y), state(0) {
-    texture = Object_manager::getTexture("ressources/soldier_1.png");
+Soldier1::Soldier1(float x, float y) : Enemy(x,y) {
+    surface = Object_manager::getSurface("ressources/soldier_1.png");
     status = WAIT;
 }
 
@@ -195,22 +202,24 @@ void Soldier1::update(Game* game) {
 }
 
 void Soldier1::draw(Game* game) {
+    static int s = 0;
     if (game->animation) {
-        state++;
+        s++;
     }
     switch (status) {
     case WAIT:
-        Entity::draw(game, Soldier1::walk_front_rects[0], 0.7);
+        s %= 4;
+        Entity::draw(game, Soldier1::walk_front_rects[s], 0.7);
         break;
     
     case WALK:
-        state %= 4;
-        Entity::draw(game, Soldier1::walk_front_rects[state], 0.7);
+        s %= 4;
+        Entity::draw(game, Soldier1::walk_front_rects[s], 0.7);
         break;
     
     case SHOOT:
-        state %= 2;
-        Entity::draw(game, Soldier1::shoot_rects[state], 0.7);
+        s %= 2;
+        Entity::draw(game, Soldier1::shoot_rects[s], 0.7);
         break;
     
     default:

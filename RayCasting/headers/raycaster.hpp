@@ -27,10 +27,8 @@ private:
 
     // wall
     SDL_Surface* brick_surface;
-    SDL_Texture* scene;
 
     float perp_rays_lenght[1080];
     float texture_offset[1080];
 
-    std::array<uint32_t, 1080 * 720> scene_pixels;
 };
