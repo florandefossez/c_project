@@ -5,8 +5,8 @@ constexpr float PLAYER_VELOCITY = 3.f;
 constexpr float PLAYER_ROTATION_VELOCITY = 90.0;
 
 
-enum cell_ : short;
-typedef enum cell_ cell_t;
+struct cell_;
+typedef struct cell_ cell_t;
 
 class Game;
 
@@ -31,5 +31,6 @@ public:
 private:
 
     Game* game;
+    void pathfind();
 
 };

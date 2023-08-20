@@ -3,9 +3,9 @@
 #include <array>
 #include <SDL2/SDL.h>
 
-typedef enum cell_ : short {
-    empty,
-    wall,
+typedef struct cell_ {
+    bool is_wall;
+    int dir;
 } cell_t;
 
 class Game;
@@ -24,8 +24,9 @@ public:
     SDL_Point vision_field_points[1080];
     void load();
 
-private:
     std::array<std::array<cell_t, 32>, 32> map;
+    
+private:
     Game* game;
     double player_sprite_angle;
 };

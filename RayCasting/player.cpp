@@ -1,5 +1,6 @@
 #include <iostream>
 #include <SDL2/SDL.h>
+#include <queue>
 #include "headers/raycaster.hpp"
 #include "headers/map.hpp"
 #include "headers/player.hpp"
@@ -96,6 +97,8 @@ void Player::update() {
         plane_y = - SIN_PLAYER_ROTATION*plane_x + COS_PLAYER_ROTATION*plane_y;
         plane_x = tmp_dir;
     }
+
+    pathfind();
         
 }
 
@@ -104,3 +107,46 @@ void Player::draw() {
 
 }
 
+
+
+void Player::pathfind() {
+    for (int i=0; i<32; i++) {
+        for (int j=0; j<32; j++) {
+            game->map.map[i][j].dir = 0;
+        }
+    }
+
+    int p_x = static_cast<int>(position_x);
+    int p_y = static_cast<int>(position_y);
+
+    std::queue<std::pair<int,int>> queue;
+    queue.push({p_x, p_y});
+    int i,j;
+    while (!queue.empty()) {
+        std::tie(i,j) = queue.front();
+        queue.pop();
+        if (std::abs(p_x-i)>20 || std::abs(p_y-j)>20)
+            continue;
+        
+        int a = i-1, b = j;
+        if (a>=0 && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
+            game->map.map[a][b].dir = 3;
+            queue.push({a,b});
+        }
+        a = i+1, b = j;
+        if (a<32 && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
+            game->map.map[a][b].dir = 1;
+            queue.push({a,b});
+        }
+        a = i, b = j-1;
+        if (b>=0 && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
+            game->map.map[a][b].dir = 4;
+            queue.push({a,b});
+        }
+        a = i, b = j+1;
+        if (b<32 && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
+            game->map.map[a][b].dir = 2;
+            queue.push({a,b});
+        }
+    }
+}

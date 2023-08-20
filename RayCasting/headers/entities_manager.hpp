@@ -43,6 +43,7 @@ public:
     int health;
     int damage;
     float accuracy;
+    bool direct_ray;
 
     float dir_x;
     float dir_y;
@@ -86,9 +87,9 @@ public:
 
     static SDL_Surface* getSurface(std::string name);
 
+    std::vector<Entity*> entities;
 private:
     Game* game;
-    std::vector<Entity*> entities;
 
     static std::map<std::string, SDL_Surface*> surfaces;
 

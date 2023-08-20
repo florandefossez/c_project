@@ -21,21 +21,22 @@ void Map::load() {
         for (unsigned int j = 0; j < 32; j++) {
             Uint8* p = (Uint8*)map_surface->pixels + j * map_surface->pitch + i * 4;
             if (p[3] == 255) {
-                this->map[i][j] = wall;
+                this->map[i][j].is_wall = true;
             } else {
-                this->map[i][j] = empty;
+                this->map[i][j].is_wall = false;
             }
+            map[i][j].dir = 0;
         }
     }
 }
 
 bool Map::collide(float x, float y) {
     if (x>=32 || x<0 || y>=32 || y<0) return true;
-    return (map[static_cast<unsigned int>(floor(x))][static_cast<unsigned int>(floor(y))] == wall);
+    return (map[static_cast<unsigned int>(floor(x))][static_cast<unsigned int>(floor(y))].is_wall);
 }
 
 bool Map::collide(int x, int y) {
-    return (map[x][y] == wall);
+    return (map[x][y].is_wall);
 }
 
 void Map::update() {
@@ -49,7 +50,12 @@ void Map::draw() {
 
     for (int i = 0; i < 32; i++) {
         for (int j = 0; j < 32; j++) {
+            SDL_SetRenderDrawColor(game->renderer, 0, 60*map[i][j].dir, 0, 255);
+            SDL_Rect wall_rect = {MINIMAP * i / 32, MINIMAP * j / 32, MINIMAP / 32 + 1, MINIMAP / 32 + 1};
+            SDL_RenderFillRect(game->renderer, &wall_rect);
+
             if (collide(i, j)) {
+                SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
                 SDL_Rect wall_rect = {MINIMAP * i / 32, MINIMAP * j / 32, MINIMAP / 32 + 1, MINIMAP / 32 + 1};
                 SDL_RenderFillRect(game->renderer, &wall_rect);
             }
@@ -64,4 +70,11 @@ void Map::draw() {
     player_texture_rect.y -= player_texture_rect.h / 2;
 
     SDL_RenderCopyEx(game->renderer, player_texture, nullptr, &player_texture_rect, player_sprite_angle, nullptr, SDL_FLIP_NONE);
+
+    SDL_SetRenderDrawColor(game->renderer, 255, 0, 0, 255);
+
+    for (Entity* entity : game->entities_manager.entities) {
+        SDL_Rect rect1 = {static_cast<int>(entity->position_x * MINIMAP / 32 - 3), static_cast<int>(entity->position_y * MINIMAP / 32 - 3), 6, 6};
+        SDL_RenderFillRect(game->renderer, &rect1);
+    }
 }

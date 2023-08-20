@@ -113,17 +113,10 @@ void Entity::draw(Game* game, SDL_Rect& rect, float size) {
     int sprite_height = size * int(WINDOW_HEIGHT / camera_y);
     int sprite_width = sprite_height * rect.w / rect.h;
     
-    // strip.setTexture(*texture);
-    // strip.setPosition(
-    //     pixel_x - sprite_width / 2,
     int y_offset = WINDOW_HEIGHT / 2 - static_cast<int>((float) WINDOW_WIDTH * (size - 0.5) / (1.7f * camera_y));
-    // );
     
     float texture_step_x = (float) rect.w / (float) sprite_width;
     float texture_step_y = (float) rect.h / (float) sprite_height;
-    // strip.setScale(sf::Vector2f(1, (float) sprite_height / (float) rect.height));
-
-    
 
     for (int i=0; i < sprite_width; i++) {
 
@@ -161,13 +154,92 @@ Barrel::Barrel(float x, float y) : Entity(x,y) {
 
 void Enemy::update(Game* game) {
 
+    // figure out if enemy has a direct view to the player, cast a ray from player to enemy
     float dist = hypotf(position_x - game->player.position_x, position_y - game->player.position_y);
-    if (dist < 1.5) {status = SHOOT; return;}
-    if (dist < 3 && status == SHOOT) return;
-    status = WALK;
 
-    float move_x = (game->player.position_x - position_x) / dist;
-    float move_y = (game->player.position_y - position_y) / dist;
+    // direction step
+    int step_x;
+    int step_y;
+
+    // x and y ray sides
+    float x_ray_length = 0;
+    float y_ray_length = 0;
+
+    // ray directions
+    float ray_dir_x = (position_x - game->player.position_x) / dist;
+    float ray_dir_y = (position_y - game->player.position_y) / dist;
+
+    // ray lengths per x,y step
+    float x_ray_unit_length = std::abs(1.f / ray_dir_x);
+    float y_ray_unit_length = std::abs(1.f / ray_dir_y);
+
+    // player cell location
+    int current_cell_x = static_cast<int>(game->player.position_x);
+    int current_cell_y = static_cast<int>(game->player.position_y);
+
+    if (ray_dir_x > 0) { // we look at west
+        x_ray_length += x_ray_unit_length * (1.f - (game->player.position_x - current_cell_x));
+        step_x = 1;
+    } else if (ray_dir_x < 0) { // we look at east
+        x_ray_length += x_ray_unit_length * (game->player.position_x - current_cell_x);
+        step_x = -1;
+    }
+    if (ray_dir_y > 0) { // we look at south
+        y_ray_length += y_ray_unit_length * (1.f - (game->player.position_y - current_cell_y));
+        step_y = 1;
+    } else if (ray_dir_y < 0) { // we look at north
+        y_ray_length += y_ray_unit_length * (game->player.position_y - current_cell_y);
+        step_y = -1;
+    }
+
+    char collision_side;
+    for (int i=0; i<50; i++) {
+        if (x_ray_length < y_ray_length) {
+            x_ray_length += x_ray_unit_length;
+            current_cell_x += step_x;
+            collision_side = 'x';
+        } else {
+            y_ray_length += y_ray_unit_length;
+            current_cell_y += step_y;
+            collision_side = 'y';
+        }
+        if (game->map.collide(current_cell_x, current_cell_y)){
+            break;
+        }
+    }
+    if (collision_side == 'x') {
+        direct_ray = (x_ray_length - x_ray_unit_length) > dist;
+    } else {
+        direct_ray = (y_ray_length - y_ray_unit_length) > dist;
+    }
+
+    float move_x, move_y;
+    if (direct_ray) {
+        if (dist < 5) {
+            status = SHOOT;
+            return;
+        }
+        if (dist < 8 && status == SHOOT) {
+            return;
+        }
+        status = WALK;
+        move_x = (game->player.position_x - position_x) / dist;
+        move_y = (game->player.position_y - position_y) / dist;
+
+    } else {
+        status = WALK;
+        int a = game->map.map[static_cast<int>(position_x)][static_cast<int>(position_y)].dir;
+        if (a==0) {
+            return;
+        }
+        if (a%2) {
+            move_x = a-2;
+            move_y = 0;
+        } else {
+            move_x = 0;
+            move_y = a-3;
+        }
+    }
 
     move_x *= game->delta_time;
     move_y *= game->delta_time;
