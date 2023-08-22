@@ -2,6 +2,7 @@
 Some personal c/c++ projects for fun
 
 - [Ray Casting](#ray-casting)
+- [Dining Philosopher Problem (Semaphores)](#dining-philosopher-problem)
 - [Tic-Tac-Toe with Minimax](#tic-tac-toe-with-minimax)
 - [Mines Weeper](#mines-weeper)
 - [Virtual Network](#virtual-network)
@@ -43,6 +44,34 @@ make run
 - S to walk backward
 - right arrow to rotate the camera right
 - left arrow to rotate the camera left
+
+
+# Dining Philosopher Problem
+
+A semaphore is a synchronization primitive used in concurrent programming to control access to shared resources among multiple threads or processes. It's a variable with an associated unsigned integer value that can be accessed and modified by atomic operations. Semaphores are used to prevent race conditions and manage the order of execution of multiple threads.
+
+The script simulate the classic dining philosophers problem where a number of philosophers sit around a circular table with forks between each pair of philosophers. Philosophers alternate between thinking and eating, but they need two forks to eat. Use semaphores to represent forks and ensure that philosophers can eat without deadlock.
+
+
+In the exemple below, there are 3 philosophers at the table and we can see that 2 philosopher can't eat at the same time. They all get hungry after 1 second but only the philosopher 0 is eating. At second 2, philosopher 0 is thinking again and philosopher 2 is eating while philosopher 1 is still hungry. At second 3, philosopher 1 is finaly eating while philosopher 2 is thinking and philosopher 0 is hungry again.
+
+```
+[0] Philosopher 0 is thinking.
+[0] Philosopher 1 is thinking.
+[0] Philosopher 2 is thinking.
+[1] Philosopher 0 is hungry.
+[1] Philosopher 1 is hungry.
+[1] Philosopher 0 is eating.
+[1] Philosopher 2 is hungry.
+[2] Philosopher 0 is thinking.
+[2] Philosopher 2 is eating.
+[3] Philosopher 0 is hungry.
+[3] Philosopher 2 is thinking.
+[3] Philosopher 1 is eating.
+[4] Philosopher 2 is hungry.
+[4] Philosopher 1 is thinking.
+[4] Philosopher 0 is eating.
+```
 
 
 
