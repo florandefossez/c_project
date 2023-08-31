@@ -50,9 +50,9 @@ void Map::draw() {
 
     for (int i = 0; i < 32; i++) {
         for (int j = 0; j < 32; j++) {
-            SDL_SetRenderDrawColor(game->renderer, 0, 60*map[i][j].dir, 0, 255);
-            SDL_Rect wall_rect = {MINIMAP * i / 32, MINIMAP * j / 32, MINIMAP / 32 + 1, MINIMAP / 32 + 1};
-            SDL_RenderFillRect(game->renderer, &wall_rect);
+            // SDL_SetRenderDrawColor(game->renderer, 0, 60*map[i][j].dir, 0, 255);
+            // SDL_Rect wall_rect = {MINIMAP * i / 32, MINIMAP * j / 32, MINIMAP / 32 + 1, MINIMAP / 32 + 1};
+            // SDL_RenderFillRect(game->renderer, &wall_rect);
 
             if (collide(i, j)) {
                 SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);

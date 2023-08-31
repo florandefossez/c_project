@@ -1,6 +1,8 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <queue>
+#include <vector>
+#include <algorithm>
 #include "headers/raycaster.hpp"
 #include "headers/map.hpp"
 #include "headers/player.hpp"
@@ -99,9 +101,19 @@ void Player::update() {
     }
 
     pathfind();
-        
+
 }
 
+void Player::shoot() {
+    if (game->entities_manager.targeted_entity) {
+        auto iter = std::find(game->entities_manager.entities.begin(), game->entities_manager.entities.end(), game->entities_manager.targeted_entity);
+        if (iter != game->entities_manager.entities.end()) {
+            // delete *iter;
+            // game->entities_manager.entities.erase(iter);
+            (*iter)->damage(1);
+        }
+    }
+}
 
 void Player::draw() {
 

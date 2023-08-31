@@ -43,12 +43,14 @@ std::array<SDL_Rect, 2> Soldier1::shoot_rects = {
     SDL_Rect{256, 14, 32, 55}
 };
 
+std::array<SDL_Rect, 1> Soldier1::pain_rect = {
+    SDL_Rect{301, 14, 32, 55}
+};
 
 
 
 
-Object_manager::Object_manager(Game* game) : game(game) {
-    // barrel_texture.loadFromFile("ressources/barrel.png");
+Object_manager::Object_manager(Game* game) : game(game), targeted_entity(nullptr) {
     entities.push_back(new Soldier1(10.5,5.5));
     entities.push_back(new Barrel(4.0,3.0));
 }
@@ -74,6 +76,8 @@ void Object_manager::update() {
 
     // sort the entities to display the furthest before the closest
     std::sort(entities.begin(), entities.end(), [] (Entity* a, Entity* b) {return a->camera_y > b->camera_y;});
+
+    targeted_entity = nullptr;
 }
 
 
@@ -91,14 +95,18 @@ void Object_manager::draw() {
 
 void Entity::update(Game* game) {}
 
-
-void Entity::draw(Game* game) {
-    SDL_Rect rect = {0, 0, surface->w, surface->h};
-    draw(game, rect, 1);
+void Entity::damage(float value) {
+    std::cout << "enti damage\n";
 }
 
 
-void Entity::draw(Game* game, SDL_Rect& rect, float size) {
+void Entity::draw(Game* game) {
+    SDL_Rect rect = {0, 0, surface->w, surface->h};
+    draw(game, rect);
+}
+
+
+void Entity::draw(Game* game, SDL_Rect& rect) {
 
     // from camera coords to film coords then to pixel coords
     int pixel_x = int(0.5 * WINDOW_WIDTH * (1.0 + camera_x / camera_y));
@@ -110,13 +118,17 @@ void Entity::draw(Game* game, SDL_Rect& rect, float size) {
 
     //calculate size of the sprite on screen, using 'camera_y' instead of the real distance to avoid fisheye
     //this is the dimension in pixel
-    int sprite_height = size * int(WINDOW_HEIGHT / camera_y);
+    int sprite_height = int(size * WINDOW_HEIGHT / camera_y);
     int sprite_width = sprite_height * rect.w / rect.h;
     
     int y_offset = WINDOW_HEIGHT / 2 - static_cast<int>((float) WINDOW_WIDTH * (size - 0.5) / (1.7f * camera_y));
     
     float texture_step_x = (float) rect.w / (float) sprite_width;
     float texture_step_y = (float) rect.h / (float) sprite_height;
+
+    if ((2*pixel_x - sprite_width < WINDOW_WIDTH) && (2*pixel_x + sprite_width > WINDOW_WIDTH)) {
+        game->entities_manager.targeted_entity = this;
+    }
 
     for (int i=0; i < sprite_width; i++) {
 
@@ -130,9 +142,8 @@ void Entity::draw(Game* game, SDL_Rect& rect, float size) {
             continue;
         }
         
-        for (int y=0; y<sprite_height; y++) {
-            if (y + y_offset >= WINDOW_HEIGHT) break;
-            if (y + y_offset < 0) continue;
+        sprite_height = (sprite_height + y_offset >= WINDOW_HEIGHT) ? WINDOW_HEIGHT - y_offset - 1 : sprite_height;
+        for (int y = y_offset<0 ? -y_offset : 0; y < sprite_height; y++) {
             int tex_y = rect.y + y*texture_step_y;
             Uint32 color = ((Uint32*) surface->pixels)[tex_x + tex_y*surface->w];
             if (!(color >> 24)) continue;
@@ -142,7 +153,7 @@ void Entity::draw(Game* game, SDL_Rect& rect, float size) {
 }
 
 
-Barrel::Barrel(float x, float y) : Entity(x,y) {
+Barrel::Barrel(float x, float y) : Entity(x,y,1) {
     surface = Object_manager::getSurface("ressources/barrel.png");
 }
 
@@ -214,31 +225,41 @@ void Enemy::update(Game* game) {
     }
 
     float move_x, move_y;
-    if (direct_ray) {
-        if (dist < 5) {
-            status = SHOOT;
-            return;
-        }
-        if (dist < 8 && status == SHOOT) {
-            return;
-        }
-        status = WALK;
-        move_x = (game->player.position_x - position_x) / dist;
-        move_y = (game->player.position_y - position_y) / dist;
-
-    } else {
-        status = WALK;
-        int a = game->map.map[static_cast<int>(position_x)][static_cast<int>(position_y)].dir;
-        if (a==0) {
-            return;
-        }
-        if (a%2) {
-            move_x = a-2;
-            move_y = 0;
-        } else {
-            move_x = 0;
-            move_y = a-3;
-        }
+    switch (status) {
+        case WAIT:
+            if (direct_ray) {
+                status = WALK;
+            }
+            break;
+        case WALK:
+            if (direct_ray && dist < 5) {
+                status = SHOOT;
+            } else if (direct_ray) {
+                move_x = (game->player.position_x - position_x) / dist;
+                move_y = (game->player.position_y - position_y) / dist;
+            } else {
+                int a = game->map.map[static_cast<int>(position_x)][static_cast<int>(position_y)].dir;
+                if (a==0) {
+                    status = WAIT;
+                    return;
+                }
+                if (a%2) {
+                    move_x = a-2;
+                    move_y = 0;
+                } else {
+                    move_x = 0;
+                    move_y = a-3;
+                }
+            }
+            break;
+        case SHOOT:
+            if (!direct_ray || dist > 8)
+                status = WALK;
+            break;
+        case PAIN:
+            if (game->animation) pain_cooldown--;
+            if (pain_cooldown == 0) status = WAIT;
+            break;
     }
 
     move_x *= game->delta_time;
@@ -264,7 +285,7 @@ void Enemy::update(Game* game) {
 }
 
 
-Soldier1::Soldier1(float x, float y) : Enemy(x,y) {
+Soldier1::Soldier1(float x, float y) : Enemy(x,y,1) {
     surface = Object_manager::getSurface("ressources/soldier_1.png");
     status = WAIT;
 }
@@ -281,17 +302,21 @@ void Soldier1::draw(Game* game) {
     switch (status) {
     case WAIT:
         s %= 4;
-        Entity::draw(game, Soldier1::walk_front_rects[s], 0.7);
+        Entity::draw(game, Soldier1::walk_front_rects[s]);
         break;
     
     case WALK:
         s %= 4;
-        Entity::draw(game, Soldier1::walk_front_rects[s], 0.7);
+        Entity::draw(game, Soldier1::walk_front_rects[s]);
         break;
     
     case SHOOT:
         s %= 2;
-        Entity::draw(game, Soldier1::shoot_rects[s], 0.7);
+        Entity::draw(game, Soldier1::shoot_rects[s]);
+        break;
+    
+    case PAIN:
+        Entity::draw(game, Soldier1::pain_rect[0]);
         break;
     
     default:
@@ -299,3 +324,8 @@ void Soldier1::draw(Game* game) {
     }
     
 };
+
+void Soldier1::damage(float value) {
+    status = PAIN;
+    pain_cooldown = 2;
+}

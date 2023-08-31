@@ -15,7 +15,7 @@ class Game;
 
 class Entity {
 public:
-    Entity(float x, float y) : position_x(x), position_y(y) {};
+    Entity(float x, float y, float size) : position_x(x), position_y(y), size(size) {};
 
     float position_x;
     float position_y;
@@ -23,25 +23,30 @@ public:
     float camera_x;
     float camera_y;
 
+    float size;
+
     SDL_Surface* surface;
 
-    void draw(Game* game, SDL_Rect& rect, float size);
+    void draw(Game* game, SDL_Rect& rect);
     virtual void draw(Game* game);
     virtual void update(Game* game);
+    virtual void damage(float value);
 };
 
 class Barrel : public Entity {
 public:
     Barrel(float x, float y);
+    void damage(float value) {Entity::damage(value);};
 };
 
 class Enemy : public Entity {
 public:
-    Enemy(float x, float y) : Entity(x,y) {};
+    Enemy(float x, float y, float size) : Entity(x,y,size), pain_cooldown(0) {};
     void update(Game* game) override;
 
     int health;
     int damage;
+    int pain_cooldown;
     float accuracy;
     bool direct_ray;
 
@@ -59,12 +64,15 @@ public:
 
     static std::array<SDL_Rect, 4> walk_front_rects;
     static std::array<SDL_Rect, 2> shoot_rects;
+    static std::array<SDL_Rect, 1> pain_rect;
     // static sf::IntRect pain;
     // static std::array<sf::IntRect, 9> death1;
     // static std::array<sf::IntRect, 6> death2;
 
     void update(Game* game) override;
     void draw(Game* game) override;
+
+    void damage(float value) override;
     
 };
 
@@ -88,6 +96,7 @@ public:
     static SDL_Surface* getSurface(std::string name);
 
     std::vector<Entity*> entities;
+    Entity* targeted_entity;
 private:
     Game* game;
 

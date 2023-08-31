@@ -69,6 +69,10 @@ void Game::handleEvents() {
             if (event.key.keysym.sym == SDLK_ESCAPE) {
                 running = false;
             }
+            if (event.key.keysym.sym == SDLK_SPACE) {
+                std::cout << "shot\n";
+                player.shoot();
+            }
         }
 #endif
     }

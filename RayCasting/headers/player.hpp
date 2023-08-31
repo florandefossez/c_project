@@ -16,6 +16,7 @@ public:
     Player(Game* game);
     void draw();
     void update();
+    void shoot();
     float get_angle();
 
     float position_x;
