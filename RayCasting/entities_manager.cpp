@@ -47,13 +47,28 @@ std::array<SDL_Rect, 1> Soldier1::pain_rect = {
     SDL_Rect{301, 14, 32, 55}
 };
 
+std::array<SDL_Rect, 9> Soldier1::death1 = {
+    SDL_Rect{9, 209, 35, 61},
+    SDL_Rect{48, 209, 42, 61},
+    SDL_Rect{94, 209, 48, 61},
 
+    SDL_Rect{145, 209, 52, 61},
+    SDL_Rect{201, 209, 54, 61},
+    SDL_Rect{259, 209, 57, 61},
+
+    SDL_Rect{319, 209, 56, 61},
+    SDL_Rect{379, 209, 57, 61},
+    SDL_Rect{439, 209, 57, 61}
+
+};
 
 
 Object_manager::Object_manager(Game* game) : game(game), targeted_entity(nullptr) {
+    entities.clear();
     entities.push_back(new Soldier1(10.5,5.5));
     entities.push_back(new Barrel(4.0,3.0));
 }
+
 
 void Object_manager::update() {
     // transform sprite with the inverse camera matrix to get their coordinate in the camera space
@@ -160,9 +175,6 @@ Barrel::Barrel(float x, float y) : Entity(x,y,1) {
 
 
 
-
-
-
 void Enemy::update(Game* game) {
 
     // figure out if enemy has a direct view to the player, cast a ray from player to enemy
@@ -224,7 +236,10 @@ void Enemy::update(Game* game) {
         direct_ray = (y_ray_length - y_ray_unit_length) > dist;
     }
 
-    float move_x, move_y;
+    if (game->animation) animation_cooldown++;
+
+    float move_x = 0;
+    float move_y = 0;
     switch (status) {
         case WAIT:
             if (direct_ray) {
@@ -257,13 +272,33 @@ void Enemy::update(Game* game) {
                 status = WALK;
             break;
         case PAIN:
-            if (game->animation) pain_cooldown--;
-            if (pain_cooldown == 0) status = WAIT;
+            if (animation_cooldown >= 5) status = WAIT;
+            break;
+        case DIYING:
+            if (animation_cooldown >= 9) {
+                for ( auto it = game->entities_manager.entities.begin(); it != game->entities_manager.entities.end(); ) {
+                    if( (*it)==this ) {
+                        delete *it;  
+                        it = game->entities_manager.entities.erase(it);
+                        break;
+                    } else {
+                        ++it;
+                    }
+                }
+                int x = rand()%32;
+                int y = rand()%32;
+                while (game->map.collide(x,y)) {
+                    x = rand()%32;
+                    y = rand()%32;
+                }
+                game->entities_manager.entities.push_back(new Soldier1(x+0.5, y+0.5));
+            }
             break;
     }
+    
 
-    move_x *= game->delta_time;
-    move_y *= game->delta_time;
+    move_x *= game->delta_time*velocity;
+    move_y *= game->delta_time*velocity;
 
     if (game->map.collide(move_x+position_x, position_y)) {
         if (move_x>0) {
@@ -285,9 +320,10 @@ void Enemy::update(Game* game) {
 }
 
 
-Soldier1::Soldier1(float x, float y) : Enemy(x,y,1) {
+Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7) {
     surface = Object_manager::getSurface("ressources/soldier_1.png");
     status = WAIT;
+    health = 3;
 }
 
 void Soldier1::update(Game* game) {
@@ -295,28 +331,32 @@ void Soldier1::update(Game* game) {
 }
 
 void Soldier1::draw(Game* game) {
-    static int s = 0;
-    if (game->animation) {
-        s++;
-    }
+    int s = animation_cooldown;
     switch (status) {
     case WAIT:
-        s %= 4;
-        Entity::draw(game, Soldier1::walk_front_rects[s]);
+        Entity::draw(game, Soldier1::walk_front_rects[0]);
         break;
     
     case WALK:
+        s /= 3;
         s %= 4;
         Entity::draw(game, Soldier1::walk_front_rects[s]);
         break;
     
     case SHOOT:
+        s /= 3;
         s %= 2;
         Entity::draw(game, Soldier1::shoot_rects[s]);
         break;
     
     case PAIN:
         Entity::draw(game, Soldier1::pain_rect[0]);
+        break;
+    
+    case DIYING:
+        s /= 1;
+        s %= 9;
+        Entity::draw(game, Soldier1::death1[s]);
         break;
     
     default:
@@ -326,6 +366,15 @@ void Soldier1::draw(Game* game) {
 };
 
 void Soldier1::damage(float value) {
+    if (status == DIYING) return;
     status = PAIN;
-    pain_cooldown = 2;
+    animation_cooldown = 0;
+    health -= value;
+    if (health < 0) {
+        death();
+    }
+}
+
+void Soldier1:: death() {
+    status = DIYING;
 }

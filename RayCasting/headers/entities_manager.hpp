@@ -8,7 +8,8 @@ typedef enum npc_status_ {
     WALK,
     PAIN,
     SHOOT,
-    WAIT
+    WAIT,
+    DIYING
 } npc_status_t;
 
 class Game;
@@ -16,6 +17,7 @@ class Game;
 class Entity {
 public:
     Entity(float x, float y, float size) : position_x(x), position_y(y), size(size) {};
+    virtual ~Entity() {};
 
     float position_x;
     float position_y;
@@ -41,14 +43,17 @@ public:
 
 class Enemy : public Entity {
 public:
-    Enemy(float x, float y, float size) : Entity(x,y,size), pain_cooldown(0) {};
+    Enemy(float x, float y, float size) : Entity(x,y,size), animation_cooldown(0), velocity(2) {};
+    virtual ~Enemy() {};
     void update(Game* game) override;
+    virtual void death() {};
 
     int health;
     int damage;
-    int pain_cooldown;
+    unsigned int animation_cooldown;
     float accuracy;
     bool direct_ray;
+    float velocity;
 
     float dir_x;
     float dir_y;
@@ -57,22 +62,25 @@ public:
 
 };
 
+
 class Soldier1 : public Enemy {
 public:
     Soldier1(float x, float y);
+    ~Soldier1() {};
 
 
     static std::array<SDL_Rect, 4> walk_front_rects;
     static std::array<SDL_Rect, 2> shoot_rects;
     static std::array<SDL_Rect, 1> pain_rect;
-    // static sf::IntRect pain;
-    // static std::array<sf::IntRect, 9> death1;
+    static std::array<SDL_Rect, 9> death1;
     // static std::array<sf::IntRect, 6> death2;
 
     void update(Game* game) override;
     void draw(Game* game) override;
 
     void damage(float value) override;
+    void death() override;
+
     
 };
 

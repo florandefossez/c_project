@@ -63,18 +63,18 @@ void Game::handleEvents() {
         if (event.type == SDL_QUIT) {
             running = false;
         }
-#ifdef __EMSCRIPTEN__
-#else
         else if (event.type == SDL_KEYDOWN) {
             if (event.key.keysym.sym == SDLK_ESCAPE) {
+#ifdef __EMSCRIPTEN__
+                SDL_ShowCursor(SDL_ENABLE);
+#else
                 running = false;
+#endif
             }
             if (event.key.keysym.sym == SDLK_SPACE) {
-                std::cout << "shot\n";
                 player.shoot();
             }
         }
-#endif
     }
 }
 
@@ -84,14 +84,20 @@ void Game::update() {
     raycaster.update();
     entities_manager.update();
 
+    // std::cout << entities_manager.entities.end() - entities_manager.entities.begin() << std::endl;
+    // for (Entity* entity : entities_manager.entities) {
+    //     std::cout << entity->position_x << " " << entity->position_y << " " << entity->size << std::endl;
+    // }
+    // std::cout << std::endl;
+
     delta_time = static_cast<float>(SDL_GetTicks() - prev_ticks) / 1000.0f;
     prev_ticks = SDL_GetTicks();
 
     if (delta_time > 1.f) delta_time = 1.f;
 
     // display FPS
-    static int frame = 0;
-    static float SPF = 0;
+    // static int frame = 0;
+    // static float SPF = 0;
     static float animationevent = 0;
 
     // SPF += delta_time;
@@ -104,7 +110,7 @@ void Game::update() {
 
     animation = false;
     animationevent += delta_time;
-    if (animationevent > 0.2) {
+    if (animationevent > 0.05) {
         animationevent = 0;
         animation = true;
     }
