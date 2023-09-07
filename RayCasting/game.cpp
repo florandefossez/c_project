@@ -28,6 +28,7 @@ Game::Game() : player(this), map(this), raycaster(this), entities_manager(this) 
 
     map.load();
     raycaster.load();
+    player.load();
 }
 
 Game::~Game() {
@@ -125,13 +126,11 @@ void Game::render() {
     raycaster.draw();
     entities_manager.draw();
 
-    // // display weapon
-    // player.draw(renderer);
 
     SDL_UpdateTexture(scene, nullptr, reinterpret_cast<void *>(scene_pixels.data()), WINDOW_WIDTH*4);
     SDL_RenderCopy(renderer, scene, NULL, NULL);
 
-    // // display the map
+    player.draw();
     map.draw();
 
     SDL_RenderPresent(renderer);

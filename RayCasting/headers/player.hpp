@@ -9,6 +9,8 @@ struct cell_;
 typedef struct cell_ cell_t;
 
 class Game;
+class Weapon;
+class ShotGun;
 
 class Player {
 
@@ -17,6 +19,7 @@ public:
     void draw();
     void update();
     void shoot();
+    void load();
     float get_angle();
 
     float position_x;
@@ -32,6 +35,7 @@ public:
 private:
 
     Game* game;
+    Weapon* weapon;
     void pathfind();
 
 };

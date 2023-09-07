@@ -8,6 +8,7 @@
 #include "headers/player.hpp"
 #include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
+#include "headers/weapon.hpp"
 
 
 Player::Player(Game* game) : game(game) {
@@ -21,6 +22,10 @@ Player::Player(Game* game) : game(game) {
 
     plane_x = 0.0;
     plane_y = 0.7;
+}
+
+void Player::load() {
+    weapon = new ShotGun(game->renderer);
 }
 
 float Player::get_angle() {
@@ -101,22 +106,23 @@ void Player::update() {
     }
 
     pathfind();
+    weapon->update(game->animation);
 
 }
 
 void Player::shoot() {
+    if (!weapon->can_shoot()) {return;}
+    weapon->shoot();
     if (game->entities_manager.targeted_entity) {
         auto iter = std::find(game->entities_manager.entities.begin(), game->entities_manager.entities.end(), game->entities_manager.targeted_entity);
         if (iter != game->entities_manager.entities.end()) {
-            // delete *iter;
-            // game->entities_manager.entities.erase(iter);
             (*iter)->damage(1);
         }
     }
 }
 
 void Player::draw() {
-
+    weapon->draw(game->renderer);
 }
 
 

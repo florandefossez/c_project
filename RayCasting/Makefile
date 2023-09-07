@@ -3,7 +3,7 @@ CC = g++
 LDFLAGS = -lSDL2 -lSDL2_image
 TARGET:rayCasting.exe
 
-OBJS = game.o map.o player.o raycaster.o entities_manager.o
+OBJS = game.o map.o player.o raycaster.o entities_manager.o weapon.o
 
 rayCasting.exe:main.o ${OBJS}
 	${CC} ${CFLAGS} main.o ${OBJS} $(LDFLAGS) -o rayCasting.exe
@@ -25,6 +25,9 @@ raycaster.o:raycaster.cpp
 
 entities_manager.o:entities_manager.cpp
 	${CC} ${CFLAGS} -c entities_manager.cpp -o entities_manager.o
+
+weapon.o:weapon.cpp
+	${CC} ${CFLAGS} -c weapon.cpp -o weapon.o
 
 clean:
 	rm -f *.o
