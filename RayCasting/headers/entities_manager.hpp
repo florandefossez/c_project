@@ -16,7 +16,7 @@ class Game;
 
 class Entity {
 public:
-    Entity(float x, float y, float size) : position_x(x), position_y(y), size(size) {};
+    Entity(float x, float y, float size, float health) : position_x(x), position_y(y), size(size), health(health) {};
     virtual ~Entity() {};
 
     float position_x;
@@ -26,32 +26,35 @@ public:
     float camera_y;
 
     float size;
-
-    SDL_Surface* surface;
+    float health;
 
     void draw(Game* game, SDL_Rect& rect);
     virtual void draw(Game* game);
-    virtual void update(Game* game);
-    virtual void damage(float value);
+    virtual void update(Game* game) = 0;
+    virtual void damage(float value) = 0;
+
+protected:
+
+    SDL_Surface* surface;
+
 };
 
 class Barrel : public Entity {
 public:
     Barrel(float x, float y);
-    void damage(float value) {Entity::damage(value);};
+    void damage(float value) override {(void)value;};
+    void update(Game* game) override {(void)game;};
 };
 
 class Enemy : public Entity {
 public:
-    Enemy(float x, float y, float size) : Entity(x,y,size), animation_cooldown(0), velocity(2) {};
+    Enemy(float x, float y, float size, float health) : Entity(x,y,size,health), animation_cooldown(0), velocity(2) {};
     virtual ~Enemy() {};
     void update(Game* game) override;
-    virtual void death() {};
+    virtual void death() = 0;
 
-    int health;
-    int damage;
+    float damage;
     unsigned int animation_cooldown;
-    float accuracy;
     bool direct_ray;
     float velocity;
 
@@ -68,19 +71,19 @@ public:
     Soldier1(float x, float y);
     ~Soldier1() {};
 
-
-    static std::array<SDL_Rect, 4> walk_front_rects;
-    static std::array<SDL_Rect, 2> shoot_rects;
-    static std::array<SDL_Rect, 1> pain_rect;
-    static std::array<SDL_Rect, 9> death1;
-    // static std::array<sf::IntRect, 6> death2;
-
     void update(Game* game) override;
     void draw(Game* game) override;
 
     void damage(float value) override;
     void death() override;
 
+private:
+
+    static std::array<SDL_Rect, 4> walk_front_rects;
+    static std::array<SDL_Rect, 2> shoot_rects;
+    static std::array<SDL_Rect, 1> pain_rect;
+    static std::array<SDL_Rect, 9> death1;
+    // static std::array<sf::IntRect, 6> death2;
     
 };
 
@@ -105,10 +108,10 @@ public:
 
     std::vector<Entity*> entities;
     Entity* targeted_entity;
+
 private:
+
     Game* game;
-
     static std::map<std::string, SDL_Surface*> surfaces;
-
 };
 

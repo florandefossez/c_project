@@ -63,7 +63,7 @@ std::array<SDL_Rect, 9> Soldier1::death1 = {
 };
 
 
-Object_manager::Object_manager(Game* game) : game(game), targeted_entity(nullptr) {
+Object_manager::Object_manager(Game* game) : targeted_entity(nullptr), game(game) {
     entities.clear();
     entities.push_back(new Soldier1(10.5,5.5));
     entities.push_back(new Barrel(4.0,3.0));
@@ -100,18 +100,6 @@ void Object_manager::draw() {
     for (Entity* entity : entities) {
         entity->draw(game);
     }
-}
-
-
-
-
-
-
-
-void Entity::update(Game* game) {}
-
-void Entity::damage(float value) {
-    std::cout << "enti damage\n";
 }
 
 
@@ -168,7 +156,7 @@ void Entity::draw(Game* game, SDL_Rect& rect) {
 }
 
 
-Barrel::Barrel(float x, float y) : Entity(x,y,1) {
+Barrel::Barrel(float x, float y) : Entity(x,y,1.f,1.f) {
     surface = Object_manager::getSurface("ressources/barrel.png");
 }
 
@@ -320,10 +308,9 @@ void Enemy::update(Game* game) {
 }
 
 
-Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7) {
+Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7f,50.f) {
     surface = Object_manager::getSurface("ressources/soldier_1.png");
     status = WAIT;
-    health = 3;
 }
 
 void Soldier1::update(Game* game) {

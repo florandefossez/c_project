@@ -9,16 +9,16 @@ class Weapon {
     public:
 
     float damage;
-    unsigned int cooldown;
     unsigned int munitions;
+    unsigned int cooldown;
     SDL_Texture* texture;
 
     Weapon(float damage, unsigned int munitions) : damage(damage), munitions(munitions), cooldown(0) {};
     virtual ~Weapon() {};
 
-    virtual void draw(SDL_Renderer* renderer) {};
-    virtual void update(bool tick) {};
-    virtual void shoot() {};
+    virtual void draw(SDL_Renderer* renderer) = 0;
+    virtual void update(bool tick) = 0;
+    virtual void shoot() = 0;
 
     bool can_shoot() {return cooldown == 0;};
 
