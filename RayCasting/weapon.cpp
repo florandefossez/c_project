@@ -42,7 +42,7 @@ void ShotGun::update(bool tick) {
 void ShotGun::draw(SDL_Renderer* renderer) {
     SDL_Rect dst = {
         WINDOW_WIDTH / 2 - ShotGun::shoot_rects[cooldown].w * WINDOW_HEIGHT / 672,
-        WINDOW_HEIGHT / 2,
+        WINDOW_HEIGHT / 2 - (32 * WINDOW_WIDTH / 319),
         ShotGun::shoot_rects[cooldown].w * WINDOW_HEIGHT / 336,
         WINDOW_HEIGHT / 2
     };

@@ -3,7 +3,7 @@ CC = g++
 LDFLAGS = -lSDL2 -lSDL2_image
 TARGET:rayCasting.exe
 
-OBJS = game.o map.o player.o raycaster.o entities_manager.o weapon.o
+OBJS = game.o map.o player.o raycaster.o entities_manager.o weapon.o hud.o
 
 rayCasting.exe:main.o ${OBJS}
 	${CC} ${CFLAGS} main.o ${OBJS} $(LDFLAGS) -o rayCasting.exe
@@ -29,6 +29,9 @@ entities_manager.o:entities_manager.cpp
 weapon.o:weapon.cpp
 	${CC} ${CFLAGS} -c weapon.cpp -o weapon.o
 
+hud.o:hud.cpp
+	${CC} ${CFLAGS} -c hud.cpp -o hud.o
+
 clean:
 	rm -f *.o
 	rm -f *.exe
@@ -40,5 +43,5 @@ run:
 	./rayCasting.exe
 
 emcc:
-	em++ --bind main.cpp game.cpp map.cpp player.cpp raycaster.cpp entities_manager.cpp -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s ALLOW_MEMORY_GROWTH=1 -s STACK_SIZE=10000000 --preload-file ressources -o index.html -std=c++17 -fsanitize=undefined
+	em++ --bind main.cpp game.cpp map.cpp player.cpp raycaster.cpp entities_manager.cpp weapon.cpp hud.cpp -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s ALLOW_MEMORY_GROWTH=1 -s STACK_SIZE=10000000 --preload-file ressources -o index.html -std=c++17 -fsanitize=undefined
 	python3 -m http.server

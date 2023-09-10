@@ -11,6 +11,7 @@ typedef struct cell_ cell_t;
 class Game;
 class Weapon;
 class ShotGun;
+class Hud;
 
 class Player {
 
@@ -36,6 +37,7 @@ private:
 
     Game* game;
     Weapon* weapon;
+    Hud* hud;
     void pathfind();
 
 };

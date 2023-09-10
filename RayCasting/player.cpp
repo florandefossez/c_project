@@ -9,6 +9,7 @@
 #include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
 #include "headers/weapon.hpp"
+#include "headers/hud.hpp"
 
 
 Player::Player(Game* game) : game(game) {
@@ -26,6 +27,7 @@ Player::Player(Game* game) : game(game) {
 
 void Player::load() {
     weapon = new ShotGun(game->renderer);
+    hud = new Hud(game->renderer);
 }
 
 float Player::get_angle() {
@@ -107,7 +109,7 @@ void Player::update() {
 
     pathfind();
     weapon->update(game->animation);
-
+    hud->update(game->animation);
 }
 
 void Player::shoot() {
@@ -122,6 +124,7 @@ void Player::shoot() {
 }
 
 void Player::draw() {
+    hud->draw(game->renderer);
     weapon->draw(game->renderer);
 }
 
