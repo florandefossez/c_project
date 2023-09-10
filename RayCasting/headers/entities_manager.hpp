@@ -48,15 +48,16 @@ public:
 
 class Enemy : public Entity {
 public:
-    Enemy(float x, float y, float size, float health) : Entity(x,y,size,health), animation_cooldown(0), velocity(2) {};
+    Enemy(float x, float y, float size, float health, float weapon_damage) :
+        Entity(x,y,size,health), animation_cooldown(0), velocity(2), weapon_damage(weapon_damage) {};
     virtual ~Enemy() {};
     void update(Game* game) override;
     virtual void death() = 0;
 
-    float damage;
     unsigned int animation_cooldown;
     bool direct_ray;
     float velocity;
+    float weapon_damage;
 
     float dir_x;
     float dir_y;

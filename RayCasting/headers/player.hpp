@@ -8,6 +8,13 @@ constexpr float PLAYER_ROTATION_VELOCITY = 90.0;
 struct cell_;
 typedef struct cell_ cell_t;
 
+typedef enum player_state_ {
+    CALM,
+    CLENCH,
+    SCREAM,
+    LAUGHT
+} player_state_t;
+
 class Game;
 class Weapon;
 class ShotGun;
@@ -22,6 +29,7 @@ public:
     void shoot();
     void load();
     float get_angle();
+    void damage(float value);
 
     float position_x;
     float position_y;
@@ -32,12 +40,17 @@ public:
 
     float plane_x;
     float plane_y;
+    
+    float health;
+
+    player_state_t state;
 
 private:
 
     Game* game;
     Weapon* weapon;
     Hud* hud;
+    unsigned int state_change_cooldown;
     void pathfind();
 
 };

@@ -229,21 +229,21 @@ void Enemy::update(Game* game) {
     float move_x = 0;
     float move_y = 0;
     switch (status) {
-        case WAIT:
+        case npc_status_t::WAIT:
             if (direct_ray) {
-                status = WALK;
+                status = npc_status_t::WALK;
             }
             break;
-        case WALK:
+        case npc_status_t::WALK:
             if (direct_ray && dist < 5) {
-                status = SHOOT;
+                status = npc_status_t::SHOOT;
             } else if (direct_ray) {
                 move_x = (game->player.position_x - position_x) / dist;
                 move_y = (game->player.position_y - position_y) / dist;
             } else {
                 int a = game->map.map[static_cast<int>(position_x)][static_cast<int>(position_y)].dir;
                 if (a==0) {
-                    status = WAIT;
+                    status = npc_status_t::WAIT;
                     return;
                 }
                 if (a%2) {
@@ -255,14 +255,17 @@ void Enemy::update(Game* game) {
                 }
             }
             break;
-        case SHOOT:
-            if (!direct_ray || dist > 8)
-                status = WALK;
+        case npc_status_t::SHOOT:
+            if (!direct_ray || dist > 8) {
+                status = npc_status_t::WALK;
+            } else if (game->animation) {
+                game->player.damage(weapon_damage / 20);
+            }
             break;
-        case PAIN:
-            if (animation_cooldown >= 5) status = WAIT;
+        case npc_status_t::PAIN:
+            if (animation_cooldown >= 5) status = npc_status_t::WAIT;
             break;
-        case DIYING:
+        case npc_status_t::DIYING:
             if (animation_cooldown >= 9) {
                 for ( auto it = game->entities_manager.entities.begin(); it != game->entities_manager.entities.end(); ) {
                     if( (*it)==this ) {
@@ -308,7 +311,7 @@ void Enemy::update(Game* game) {
 }
 
 
-Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7f,50.f) {
+Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7f,50.f,4.f) {
     surface = Object_manager::getSurface("ressources/soldier_1.png");
     status = WAIT;
 }
@@ -320,27 +323,27 @@ void Soldier1::update(Game* game) {
 void Soldier1::draw(Game* game) {
     int s = animation_cooldown;
     switch (status) {
-    case WAIT:
+    case npc_status_t::WAIT:
         Entity::draw(game, Soldier1::walk_front_rects[0]);
         break;
     
-    case WALK:
+    case npc_status_t::WALK:
         s /= 3;
         s %= 4;
         Entity::draw(game, Soldier1::walk_front_rects[s]);
         break;
     
-    case SHOOT:
+    case npc_status_t::SHOOT:
         s /= 3;
         s %= 2;
         Entity::draw(game, Soldier1::shoot_rects[s]);
         break;
     
-    case PAIN:
+    case npc_status_t::PAIN:
         Entity::draw(game, Soldier1::pain_rect[0]);
         break;
     
-    case DIYING:
+    case npc_status_t::DIYING:
         s /= 1;
         s %= 9;
         Entity::draw(game, Soldier1::death1[s]);
@@ -353,8 +356,8 @@ void Soldier1::draw(Game* game) {
 };
 
 void Soldier1::damage(float value) {
-    if (status == DIYING) return;
-    status = PAIN;
+    if (status == npc_status_t::DIYING) return;
+    status = npc_status_t::PAIN;
     animation_cooldown = 0;
     health -= value;
     if (health < 0) {
@@ -363,5 +366,5 @@ void Soldier1::damage(float value) {
 }
 
 void Soldier1:: death() {
-    status = DIYING;
+    status = npc_status_t::DIYING;
 }

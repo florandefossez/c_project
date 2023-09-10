@@ -23,6 +23,9 @@ Player::Player(Game* game) : game(game) {
 
     plane_x = 0.0;
     plane_y = 0.7;
+
+    health = 100.f;
+    state_change_cooldown = 0;
 }
 
 void Player::load() {
@@ -35,6 +38,14 @@ float Player::get_angle() {
     if (dir_x < 0) angle -= 180;
     if (angle < 0) angle += 360;
     return angle;
+}
+
+void Player::damage(float value) {
+    health -= value;
+    if (!state_change_cooldown) {
+        state_change_cooldown = 20;
+        state = player_state_t::CLENCH;
+    }
 }
 
 void Player::update() {
@@ -109,7 +120,11 @@ void Player::update() {
 
     pathfind();
     weapon->update(game->animation);
-    hud->update(game->animation);
+    hud->update(game->animation, this);
+    if (state_change_cooldown == 0) {
+        state = player_state_t::CALM;
+    }
+    if (state_change_cooldown && game->animation) state_change_cooldown--;
 }
 
 void Player::shoot() {
@@ -118,7 +133,11 @@ void Player::shoot() {
     if (game->entities_manager.targeted_entity) {
         auto iter = std::find(game->entities_manager.entities.begin(), game->entities_manager.entities.end(), game->entities_manager.targeted_entity);
         if (iter != game->entities_manager.entities.end()) {
-            (*iter)->damage(1);
+            (*iter)->damage(weapon->damage);
+            if (state_change_cooldown == 0) {
+                state_change_cooldown = 20;
+                state = player_state_t::SCREAM;
+            }
         }
     }
 }
