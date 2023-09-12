@@ -14,15 +14,15 @@
 
 Player::Player(Game* game) : game(game) {
 
-    position_x = 2.0;
-    position_y = 3.0;
+    position_x = 5.5;
+    position_y = 38.5;
     position_z = 0.5;
 
-    dir_x = 1.0;
-    dir_y = 0.0;
+    dir_x = cos(-80.f);
+    dir_y = sin(-80.f);
 
-    plane_x = 0.0;
-    plane_y = 0.7;
+    plane_x = -0.7*dir_y;
+    plane_y = 0.7*dir_x;
 
     health = 100.f;
     state_change_cooldown = 0;
@@ -150,8 +150,8 @@ void Player::draw() {
 
 
 void Player::pathfind() {
-    for (int i=0; i<32; i++) {
-        for (int j=0; j<32; j++) {
+    for (int i=0; i<MAP_WIDTH; i++) {
+        for (int j=0; j<MAP_WIDTH; j++) {
             game->map.map[i][j].dir = 0;
         }
     }
@@ -174,7 +174,7 @@ void Player::pathfind() {
             queue.push({a,b});
         }
         a = i+1, b = j;
-        if (a<32 && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
+        if (a<MAP_WIDTH && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
             game->map.map[a][b].dir = 1;
             queue.push({a,b});
         }
@@ -184,7 +184,7 @@ void Player::pathfind() {
             queue.push({a,b});
         }
         a = i, b = j+1;
-        if (b<32 && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
+        if (b<MAP_WIDTH && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
             game->map.map[a][b].dir = 2;
             queue.push({a,b});
         }

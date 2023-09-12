@@ -65,8 +65,8 @@ std::array<SDL_Rect, 9> Soldier1::death1 = {
 
 Object_manager::Object_manager(Game* game) : targeted_entity(nullptr), game(game) {
     entities.clear();
-    entities.push_back(new Soldier1(10.5,5.5));
-    entities.push_back(new Barrel(4.0,3.0));
+    entities.push_back(new Soldier1(4.5,44.0));
+    entities.push_back(new Barrel(4.5,44.0));
 }
 
 
@@ -276,11 +276,11 @@ void Enemy::update(Game* game) {
                         ++it;
                     }
                 }
-                int x = rand()%32;
-                int y = rand()%32;
+                int x = rand()%64;
+                int y = rand()%64;
                 while (game->map.collide(x,y)) {
-                    x = rand()%32;
-                    y = rand()%32;
+                    x = rand()%64;
+                    y = rand()%64;
                 }
                 game->entities_manager.entities.push_back(new Soldier1(x+0.5, y+0.5));
             }

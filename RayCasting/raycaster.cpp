@@ -166,8 +166,8 @@ void Raycaster::raycast_wall() {
         }
 
         game->map.vision_field_points[r] = {
-            static_cast<int>((game->player.position_x + ray_length * ray_dir_x) * MINIMAP / 32.f),
-            static_cast<int>((game->player.position_y + ray_length * ray_dir_y) * MINIMAP / 32.f)
+            static_cast<int>((game->player.position_x + ray_length * ray_dir_x) * MINIMAP / MAP_WIDTH),
+            static_cast<int>((game->player.position_y + ray_length * ray_dir_y) * MINIMAP / MAP_WIDTH)
         };
         
         rays_lenght[r] = ray_length;
