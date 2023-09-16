@@ -12,15 +12,15 @@
 #include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
 
-Game::Game() :  map(this), player(this), raycaster(this), entities_manager(this) {
+Game::Game() : width(1024), map(this), player(this), raycaster(this), entities_manager(this) {
     SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow("Ray casting !", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_ShowCursor(SDL_DISABLE);
-    SDL_SetRelativeMouseMode(SDL_TRUE);
+    window = SDL_CreateWindow("Ray casting !", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+    renderer = SDL_CreateRenderer(window, -1, 0);
 
-    scene = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
+    scene_pixels = new Uint32[width * (2 * width / 3)];
+
+    SDL_RenderSetLogicalSize(renderer, width, 2 * width / 3);
+    scene = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width, (2 * width / 3));
     SDL_SetTextureBlendMode(scene, SDL_BLENDMODE_BLEND);
 
     delta_time = 1;
@@ -59,6 +59,23 @@ void Game::run() {
 #endif
 }
 
+void Game::toggleFullscreen() {
+    Uint32 FullscreenFlag = SDL_WINDOW_FULLSCREEN;
+    bool IsFullscreen = SDL_GetWindowFlags(window) & FullscreenFlag;
+    SDL_SetWindowFullscreen(window, IsFullscreen ? 0 : FullscreenFlag);
+}
+
+void Game::update_width(int w) {
+    this->width = w;
+    free(scene_pixels);
+    scene_pixels = new Uint32[width * (2 * width / 3)];
+    SDL_RenderSetLogicalSize(renderer, width, 2 * width / 3);
+    SDL_DestroyTexture(scene);
+    scene = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width, (2 * width / 3));
+    SDL_SetTextureBlendMode(scene, SDL_BLENDMODE_BLEND);
+    raycaster.update_width();
+}
+
 void Game::handleEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -68,10 +85,12 @@ void Game::handleEvents() {
         else if (event.type == SDL_KEYDOWN) {
             if (event.key.keysym.sym == SDLK_ESCAPE) {
 #ifdef __EMSCRIPTEN__
-                SDL_ShowCursor(SDL_ENABLE);
 #else
                 running = false;
 #endif
+            }
+            if (event.key.keysym.sym == SDLK_p) {
+                toggleFullscreen();                
             }
             if (event.key.keysym.sym == SDLK_SPACE) {
                 player.shoot();
@@ -104,14 +123,13 @@ void Game::update() {
 void Game::render() {
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
     SDL_RenderClear(renderer);
-    scene_pixels.fill(255);
+    for (int i=0; i<(width * (2*width/3)); i++) scene_pixels[i] = 0;
 
     // // display 3D
     raycaster.draw();
     entities_manager.draw();
 
-
-    SDL_UpdateTexture(scene, nullptr, reinterpret_cast<void *>(scene_pixels.data()), WINDOW_WIDTH*4);
+    SDL_UpdateTexture(scene, nullptr, (void *) scene_pixels, width*4);
     SDL_RenderCopy(renderer, scene, NULL, NULL);
 
     player.draw();

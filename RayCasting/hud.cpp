@@ -115,15 +115,17 @@ void Hud::update(bool tick, Player* player) {
 }
 
 void Hud::draw(SDL_Renderer* renderer) {
+    int width, height;
+    SDL_RenderGetLogicalSize(renderer, &width, &height);
     // base layer
     static SDL_Rect src_base_layer = {0,0,319,32};
-    static SDL_Rect dst_base_layer = {
+    SDL_Rect dst = {
         0,
-        WINDOW_HEIGHT - (32 * WINDOW_WIDTH / 319),
-        WINDOW_WIDTH,
-        32 * WINDOW_WIDTH / 319
+        height - (32 * width / 319),
+        width,
+        32 * width / 319
     };
-    SDL_RenderCopy(renderer, texture, &src_base_layer, &dst_base_layer);
+    SDL_RenderCopy(renderer, texture, &src_base_layer, &dst);
     
     // marine's face
     std::array<SDL_Rect, 8>* rect_array;
@@ -139,11 +141,11 @@ void Hud::draw(SDL_Renderer* renderer) {
     } else {
         rect_array = &faces5_rects;
     }
-    SDL_Rect dst = {
-        WINDOW_WIDTH / 2 - (*rect_array)[face].w * WINDOW_WIDTH / 638,
-        WINDOW_HEIGHT - (32 * WINDOW_WIDTH / 638) - ((*rect_array)[face].h * WINDOW_WIDTH / 638),
-        (*rect_array)[face].w * WINDOW_WIDTH / 319,
-        (*rect_array)[face].h * WINDOW_WIDTH / 319
+    dst = {
+        width / 2 - (*rect_array)[face].w * width / 638,
+        height - (32 * width / 638) - ((*rect_array)[face].h * width / 638),
+        (*rect_array)[face].w * width / 319,
+        (*rect_array)[face].h * width / 319
     };
     SDL_RenderCopy(renderer, texture, &(*rect_array)[face], &dst);
 
@@ -154,10 +156,10 @@ void Hud::draw(SDL_Renderer* renderer) {
         if (b && !digit[i]) continue;
         b = false;
         dst = {
-            WINDOW_WIDTH * (55+i*14) / 319,
-            WINDOW_HEIGHT - (27 * WINDOW_WIDTH / 319),
-            WINDOW_WIDTH * big_numbers[digit[i]].w / 319,
-            WINDOW_WIDTH * big_numbers[digit[i]].h / 319
+            width * (55+i*14) / 319,
+            height - (27 * width / 319),
+            width * big_numbers[digit[i]].w / 319,
+            width * big_numbers[digit[i]].h / 319
         };
         SDL_RenderCopy(renderer, texture, &big_numbers[digit[i]], &dst);
     }

@@ -111,8 +111,10 @@ void Entity::draw(Game* game) {
 
 void Entity::draw(Game* game, SDL_Rect& rect) {
 
+    int height = 2 * game->width / 3;
+
     // from camera coords to film coords then to pixel coords
-    int pixel_x = int(0.5 * WINDOW_WIDTH * (1.0 + camera_x / camera_y));
+    int pixel_x = int(0.5 * game->width * (1.0 + camera_x / camera_y));
 
     // if the sprite is outside the camera field of view ignore the prite
     if (camera_y < 0.5f) {
@@ -121,15 +123,15 @@ void Entity::draw(Game* game, SDL_Rect& rect) {
 
     //calculate size of the sprite on screen, using 'camera_y' instead of the real distance to avoid fisheye
     //this is the dimension in pixel
-    int sprite_height = int(size * WINDOW_HEIGHT / camera_y);
+    int sprite_height = int(size * height / camera_y);
     int sprite_width = sprite_height * rect.w / rect.h;
     
-    int y_offset = WINDOW_HEIGHT / 2 - static_cast<int>((float) WINDOW_WIDTH * (size - 0.5) / (1.7f * camera_y));
+    int y_offset = height / 2 - static_cast<int>((float) game->width * (size - 0.5) / (1.7f * camera_y));
     
     float texture_step_x = (float) rect.w / (float) sprite_width;
     float texture_step_y = (float) rect.h / (float) sprite_height;
 
-    if ((2*pixel_x - sprite_width < WINDOW_WIDTH) && (2*pixel_x + sprite_width > WINDOW_WIDTH)) {
+    if ((2*pixel_x - sprite_width < game->width) && (2*pixel_x + sprite_width > game->width)) {
         game->entities_manager.targeted_entity = this;
     }
 
@@ -138,19 +140,19 @@ void Entity::draw(Game* game, SDL_Rect& rect) {
         int x = pixel_x - sprite_width / 2 + i;
         int tex_x = rect.x + i*texture_step_x;
 
-        if ( x < 0 || x > WINDOW_WIDTH ) {
+        if ( x < 0 || x > game->width ) {
             continue;
         }
         if (camera_y > game->raycaster.rays_lenght[x]) {
             continue;
         }
         
-        sprite_height = (sprite_height + y_offset >= WINDOW_HEIGHT) ? WINDOW_HEIGHT - y_offset - 1 : sprite_height;
+        sprite_height = (sprite_height + y_offset >= height) ? height - y_offset - 1 : sprite_height;
         for (int y = y_offset<0 ? -y_offset : 0; y < sprite_height; y++) {
             int tex_y = rect.y + y*texture_step_y;
             Uint32 color = ((Uint32*) surface->pixels)[tex_x + tex_y*surface->w];
             if (!(color >> 24)) continue;
-            game->scene_pixels[x + (y + y_offset)*WINDOW_WIDTH] = color;
+            game->scene_pixels[x + (y + y_offset)*game->width] = color;
         }
     }
 }

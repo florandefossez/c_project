@@ -21,7 +21,6 @@ public:
     SDL_Rect player_texture_rect;
     SDL_Texture* player_texture;
     SDL_Surface* player_surface;
-    SDL_Point vision_field_points[1080];
     void load();
 
     std::array<std::array<cell_t, 64>, 64> map;

@@ -40,11 +40,13 @@ void ShotGun::update(bool tick) {
 }
 
 void ShotGun::draw(SDL_Renderer* renderer) {
+    int width, height;
+    SDL_RenderGetLogicalSize(renderer, &width, &height);
     SDL_Rect dst = {
-        WINDOW_WIDTH / 2 - ShotGun::shoot_rects[cooldown].w * WINDOW_HEIGHT / 672,
-        WINDOW_HEIGHT / 2 - (32 * WINDOW_WIDTH / 319),
-        ShotGun::shoot_rects[cooldown].w * WINDOW_HEIGHT / 336,
-        WINDOW_HEIGHT / 2
+        width / 2 - ShotGun::shoot_rects[cooldown].w * height / 672,
+        height / 2 - (32 * width / 319),
+        ShotGun::shoot_rects[cooldown].w * height / 336,
+        height / 2
     };
     SDL_RenderCopy(renderer, texture, &ShotGun::shoot_rects[cooldown], &dst);
 }

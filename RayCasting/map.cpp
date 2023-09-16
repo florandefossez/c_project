@@ -9,8 +9,8 @@
 #include "headers/game.hpp"
 
 Map::Map(Game* game) : game(game) {
-    player_texture_rect.w = 2 * MINIMAP / MAP_WIDTH;
-    player_texture_rect.h = 2 * MINIMAP / MAP_WIDTH;
+    player_texture_rect.w = 2 * game->width / MAP_WIDTH / 4;
+    player_texture_rect.h = 2 * game->width / MAP_WIDTH / 4;
 }
 
 void Map::load() {
@@ -40,8 +40,10 @@ bool Map::collide(int x, int y) {
 }
 
 void Map::update() {
-    player_texture_rect.x = static_cast<int>(game->player.position_x * MINIMAP / MAP_WIDTH);
-    player_texture_rect.y = static_cast<int>(game->player.position_y * MINIMAP / MAP_WIDTH);
+    player_texture_rect.w = 2 * game->width / MAP_WIDTH / 4;
+    player_texture_rect.h = 2 * game->width / MAP_WIDTH / 4;
+    player_texture_rect.x = static_cast<int>(game->player.position_x *  game->width/4 / MAP_WIDTH);
+    player_texture_rect.y = static_cast<int>(game->player.position_y *  game->width/4 / MAP_WIDTH);
     player_sprite_angle = static_cast<double>(game->player.get_angle());
 }
 
@@ -50,22 +52,14 @@ void Map::draw() {
 
     for (int i = 0; i < MAP_WIDTH; i++) {
         for (int j = 0; j < MAP_WIDTH; j++) {
-            // SDL_SetRenderDrawColor(game->renderer, 0, 60*map[i][j].dir, 0, 255);
-            // SDL_Rect wall_rect = {MINIMAP * i / 32, MINIMAP * j / 32, MINIMAP / 32 + 1, MINIMAP / 32 + 1};
-            // SDL_RenderFillRect(game->renderer, &wall_rect);
-
             if (collide(i, j)) {
                 SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
-                SDL_Rect wall_rect = {MINIMAP * i / MAP_WIDTH, MINIMAP * j / MAP_WIDTH, MINIMAP / MAP_WIDTH + 1, MINIMAP / MAP_WIDTH + 1};
+                SDL_Rect wall_rect = {game->width/4 * i / MAP_WIDTH, game->width/4 * j / MAP_WIDTH, game->width/4 / MAP_WIDTH + 1, game->width/4 / MAP_WIDTH + 1};
                 SDL_RenderFillRect(game->renderer, &wall_rect);
             }
         }
     }
     
-    SDL_SetRenderDrawColor(game->renderer, 255, 255, 255, 255);
-    for(int r=0; r<WINDOW_WIDTH; r+=10) {
-        SDL_RenderDrawLine(game->renderer, vision_field_points[r].x, vision_field_points[r].y, player_texture_rect.x, player_texture_rect.y);
-    }
     player_texture_rect.x -= player_texture_rect.h / 2;
     player_texture_rect.y -= player_texture_rect.h / 2;
 
@@ -74,7 +68,7 @@ void Map::draw() {
     SDL_SetRenderDrawColor(game->renderer, 255, 0, 0, 255);
 
     for (Entity* entity : game->entities_manager.entities) {
-        SDL_Rect rect1 = {static_cast<int>(entity->position_x * MINIMAP / MAP_WIDTH - 3), static_cast<int>(entity->position_y * MINIMAP / MAP_WIDTH - 3), 6, 6};
+        SDL_Rect rect1 = {static_cast<int>(entity->position_x * game->width/4 / MAP_WIDTH - 3), static_cast<int>(entity->position_y * game->width/4 / MAP_WIDTH - 3), 6, 6};
         SDL_RenderFillRect(game->renderer, &rect1);
     }
 }

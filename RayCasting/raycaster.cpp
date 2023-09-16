@@ -24,6 +24,19 @@ void Raycaster::load() {
     tmp = IMG_Load("ressources/greystone.png");
     stone_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_ABGR8888, 0);
     SDL_FreeSurface(tmp);
+
+    rays_lenght = new float[game->width];
+    perp_rays_lenght = new float[game->width];
+    texture_offset = new float[game->width];
+}
+
+void Raycaster::update_width() {
+    free(rays_lenght);
+    free(perp_rays_lenght);
+    free(texture_offset);
+    rays_lenght = new float[game->width];
+    perp_rays_lenght = new float[game->width];
+    texture_offset = new float[game->width];
 }
 
 
@@ -48,38 +61,40 @@ void Raycaster::draw_floor() {
     float right_ray_x = game->player.dir_x + game->player.plane_x;
     float right_ray_y = game->player.dir_y + game->player.plane_y;
 
+    int height = 2 * game->width / 3;
+
     // p index of the scanline from the center of the screen
-    for (int p=1; p<WINDOW_HEIGHT/2; p++) {
+    for (int p=1; p<height/2; p++) {
 
         // horizontal distance from the player to the floor line (x distance of the ray)
-        float floor_distance = game->player.position_z*WINDOW_HEIGHT/p;
+        float floor_distance = 4.f / 4.2f * height / p * game->player.position_z;
 
         // floor coordinate of the left ray
         float floor_x = game->player.position_x + floor_distance * left_ray_x;
         float floor_y = game->player.position_y + floor_distance * left_ray_y;
 
         // floor step to go to the next right pixel on the screen
-        float floor_step_x = floor_distance * (right_ray_x - left_ray_x) / WINDOW_WIDTH;
-        float floor_step_y = floor_distance * (right_ray_y - left_ray_y) / WINDOW_WIDTH;
+        float floor_step_x = floor_distance * (right_ray_x - left_ray_x) / game->width;
+        float floor_step_y = floor_distance * (right_ray_y - left_ray_y) / game->width;
 
-        for (int x=0; x < WINDOW_WIDTH; x++) {
+        for (int x=0; x < game->width; x++) {
 
             // the cell coord is simply got from the integer parts of floorX and floorY
             int current_cell_x = (int)(floor_x);
             int current_cell_y = (int)(floor_y);
 
             // get the texture coordinate from the fractional part
-            unsigned int tx = (unsigned int) std::abs(64.0 * (floor_x - current_cell_x));
-            unsigned int ty = (unsigned int) std::abs(64.0 * (floor_y - current_cell_y));
+            int tx = (int) std::abs(64.f * (floor_x - current_cell_x));
+            int ty = (int) std::abs(64.f * (floor_y - current_cell_y));
 
             floor_x += floor_step_x;
             floor_y += floor_step_y;
 
             // choose texture and draw the pixel on the image
             if ((current_cell_x + current_cell_y)%2 == 1) {
-                game->scene_pixels[x + (p-1) * WINDOW_WIDTH + WINDOW_HEIGHT * WINDOW_WIDTH / 2] = mosse_pixels[tx + 64*ty];
+                game->scene_pixels[x + (p-1) * game->width + height/2 * game->width ] = mosse_pixels[tx + 64*ty];
             } else {
-                game->scene_pixels[x + (p-1) * WINDOW_WIDTH + WINDOW_HEIGHT * WINDOW_WIDTH / 2] = stone_pixels[tx + 64*ty];
+                game->scene_pixels[x + (p-1) * game->width + height/2 * game->width ] = stone_pixels[tx + 64*ty];
             }
 
         }
@@ -91,7 +106,7 @@ void Raycaster::raycast_wall() {
 
     char collision_side;
     
-    for (int r=0; r<WINDOW_WIDTH; r++) {
+    for (int r=0; r<game->width; r++) {
 
         // direction step
         int step_x;
@@ -105,7 +120,7 @@ void Raycaster::raycast_wall() {
         float y_ray_length = 0;
 
         // x coord of the ray in the camera plane in [-1,1]
-        float camera = 2 * (float) r / (float) WINDOW_WIDTH - 1;
+        float camera = 2.f * (float) r / (float) game->width - 1.f;
 
         // ray directions
         float ray_dir_x = game->player.dir_x + game->player.plane_x * camera;
@@ -164,11 +179,6 @@ void Raycaster::raycast_wall() {
                 break;
             }
         }
-
-        game->map.vision_field_points[r] = {
-            static_cast<int>((game->player.position_x + ray_length * ray_dir_x) * MINIMAP / MAP_WIDTH),
-            static_cast<int>((game->player.position_y + ray_length * ray_dir_y) * MINIMAP / MAP_WIDTH)
-        };
         
         rays_lenght[r] = ray_length;
 
@@ -188,26 +198,28 @@ void Raycaster::draw_wall() {
 
     Uint32* brick_pixels = (Uint32*) brick_surface->pixels;
 
-    for (int r=0; r<WINDOW_WIDTH; r++) {
+    int height = 2 * game->width / 3;
+
+    for (int r=0; r<game->width; r++) {
 
         int start,end;
         if (perp_rays_lenght[r]<1) {
             start = 0;
-            end = WINDOW_HEIGHT;
+            end = height;
         } else {
-            start = (WINDOW_HEIGHT - WINDOW_HEIGHT/perp_rays_lenght[r])/2;
-            end = start + WINDOW_HEIGHT/perp_rays_lenght[r];
+            start = (height - height/perp_rays_lenght[r])/2;
+            end = start + height/perp_rays_lenght[r];
         }
 
         // How much to increase the texture coordinate per screen pixel
-        float step = 64.f / WINDOW_HEIGHT * perp_rays_lenght[r];
-        float texPos = (start - WINDOW_HEIGHT / 2 + WINDOW_HEIGHT/perp_rays_lenght[r] / 2) * step;
+        float step = 64.f / height * perp_rays_lenght[r];
+        float texPos = (start - height / 2 + height/perp_rays_lenght[r] / 2) * step;
 
         for (int y=start; y<end; y++) {
             int texY = (int)texPos & (64 - 1);
             texPos += step;
             Uint32 color = brick_pixels[static_cast<unsigned int>(64.f * texY + texture_offset[r]*64.f)];
-            game->scene_pixels[r + y * WINDOW_WIDTH] = color;
+            game->scene_pixels[r + y * game->width] = color;
         }
     }
 }

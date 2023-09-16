@@ -9,9 +9,10 @@ public:
     void update();
     void draw();
 
-    float rays_lenght[1080];
+    float* rays_lenght;
 
     void load();
+    void update_width();
 
 private:
     void raycast_wall();
@@ -28,7 +29,7 @@ private:
     // wall
     SDL_Surface* brick_surface;
 
-    float perp_rays_lenght[1080];
-    float texture_offset[1080];
+    float* perp_rays_lenght;
+    float* texture_offset;
 
 };

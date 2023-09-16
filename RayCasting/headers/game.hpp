@@ -4,7 +4,6 @@ constexpr int WINDOW_HEIGHT = 720;
 constexpr int WINDOW_WIDTH = 1080;
 constexpr int MAP_HEIGHT = 64;
 constexpr int MAP_WIDTH = 64;
-constexpr int MINIMAP = 300;
 
 
 class Game {
@@ -12,6 +11,8 @@ public:
     Game();
     ~Game();
     void run();
+
+    int width;
 
     Map map;
     Player player;
@@ -26,8 +27,10 @@ public:
     void render();
 
     float delta_time;
+    void toggleFullscreen();
+    void update_width(int w);
 
-    std::array<uint32_t, WINDOW_WIDTH * WINDOW_HEIGHT> scene_pixels;
+    uint32_t* scene_pixels;
 
 private:
 
