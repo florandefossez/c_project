@@ -5,6 +5,7 @@
 
 typedef struct cell_ {
     bool is_wall;
+    bool is_door;
     int dir;
 } cell_t;
 

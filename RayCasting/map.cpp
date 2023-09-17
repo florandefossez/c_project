@@ -26,8 +26,13 @@ void Map::load() {
                 this->map[i][j].is_wall = false;
             }
             map[i][j].dir = 0;
+            map[i][j].is_door = false;
         }
     }
+    map[8][41].is_door = true;
+    map[8][41].is_wall = true;
+    map[4][57].is_wall = true;
+    map[4][57].is_door = true;
 }
 
 bool Map::collide(float x, float y) {

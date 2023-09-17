@@ -95,6 +95,9 @@ void Game::handleEvents() {
             if (event.key.keysym.sym == SDLK_SPACE) {
                 player.shoot();
             }
+            if (event.key.keysym.sym == SDLK_u) {
+                raycaster.trigger();
+            }
         }
     }
 }

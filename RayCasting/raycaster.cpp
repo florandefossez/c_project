@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <iostream>
 
 #include "headers/raycaster.hpp"
 #include "headers/player.hpp"
@@ -26,23 +27,15 @@ void Raycaster::load() {
     SDL_FreeSurface(tmp);
 
     rays_lenght = new float[game->width];
-    perp_rays_lenght = new float[game->width];
-    texture_offset = new float[game->width];
 }
 
 void Raycaster::update_width() {
     free(rays_lenght);
-    free(perp_rays_lenght);
-    free(texture_offset);
     rays_lenght = new float[game->width];
-    perp_rays_lenght = new float[game->width];
-    texture_offset = new float[game->width];
 }
 
 
-void Raycaster::update() {
-    raycast_wall();
-}
+void Raycaster::update() {}
 
 void Raycaster::draw() {
     draw_floor();
@@ -102,10 +95,15 @@ void Raycaster::draw_floor() {
 }
 
 
-void Raycaster::raycast_wall() {
+void Raycaster::draw_wall() {
 
+    Uint32* brick_pixels = (Uint32*) brick_surface->pixels;
+
+    int height = 2 * game->width / 3;
     char collision_side;
-    
+    float perp_rays_lenght;
+    float texture_offset;
+
     for (int r=0; r<game->width; r++) {
 
         // direction step
@@ -180,46 +178,86 @@ void Raycaster::raycast_wall() {
             }
         }
         
-        rays_lenght[r] = ray_length;
+        // targeted wall
+        if (r == game->width/2) {
+            targeted_wall_x = current_cell_x;
+            targeted_wall_y = current_cell_y;
+        }
+
+        
 
         // we don't use the real ray length to avoid fisheye effect
         if (collision_side == 'x') {
-            perp_rays_lenght[r] = x_ray_length - x_ray_unit_length;
-            texture_offset[r] = game->player.position_y + ray_length * ray_dir_y - (float) current_cell_y;
+            perp_rays_lenght = x_ray_length - x_ray_unit_length;
+            texture_offset = game->player.position_y + ray_length * ray_dir_y - (float) current_cell_y;
+
+            if (game->map.map[current_cell_x][current_cell_y].is_door) {
+                float cell_y = game->player.position_y + ray_length * ray_dir_y + 0.4f/ray_dir_x * ray_dir_y;
+                if (int(cell_y) == current_cell_y) {
+                    perp_rays_lenght += 0.4f/ray_dir_x;
+                    texture_offset = cell_y - floor(cell_y);
+                } else {
+                    ray_length = y_ray_length;
+                    y_ray_length += y_ray_unit_length;
+
+                    current_cell_y += step_y;
+                    collision_side = 'y';
+                    perp_rays_lenght = y_ray_length - y_ray_unit_length;
+                    texture_offset = game->player.position_x + ray_length * ray_dir_x - (float) current_cell_x;
+                }
+            }
+            
         } else {
-            perp_rays_lenght[r] = y_ray_length - y_ray_unit_length;
-            texture_offset[r] = game->player.position_x + ray_length * ray_dir_x - (float) current_cell_x;
+            perp_rays_lenght = y_ray_length - y_ray_unit_length;
+            texture_offset = game->player.position_x + ray_length * ray_dir_x - (float) current_cell_x;
+
+            if (game->map.map[current_cell_x][current_cell_y].is_door) {
+                float cell_x = game->player.position_x + ray_length * ray_dir_x + 0.4f/ray_dir_y * ray_dir_x;
+                if (int(cell_x) == current_cell_x) {
+                    perp_rays_lenght += 0.4f/ray_dir_y;
+                    texture_offset = cell_x - floor(cell_x);
+                } else {
+                    ray_length = x_ray_length;
+                    x_ray_length += x_ray_unit_length;
+
+                    current_cell_x += step_x;
+                    collision_side = 'x';
+                    perp_rays_lenght = x_ray_length - x_ray_unit_length;
+                    texture_offset = game->player.position_y + ray_length * ray_dir_y - (float) current_cell_y;
+                }
+            }
+
+        }
+
+        rays_lenght[r] = ray_length;
+
+
+        // where to start and end the dawing of the strip
+        int start,end;
+        if (perp_rays_lenght<1) {
+            start = 0;
+            end = height;
+        } else {
+            start = (height - height/perp_rays_lenght)/2;
+            end = start + height/perp_rays_lenght;
+        }
+
+        // How much to increase the texture coordinate per screen pixel
+        float step = 64.f / height * perp_rays_lenght;
+        float texPos = (start - height / 2 + height/perp_rays_lenght / 2) * step;
+
+        // draw
+        for (int y=start; y<end; y++) {
+            int texY = (int)texPos & (64 - 1);
+            texPos += step;
+            Uint32 color = brick_pixels[static_cast<unsigned int>(64.f * texY + texture_offset*64.f)];
+            game->scene_pixels[r + y * game->width] = color;
         }
     }
 }
 
-
-void Raycaster::draw_wall() {
-
-    Uint32* brick_pixels = (Uint32*) brick_surface->pixels;
-
-    int height = 2 * game->width / 3;
-
-    for (int r=0; r<game->width; r++) {
-
-        int start,end;
-        if (perp_rays_lenght[r]<1) {
-            start = 0;
-            end = height;
-        } else {
-            start = (height - height/perp_rays_lenght[r])/2;
-            end = start + height/perp_rays_lenght[r];
-        }
-
-        // How much to increase the texture coordinate per screen pixel
-        float step = 64.f / height * perp_rays_lenght[r];
-        float texPos = (start - height / 2 + height/perp_rays_lenght[r] / 2) * step;
-
-        for (int y=start; y<end; y++) {
-            int texY = (int)texPos & (64 - 1);
-            texPos += step;
-            Uint32 color = brick_pixels[static_cast<unsigned int>(64.f * texY + texture_offset[r]*64.f)];
-            game->scene_pixels[r + y * game->width] = color;
-        }
-    }
+void Raycaster::trigger() {
+    if (!game->map.map[targeted_wall_x][targeted_wall_y].is_door) return;
+    game->map.map[targeted_wall_x][targeted_wall_y].is_wall = false;
+    game->map.map[targeted_wall_x][targeted_wall_y].is_door = false;
 }

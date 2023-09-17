@@ -14,8 +14,12 @@ public:
     void load();
     void update_width();
 
+    void trigger();
+
+    int targeted_wall_x;
+    int targeted_wall_y;
+
 private:
-    void raycast_wall();
 
     void draw_wall();
     void draw_floor();
@@ -28,8 +32,5 @@ private:
 
     // wall
     SDL_Surface* brick_surface;
-
-    float* perp_rays_lenght;
-    float* texture_offset;
 
 };
