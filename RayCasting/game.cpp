@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <algorithm>
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
 #endif
@@ -126,7 +127,7 @@ void Game::update() {
 void Game::render() {
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
     SDL_RenderClear(renderer);
-    for (int i=0; i<(width * (2*width/3)); i++) scene_pixels[i] = 0;
+    std::fill(scene_pixels, scene_pixels + (width * (2*width/3)), 0);
 
     // // display 3D
     raycaster.draw();

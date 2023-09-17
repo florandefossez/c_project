@@ -253,7 +253,6 @@ raycast_label:
 
         rays_lenght[r] = ray_length;
 
-
         // where to start and end the dawing of the strip
         int start,end;
         if (perp_rays_lenght<1) {

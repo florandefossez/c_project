@@ -31,12 +31,14 @@ ShotGun::ShotGun(SDL_Renderer* renderer) : Weapon(30.f, 100) {
 
 void ShotGun::update(bool tick) {
     static int s = 0;
-    if (cooldown && tick && s<=0) {
-        cooldown--;
-        s = 10;
-    } else {
-        s--;
-    };
+    if (tick) {
+        if (cooldown && s<=0) {
+            cooldown--;
+            s = 2;
+        } else {
+            s--;
+        };
+    }
 }
 
 void ShotGun::draw(SDL_Renderer* renderer) {
