@@ -33,4 +33,8 @@ private:
     // wall
     SDL_Surface* brick_surface;
 
+    int opening_door_x;
+    int opening_door_y;
+    float opening_state;
+
 };

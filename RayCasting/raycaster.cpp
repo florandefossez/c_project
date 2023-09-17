@@ -27,6 +27,10 @@ void Raycaster::load() {
     SDL_FreeSurface(tmp);
 
     rays_lenght = new float[game->width];
+
+    opening_state = 0;
+    opening_door_x = 0;
+    opening_door_y = 0;
 }
 
 void Raycaster::update_width() {
@@ -35,7 +39,16 @@ void Raycaster::update_width() {
 }
 
 
-void Raycaster::update() {}
+void Raycaster::update() {
+    if (opening_state > 0 && game->animation) {
+        opening_state -= 0.1;
+    }
+    if (opening_state <= 0) {
+        game->map.map[opening_door_x][opening_door_y].is_wall = false;
+        game->map.map[opening_door_x][opening_door_y].is_door = false;
+        opening_state = 0;
+    }
+}
 
 void Raycaster::draw() {
     draw_floor();
@@ -158,6 +171,7 @@ void Raycaster::draw_wall() {
 
 
         // we MUST break this loop
+raycast_label:
         for (int i=0; i<50; i++) {
             if (x_ray_length < y_ray_length) {
                 ray_length = x_ray_length;
@@ -194,8 +208,12 @@ void Raycaster::draw_wall() {
             if (game->map.map[current_cell_x][current_cell_y].is_door) {
                 float cell_y = game->player.position_y + ray_length * ray_dir_y + 0.4f/ray_dir_x * ray_dir_y;
                 if (int(cell_y) == current_cell_y) {
-                    perp_rays_lenght += 0.4f/ray_dir_x;
                     texture_offset = cell_y - floor(cell_y);
+                    if (opening_state > 0 && current_cell_x == opening_door_x && current_cell_y == opening_door_y && texture_offset > opening_state) {
+                        goto raycast_label;
+                    } else {
+                        perp_rays_lenght += 0.4f/ray_dir_x;
+                    }
                 } else {
                     ray_length = y_ray_length;
                     y_ray_length += y_ray_unit_length;
@@ -214,8 +232,12 @@ void Raycaster::draw_wall() {
             if (game->map.map[current_cell_x][current_cell_y].is_door) {
                 float cell_x = game->player.position_x + ray_length * ray_dir_x + 0.4f/ray_dir_y * ray_dir_x;
                 if (int(cell_x) == current_cell_x) {
-                    perp_rays_lenght += 0.4f/ray_dir_y;
                     texture_offset = cell_x - floor(cell_x);
+                    if (opening_state > 0 && current_cell_x == opening_door_x && current_cell_y == opening_door_y && texture_offset > opening_state) {
+                        goto raycast_label;
+                    } else {
+                        perp_rays_lenght += 0.4f/ray_dir_y;
+                    }
                 } else {
                     ray_length = x_ray_length;
                     x_ray_length += x_ray_unit_length;
@@ -258,6 +280,7 @@ void Raycaster::draw_wall() {
 
 void Raycaster::trigger() {
     if (!game->map.map[targeted_wall_x][targeted_wall_y].is_door) return;
-    game->map.map[targeted_wall_x][targeted_wall_y].is_wall = false;
-    game->map.map[targeted_wall_x][targeted_wall_y].is_door = false;
+    opening_door_x = targeted_wall_x;
+    opening_door_y = targeted_wall_y;
+    opening_state = 1.f;
 }
