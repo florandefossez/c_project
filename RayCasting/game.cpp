@@ -61,9 +61,8 @@ void Game::run() {
 }
 
 void Game::toggleFullscreen() {
-    Uint32 FullscreenFlag = SDL_WINDOW_FULLSCREEN;
-    bool IsFullscreen = SDL_GetWindowFlags(window) & FullscreenFlag;
-    SDL_SetWindowFullscreen(window, IsFullscreen ? 0 : FullscreenFlag);
+    bool IsFullscreen = SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN;
+    SDL_SetWindowFullscreen(window, IsFullscreen ? 0 : SDL_WINDOW_FULLSCREEN);
 }
 
 void Game::update_width(int w) {
@@ -129,6 +128,7 @@ void Game::render() {
     SDL_RenderClear(renderer);
     std::fill(scene_pixels, scene_pixels + (width * (2*width/3)), 0);
 
+    map.draw_sky();
     // // display 3D
     raycaster.draw();
     entities_manager.draw();

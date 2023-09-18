@@ -15,7 +15,8 @@ Map::Map(Game* game) : game(game) {
 
 void Map::load() {
     player_texture = IMG_LoadTexture(game->renderer, "ressources/player.png");
-    SDL_Surface* map_surface = IMG_Load( "ressources/map.png");
+    SDL_Surface* map_surface = IMG_Load("ressources/map.png");
+    sky_texture = IMG_LoadTexture(game->renderer, "ressources/sky.png");
 
     for (unsigned int i = 0; i < MAP_WIDTH; i++) {
         for (unsigned int j = 0; j < MAP_WIDTH; j++) {
@@ -52,7 +53,31 @@ void Map::update() {
     player_sprite_angle = static_cast<double>(game->player.get_angle());
 }
 
+
+void Map::draw_sky() {
+    int start_x = static_cast<int>(player_sprite_angle / 360.0 * 1024.0 * 3)%1024;
+    SDL_Rect src = {start_x, 57, 0, 199};
+    SDL_Rect dst = {0, 0, 0, game->width / 3 };
+
+    if ((start_x + 597) > 1024) {
+        src.w = 1024 - start_x;
+        dst.w = game->width * src.w / 597;
+        SDL_RenderCopy(game->renderer, sky_texture, &src, &dst);
+        src.x = 0;
+        src.w = 597 - src.w;
+        dst.x = dst.w;
+        dst.w = game->width * src.w / 597;
+        SDL_RenderCopy(game->renderer, sky_texture, &src, &dst);
+    } else {
+        src.w = 597;
+        dst.w = game->width;
+        SDL_RenderCopy(game->renderer, sky_texture, &src, &dst);
+    }
+    
+}
+
 void Map::draw() {
+
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 255);
 
     for (int i = 0; i < MAP_WIDTH; i++) {

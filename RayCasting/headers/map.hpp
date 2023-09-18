@@ -18,6 +18,7 @@ public:
     bool collide(float x, float y);
     void update();
     void draw();
+    void draw_sky();
 
     SDL_Rect player_texture_rect;
     SDL_Texture* player_texture;
@@ -29,4 +30,5 @@ public:
 private:
     Game* game;
     double player_sprite_angle;
+    SDL_Texture* sky_texture;
 };
