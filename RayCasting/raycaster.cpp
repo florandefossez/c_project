@@ -169,7 +169,6 @@ void Raycaster::draw_wall() {
             step_y = 0;
         }
 
-
         // we MUST break this loop
 raycast_label:
         for (int i=0; i<50; i++) {
@@ -198,21 +197,19 @@ raycast_label:
             targeted_wall_y = current_cell_y;
         }
 
-        
-
         // we don't use the real ray length to avoid fisheye effect
         if (collision_side == 'x') {
             perp_rays_lenght = x_ray_length - x_ray_unit_length;
             texture_offset = game->player.position_y + ray_length * ray_dir_y - (float) current_cell_y;
 
             if (game->map.map[current_cell_x][current_cell_y].is_door) {
-                float cell_y = game->player.position_y + ray_length * ray_dir_y + 0.4f/ray_dir_x * ray_dir_y;
+                float cell_y = game->player.position_y + ray_length * ray_dir_y + std::abs(0.4f/ray_dir_x) * ray_dir_y;
                 if (int(cell_y) == current_cell_y) {
                     texture_offset = cell_y - floor(cell_y);
                     if (opening_state > 0 && current_cell_x == opening_door_x && current_cell_y == opening_door_y && texture_offset > opening_state) {
                         goto raycast_label;
                     } else {
-                        perp_rays_lenght += 0.4f/ray_dir_x;
+                        perp_rays_lenght += std::abs(0.4f/ray_dir_x);
                     }
                 } else {
                     ray_length = y_ray_length;
@@ -230,13 +227,13 @@ raycast_label:
             texture_offset = game->player.position_x + ray_length * ray_dir_x - (float) current_cell_x;
 
             if (game->map.map[current_cell_x][current_cell_y].is_door) {
-                float cell_x = game->player.position_x + ray_length * ray_dir_x + 0.4f/ray_dir_y * ray_dir_x;
+                float cell_x = game->player.position_x + ray_length * ray_dir_x + std::abs(0.4f/ray_dir_y) * ray_dir_x;
                 if (int(cell_x) == current_cell_x) {
                     texture_offset = cell_x - floor(cell_x);
                     if (opening_state > 0 && current_cell_x == opening_door_x && current_cell_y == opening_door_y && texture_offset > opening_state) {
                         goto raycast_label;
                     } else {
-                        perp_rays_lenght += 0.4f/ray_dir_y;
+                        perp_rays_lenght += std::abs(0.4f/ray_dir_y);
                     }
                 } else {
                     ray_length = x_ray_length;

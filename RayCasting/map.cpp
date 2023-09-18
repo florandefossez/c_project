@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <cmath>
+#include <iostream>
 
 #include "headers/raycaster.hpp"
 #include "headers/map.hpp"
@@ -30,8 +31,8 @@ void Map::load() {
             map[i][j].is_door = false;
         }
     }
-    map[8][41].is_door = true;
-    map[8][41].is_wall = true;
+    map[11][41].is_door = true;
+    map[11][41].is_wall = true;
     map[4][57].is_wall = true;
     map[4][57].is_door = true;
 }
@@ -42,6 +43,10 @@ bool Map::collide(float x, float y) {
 }
 
 bool Map::collide(int x, int y) {
+    if (x<0 || x>=64 || y<0 || y>=64) {
+        std::cout << x << " " << y << std::endl;
+        return true;
+    }
     return (map[x][y].is_wall);
 }
 
