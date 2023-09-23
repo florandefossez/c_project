@@ -73,7 +73,7 @@ void Raycaster::draw_floor() {
     for (int p=1; p<height/2; p++) {
 
         // horizontal distance from the player to the floor line (x distance of the ray)
-        float floor_distance = 4.f / 4.2f * height / p * game->player.position_z;
+        float floor_distance = 15.f / 14.f * height / p * game->player.position_z;
 
         // floor coordinate of the left ray
         float floor_x = game->player.position_x + floor_distance * left_ray_x;
@@ -249,20 +249,21 @@ raycast_label:
         }
 
         rays_lenght[r] = ray_length;
+        float wall_height = 15.f / 14.f * height / perp_rays_lenght;
 
         // where to start and end the dawing of the strip
         int start,end;
-        if (perp_rays_lenght<1) {
+        if (height<wall_height) {
             start = 0;
             end = height;
         } else {
-            start = (height - height/perp_rays_lenght)/2;
-            end = start + height/perp_rays_lenght;
+            start = (height - wall_height) / 2;
+            end = start + wall_height;
         }
 
         // How much to increase the texture coordinate per screen pixel
-        float step = 64.f / height * perp_rays_lenght;
-        float texPos = (start - height / 2 + height/perp_rays_lenght / 2) * step;
+        float step = 64.f / wall_height;
+        float texPos = (start + (wall_height - height) / 2) * step;
 
         // draw
         for (int y=start; y<end; y++) {
