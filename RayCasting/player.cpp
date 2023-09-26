@@ -7,13 +7,16 @@
 #include "headers/map.hpp"
 #include "headers/player.hpp"
 #include "headers/entities_manager.hpp"
-#include "headers/game.hpp"
 #include "headers/weapon.hpp"
 #include "headers/hud.hpp"
+#include "headers/game.hpp"
 
 
 Player::Player(Game* game) : game(game) {
 
+}
+
+void Player::load() {
     position_x = 5.5;
     position_y = 38.5;
     position_z = 0.5;
@@ -26,11 +29,7 @@ Player::Player(Game* game) : game(game) {
 
     health = 100.f;
     state_change_cooldown = 0;
-}
-
-void Player::load() {
     weapon = new ShotGun(game->renderer);
-    hud = new Hud(game->renderer);
 }
 
 float Player::get_angle() {
@@ -55,22 +54,22 @@ void Player::update() {
 
     const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
 
-    if (keyboardState[SDL_SCANCODE_W]) {
+    if (keyboardState[SDL_GetScancodeFromKey(game->move_forward)]) {
         move_x += PLAYER_VELOCITY*dir_x;
         move_y += PLAYER_VELOCITY*dir_y;
     }
 
-    if (keyboardState[SDL_SCANCODE_S]) {
+    if (keyboardState[SDL_GetScancodeFromKey(game->move_backward)]) {
         move_x += -PLAYER_VELOCITY*dir_x;
         move_y += -PLAYER_VELOCITY*dir_y;
     }
     
-    if (keyboardState[SDL_SCANCODE_A]) {
+    if (keyboardState[SDL_GetScancodeFromKey(game->move_left)]) {
         move_x += PLAYER_VELOCITY*dir_y;
         move_y += -PLAYER_VELOCITY*dir_x;
     }
     
-    if (keyboardState[SDL_SCANCODE_D]) {
+    if (keyboardState[SDL_GetScancodeFromKey(game->move_right)]) {
         move_x += -PLAYER_VELOCITY*dir_y;
         move_y += PLAYER_VELOCITY*dir_x;
     }
@@ -98,6 +97,8 @@ void Player::update() {
     float const SIN_PLAYER_ROTATION = sinf(PLAYER_ROTATION_VELOCITY/180.0*3.14159 * game->delta_time);
     float const COS_PLAYER_ROTATION = cosf(PLAYER_ROTATION_VELOCITY/180.0*3.14159 * game->delta_time);
 
+    
+
     if (keyboardState[SDL_SCANCODE_RIGHT]) {
         float tmp_dir = COS_PLAYER_ROTATION*dir_x - SIN_PLAYER_ROTATION*dir_y;
         dir_y = SIN_PLAYER_ROTATION*dir_x + COS_PLAYER_ROTATION*dir_y;
@@ -120,7 +121,6 @@ void Player::update() {
 
     pathfind();
     weapon->update(game->animation);
-    hud->update(game->animation, this);
     if (state_change_cooldown == 0) {
         state = player_state_t::CALM;
     }
@@ -143,7 +143,6 @@ void Player::shoot() {
 }
 
 void Player::draw() {
-    hud->draw(game->renderer);
     weapon->draw(game->renderer);
 }
 

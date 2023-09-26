@@ -81,11 +81,42 @@ std::array<SDL_Rect, 10> Hud::big_numbers = {
     SDL_Rect{134, 33, 14, 16}
 };
 
+std::array<SDL_Rect, 26> Hud::letters = {
+    SDL_Rect{2, 58, 8, 7},
+    SDL_Rect{11, 58, 8, 7},
+    SDL_Rect{20, 58, 8, 7},
+    SDL_Rect{29, 58, 8, 7},
+    SDL_Rect{38, 58, 8, 7},
+    SDL_Rect{47, 58, 8, 7},
+    SDL_Rect{56, 58, 8, 7},
+    SDL_Rect{65, 58, 8, 7},
+    SDL_Rect{74, 58, 4, 7},
+    SDL_Rect{79, 58, 8, 7},
+    SDL_Rect{88, 58, 8, 7},
+    SDL_Rect{97, 58, 8, 7},
+    SDL_Rect{106, 58, 9, 7},
+    SDL_Rect{116, 58, 8, 7},
+    SDL_Rect{125, 58, 8, 7},
+    SDL_Rect{134, 58, 8, 7},
+    SDL_Rect{143, 58, 8, 8},
+    SDL_Rect{152, 58, 8, 7},
+    SDL_Rect{161, 58, 7, 7},
+    SDL_Rect{169, 58, 8, 7},
+    SDL_Rect{178, 58, 8, 7},
+    SDL_Rect{187, 58, 7, 7},
+    SDL_Rect{195, 58, 9, 7},
+    SDL_Rect{205, 58, 9, 7},
+    SDL_Rect{215, 58, 8, 7},
+    SDL_Rect{224, 58, 7, 7}
+};
 
-Hud::Hud(SDL_Renderer* renderer) : face(1), health(100) {
-    SDL_Surface* surface = IMG_Load("ressources/hud.png");
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
+
+
+Hud::Hud(Game* game) : game(game), menu_index(0), face(1), health(100) {}
+
+void Hud::load(SDL_Renderer* renderer) {
+    texture = IMG_LoadTexture(renderer, "ressources/hud.png");
+    menu_background = IMG_LoadTexture(renderer, "ressources/menu_background.png");
 }
 
 void Hud::update(bool tick, Player* player) {
@@ -164,4 +195,98 @@ void Hud::draw(SDL_Renderer* renderer) {
         SDL_RenderCopy(renderer, texture, &big_numbers[digit[i]], &dst);
     }
     
+}
+
+
+void Hud::draw_text(SDL_Renderer* renderer, std::string text, int x, int y, int h) {
+    int i = 0;
+    SDL_Rect dst = {x,y,0,h};
+    SDL_Rect* src;
+    while (text[i] != '\0') {
+        if (text[i] == ' ') {dst.x += dst.w; i++; continue;}
+        src = &letters[std::tolower(text[i]) - 'a'];
+        dst.w = src->w * h / src->h;
+        SDL_RenderCopy(renderer, texture, src, &dst);
+        dst.x += dst.w + h / 5;
+        i++;
+    }   
+}
+
+
+void Hud::draw_menu(SDL_Renderer* renderer) {
+    SDL_RenderCopy(renderer, menu_background, nullptr, nullptr);
+    draw_text(renderer, "new game", 150, 300, 30);
+    draw_text(renderer, "option", 150, 350, 30);
+    draw_text(renderer, "exit", 150, 400, 30);
+
+    SDL_Rect dst = {110, 300 + 50*menu_index, 30, 30};
+    SDL_RenderCopy(renderer, texture, &Hud::faces1_rects[7], &dst);
+}
+
+void Hud::handleEvents_menu(SDL_Event* event) {
+    if (event->key.keysym.sym == SDLK_RETURN) {
+        if (menu_index == 0) {
+            game->start_level();
+            face = 1;
+        }
+        if (menu_index == 1) {
+            game->state = OPTIONS;
+            option_index = 0;
+            return;
+        }
+        if (menu_index == 2) game->stop_run();
+    }
+    if (event->key.keysym.sym == SDLK_DOWN) menu_index = (menu_index + 1)%3;
+    if (event->key.keysym.sym == SDLK_UP) menu_index = (menu_index + 2)%3;
+}
+
+
+
+void Hud::draw_option(SDL_Renderer* renderer) {
+    SDL_RenderCopy(renderer, menu_background, nullptr, nullptr);
+    draw_text(renderer, "contoles", 260, 80, 50);
+
+    draw_text(renderer, "move forward", 150, 200, 20);
+    draw_text(renderer, "move backward", 150, 230, 20);
+    draw_text(renderer, "move left", 150, 260, 20);
+    draw_text(renderer, "move right", 150, 290, 20);
+    draw_text(renderer, "shoot", 150, 320, 20);
+    draw_text(renderer, "interact", 150, 350, 20);
+    draw_text(renderer, "switch weapon", 150, 380, 20);
+
+    draw_text(renderer, SDL_GetKeyName(game->move_forward), 650, 200, 20);
+    draw_text(renderer, SDL_GetKeyName(game->move_backward), 650, 230, 20);
+    draw_text(renderer, SDL_GetKeyName(game->move_left), 650, 260, 20);
+    draw_text(renderer, SDL_GetKeyName(game->move_right), 650, 290, 20);
+    draw_text(renderer, SDL_GetKeyName(game->shoot), 650, 320, 20);
+    draw_text(renderer, SDL_GetKeyName(game->interact), 650, 350, 20);
+    draw_text(renderer, SDL_GetKeyName(game->switch_weapon), 650, 380, 20);
+
+    draw_text(renderer, "press escape to exit", 150, 500, 20);
+
+    SDL_Rect dst = {110, 200 + 30*option_index, 20, 20};
+    SDL_RenderCopy(renderer, texture, &Hud::faces1_rects[7], &dst);
+}
+
+void Hud::handleEvents_option(SDL_Event* event) {
+    if (event->key.keysym.sym == SDLK_ESCAPE) {
+        game->state = MENU;
+        return;
+    };
+    if (option_index < 1) {
+        game->move_forward = event->key.keysym.sym;
+    } else if (option_index < 2) {
+        game->move_backward = event->key.keysym.sym;
+    } else if (option_index < 3) {
+        game->move_left = event->key.keysym.sym;
+    } else if (option_index < 4) {
+        game->move_right = event->key.keysym.sym;
+    } else if (option_index < 5) {
+        game->shoot = event->key.keysym.sym;
+    } else if (option_index < 6) {
+        game->interact = event->key.keysym.sym;
+    } else if (option_index < 7) {
+        game->switch_weapon = event->key.keysym.sym;
+    }
+    option_index = (option_index + 1)%7;
 }

@@ -10,6 +10,7 @@
 #include "headers/map.hpp"
 #include "headers/player.hpp"
 #include "headers/entities_manager.hpp"
+#include "headers/hud.hpp"
 #include "headers/game.hpp"
 
 

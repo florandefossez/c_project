@@ -5,6 +5,13 @@ constexpr int WINDOW_WIDTH = 1080;
 constexpr int MAP_HEIGHT = 64;
 constexpr int MAP_WIDTH = 64;
 
+typedef enum game_state_ {
+    PAUSED,
+    LEVEL1,
+    MENU,
+    OPTIONS
+} game_state_t;
+
 
 class Game {
 public:
@@ -13,11 +20,13 @@ public:
     void run();
 
     int width;
+    game_state_t state;
 
     Map map;
     Player player;
     Raycaster raycaster;
     Object_manager entities_manager;
+    Hud hud;
 
     bool animation;
     SDL_Renderer* renderer;
@@ -29,8 +38,19 @@ public:
     float delta_time;
     void toggleFullscreen();
     void update_width(int w);
+    void start_level();
+    void stop_run();
 
     uint32_t* scene_pixels;
+
+    // keys
+    SDL_Keycode move_forward;
+    SDL_Keycode move_backward;
+    SDL_Keycode move_left;
+    SDL_Keycode move_right;
+    SDL_Keycode shoot;
+    SDL_Keycode interact;
+    SDL_Keycode switch_weapon;
 
 private:
 

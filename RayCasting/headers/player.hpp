@@ -49,7 +49,6 @@ private:
 
     Game* game;
     Weapon* weapon;
-    Hud* hud;
     unsigned int state_change_cooldown;
     void pathfind();
 
