@@ -29,6 +29,9 @@ void Raycaster::load() {
 
     rays_lenght = new float[game->width];
 
+}
+
+void Raycaster::start() {
     opening_state = 0;
     opening_door_x = 0;
     opening_door_y = 0;

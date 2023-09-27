@@ -42,8 +42,10 @@ protected:
 class Barrel : public Entity {
 public:
     Barrel(float x, float y);
-    void damage(float value) override {(void)value;};
+    ~Barrel() {};
+    void draw(Game* game) override {Entity::draw(game);};
     void update(Game* game) override {(void)game;};
+    void damage(float value) override {(void)value;};
 };
 
 class Enemy : public Entity {
@@ -51,6 +53,7 @@ public:
     Enemy(float x, float y, float size, float health, float weapon_damage) :
         Entity(x,y,size,health), animation_cooldown(0), velocity(2), weapon_damage(weapon_damage) {};
     virtual ~Enemy() {};
+    
     void update(Game* game) override;
     virtual void death() = 0;
 
@@ -74,8 +77,8 @@ public:
 
     void update(Game* game) override;
     void draw(Game* game) override;
-
     void damage(float value) override;
+
     void death() override;
 
 private:
@@ -103,6 +106,7 @@ public:
     Object_manager(Game* game);
 
     void update();
+    void start(int level_id);
     void draw();
 
     static SDL_Surface* getSurface(std::string name);

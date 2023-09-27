@@ -12,6 +12,7 @@ public:
     float* rays_lenght;
 
     void load();
+    void start();
     void update_width();
 
     void trigger();

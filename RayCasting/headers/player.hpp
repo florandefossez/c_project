@@ -28,6 +28,7 @@ public:
     void update();
     void shoot();
     void load();
+    void start(int level_id);
     void rotate(float relative_mov);
     float get_angle();
     void damage(float value);

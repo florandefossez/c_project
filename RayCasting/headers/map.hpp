@@ -24,6 +24,7 @@ public:
     SDL_Texture* player_texture;
     SDL_Surface* player_surface;
     void load();
+    void start(int level_id);
 
     std::array<std::array<cell_t, 64>, 64> map;
     

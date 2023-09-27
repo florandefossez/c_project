@@ -12,25 +12,34 @@
 #include "headers/game.hpp"
 
 
-Player::Player(Game* game) : game(game) {
+Player::Player(Game* game) : game(game), weapon(nullptr) {}
 
+void Player::load() {}
+
+void Player::start(int level_id) {
+    delete weapon;
+    switch (level_id) {
+    case 1:
+        position_x = 5.5;
+        position_y = 38.5;
+        position_z = 0.5;
+
+        dir_x = cos(-80.f);
+        dir_y = sin(-80.f);
+
+        plane_x = -0.7*dir_y;
+        plane_y = 0.7*dir_x;
+
+        health = 100.f;
+        state_change_cooldown = 0;
+        weapon = new ShotGun(game->renderer);
+        break;
+    
+    default:
+        break;
+    }
 }
 
-void Player::load() {
-    position_x = 5.5;
-    position_y = 38.5;
-    position_z = 0.5;
-
-    dir_x = cos(-80.f);
-    dir_y = sin(-80.f);
-
-    plane_x = -0.7*dir_y;
-    plane_y = 0.7*dir_x;
-
-    health = 100.f;
-    state_change_cooldown = 0;
-    weapon = new ShotGun(game->renderer);
-}
 
 float Player::get_angle() {
     float angle = atanf(dir_y/dir_x)*180.0/3.14159;

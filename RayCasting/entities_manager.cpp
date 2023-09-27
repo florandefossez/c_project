@@ -21,7 +21,6 @@ SDL_Surface* Object_manager::getSurface(std::string name) {
     if(surfaces.find(name) != surfaces.end()){
         return surfaces[name];
     } else {
-        std::cout << "load new texture\n";
         SDL_Surface* new_surface = IMG_Load(name.c_str());
         SDL_Surface* new_formated_surface = new SDL_Surface();
         new_formated_surface = SDL_ConvertSurfaceFormat(new_surface, SDL_PIXELFORMAT_ABGR8888, 0);
@@ -66,8 +65,25 @@ std::array<SDL_Rect, 9> Soldier1::death1 = {
 
 Object_manager::Object_manager(Game* game) : targeted_entity(nullptr), game(game) {
     entities.clear();
-    entities.push_back(new Soldier1(4.5,44.0));
-    entities.push_back(new Barrel(4.5,44.0));
+}
+
+void Object_manager::start(int level_id) {
+    for (Entity* entity : entities) {
+        delete entity;
+    }
+
+    entities.clear();
+    targeted_entity = nullptr;
+    
+    switch (level_id) {
+    case 1:
+        entities.push_back(new Soldier1(4.5,44.0));
+        entities.push_back(new Barrel(4.5,44.0));
+        break;
+    
+    default:
+        break;
+    }
 }
 
 

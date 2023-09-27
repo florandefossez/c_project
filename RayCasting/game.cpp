@@ -20,7 +20,6 @@ Game::Game() : width(1024), state(MENU), map(this), player(this), raycaster(this
     renderer = SDL_CreateRenderer(window, -1, 0);
     SDL_RenderSetLogicalSize(renderer, width, 2 * width / 3);
     SDL_SetRelativeMouseMode(SDL_TRUE);
-    SDL_SetWindowMouseGrab(window, SDL_TRUE);
     running = true;
 
     scene_pixels = new Uint32[width * (2 * width / 3)];
@@ -188,6 +187,10 @@ void Game::render() {
 
 void Game::start_level() {
     state = LEVEL1;
+    map.start(1);
+    player.start(1);
+    entities_manager.start(1);
+    raycaster.start();
 }
 
 void Game::stop_run() {

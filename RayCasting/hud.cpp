@@ -227,7 +227,6 @@ void Hud::handleEvents_menu(SDL_Event* event) {
     if (event->key.keysym.sym == SDLK_RETURN) {
         if (menu_index == 0) {
             game->start_level();
-            face = 1;
         }
         if (menu_index == 1) {
             game->state = OPTIONS;

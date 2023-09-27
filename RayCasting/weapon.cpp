@@ -25,9 +25,7 @@ std::array<SDL_Rect, 6> ShotGun::shoot_rects = {
 
 
 ShotGun::ShotGun(SDL_Renderer* renderer) : Weapon(30.f, 100) {
-    SDL_Surface* surface = IMG_Load("ressources/shotgun.png");
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
+    texture = IMG_LoadTexture(renderer, "ressources/shotgun.png");
 }
 
 void ShotGun::update(bool tick) {

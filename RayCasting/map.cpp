@@ -10,26 +10,46 @@
 #include "headers/hud.hpp"
 #include "headers/game.hpp"
 
-Map::Map(Game* game) : game(game) {
-    player_texture_rect.w = 2 * game->width / MAP_WIDTH / 4;
-    player_texture_rect.h = 2 * game->width / MAP_WIDTH / 4;
-}
+Map::Map(Game* game) : game(game) {}
 
 void Map::load() {
+    player_texture_rect.w = 2 * game->width / MAP_WIDTH / 4;
+    player_texture_rect.h = 2 * game->width / MAP_WIDTH / 4;
     player_texture = IMG_LoadTexture(game->renderer, "ressources/player.png");
-    SDL_Surface* map_surface = IMG_Load("ressources/map.png");
-    sky_texture = IMG_LoadTexture(game->renderer, "ressources/sky.png");
+}
+
+
+void Map::start(int level_id) {
+    SDL_Surface* map_surface;
+    if (sky_texture) SDL_DestroyTexture(sky_texture);
+
+    for (unsigned int i = 0; i < MAP_WIDTH; i++) {
+        for (unsigned int j = 0; j < MAP_WIDTH; j++) {
+            map[i][j] = {false, false, 0};
+        }
+    }
+
+    switch (level_id) {
+    case 1:
+        map_surface = IMG_Load("ressources/map.png");
+        sky_texture = IMG_LoadTexture(game->renderer, "ressources/sky.png");
+        map[11][41].is_door = true;
+        map[11][41].is_wall = true;
+        map[4][57].is_wall = true;
+        map[4][57].is_door = true;
+        break;
+    
+    default:
+        return;
+        break;
+    }
 
     for (unsigned int i = 0; i < MAP_WIDTH; i++) {
         for (unsigned int j = 0; j < MAP_WIDTH; j++) {
             Uint8* p = (Uint8*)map_surface->pixels + j * map_surface->pitch + i * 4;
             if (p[3] == 255) {
                 this->map[i][j].is_wall = true;
-            } else {
-                this->map[i][j].is_wall = false;
             }
-            map[i][j].dir = 0;
-            map[i][j].is_door = false;
         }
     }
     map[11][41].is_door = true;
