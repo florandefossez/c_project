@@ -94,30 +94,10 @@ void Player::update() {
     position_x += move_x;
     position_y += move_y;
 
-    float const SIN_PLAYER_ROTATION = sinf(PLAYER_ROTATION_VELOCITY/180.0*3.14159 * game->delta_time);
-    float const COS_PLAYER_ROTATION = cosf(PLAYER_ROTATION_VELOCITY/180.0*3.14159 * game->delta_time);
-
-    
-
-    if (keyboardState[SDL_SCANCODE_RIGHT]) {
-        float tmp_dir = COS_PLAYER_ROTATION*dir_x - SIN_PLAYER_ROTATION*dir_y;
-        dir_y = SIN_PLAYER_ROTATION*dir_x + COS_PLAYER_ROTATION*dir_y;
-        dir_x = tmp_dir;
-
-        tmp_dir = COS_PLAYER_ROTATION*plane_x - SIN_PLAYER_ROTATION*plane_y;
-        plane_y = SIN_PLAYER_ROTATION*plane_x + COS_PLAYER_ROTATION*plane_y;
-        plane_x = tmp_dir;
-    }
-    
-    if (keyboardState[SDL_SCANCODE_LEFT]) {
-        float tmp_dir = COS_PLAYER_ROTATION*dir_x + SIN_PLAYER_ROTATION*dir_y;
-        dir_y = - SIN_PLAYER_ROTATION*dir_x + COS_PLAYER_ROTATION*dir_y;
-        dir_x = tmp_dir;
-
-        tmp_dir = COS_PLAYER_ROTATION*plane_x + SIN_PLAYER_ROTATION*plane_y;
-        plane_y = - SIN_PLAYER_ROTATION*plane_x + COS_PLAYER_ROTATION*plane_y;
-        plane_x = tmp_dir;
-    }
+#ifndef __EMSCRIPTEN__
+    if (keyboardState[SDL_SCANCODE_RIGHT]) rotate(game->delta_time);
+    if (keyboardState[SDL_SCANCODE_LEFT]) rotate(-game->delta_time);
+#endif
 
     pathfind();
     weapon->update(game->animation);
@@ -126,6 +106,22 @@ void Player::update() {
     }
     if (state_change_cooldown && game->animation) state_change_cooldown--;
 }
+
+
+void Player::rotate(float relative_mov) {
+    float const SIN_PLAYER_ROTATION = sinf(PLAYER_ROTATION_VELOCITY/180.0*3.14159 * relative_mov);
+    float const COS_PLAYER_ROTATION = cosf(PLAYER_ROTATION_VELOCITY/180.0*3.14159 * relative_mov);
+
+    float tmp_dir = COS_PLAYER_ROTATION*dir_x - SIN_PLAYER_ROTATION*dir_y;
+    dir_y = SIN_PLAYER_ROTATION*dir_x + COS_PLAYER_ROTATION*dir_y;
+    dir_x = tmp_dir;
+
+    tmp_dir = COS_PLAYER_ROTATION*plane_x - SIN_PLAYER_ROTATION*plane_y;
+    plane_y = SIN_PLAYER_ROTATION*plane_x + COS_PLAYER_ROTATION*plane_y;
+    plane_x = tmp_dir;
+}
+
+
 
 void Player::shoot() {
     if (!weapon->can_shoot()) {return;}

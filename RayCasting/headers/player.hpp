@@ -1,7 +1,7 @@
 #pragma once
 #include <cmath>
 
-constexpr float PLAYER_VELOCITY = 3.f;
+constexpr float PLAYER_VELOCITY = 4.f;
 constexpr float PLAYER_ROTATION_VELOCITY = 90.0;
 
 
@@ -28,6 +28,7 @@ public:
     void update();
     void shoot();
     void load();
+    void rotate(float relative_mov);
     float get_angle();
     void damage(float value);
 

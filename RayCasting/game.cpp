@@ -20,6 +20,7 @@ Game::Game() : width(1024), state(MENU), map(this), player(this), raycaster(this
     renderer = SDL_CreateRenderer(window, -1, 0);
     SDL_RenderSetLogicalSize(renderer, width, 2 * width / 3);
     SDL_SetRelativeMouseMode(SDL_TRUE);
+    SDL_SetWindowMouseGrab(window, SDL_TRUE);
     running = true;
 
     scene_pixels = new Uint32[width * (2 * width / 3)];
@@ -94,22 +95,26 @@ void Game::handleEvents() {
             running = false;
             return;
         }
-        // if (event.type == SDL_MOUSEMOTION) {
-        //     std::cout << event.motion.xrel << " " << event.motion.yrel << std::endl;
-        // }
-        if (event.type != SDL_KEYDOWN) continue;
-        if (event.key.keysym.sym == SDLK_p) toggleFullscreen();
+        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_p) toggleFullscreen();
 
         switch (state) {
         case MENU:
+            if (event.type != SDL_KEYDOWN) continue;
             hud.handleEvents_menu(&event);
             break;
         
         case OPTIONS:
+            if (event.type != SDL_KEYDOWN) continue;
             hud.handleEvents_option(&event);
             break;
         
         default:
+#ifdef __EMSCRIPTEN__
+            if (event.type == SDL_MOUSEMOTION) {
+                player.rotate((float) event.motion.xrel * 0.0015f);
+            }
+#endif
+            if (event.type != SDL_KEYDOWN) continue;
             if (event.key.keysym.sym == shoot) player.shoot();
             if (event.key.keysym.sym == interact) raycaster.trigger();
             if (event.key.keysym.sym == SDLK_ESCAPE) state = MENU;
