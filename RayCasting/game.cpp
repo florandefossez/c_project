@@ -18,7 +18,7 @@ Game::Game() : width(1024), state(MENU), map(this), player(this), raycaster(this
     SDL_Init(SDL_INIT_VIDEO);
     window = SDL_CreateWindow("Ray casting !", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, 0);
-    SDL_RenderSetLogicalSize(renderer, width, 2 * width / 3);
+    SDL_RenderSetLogicalSize(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
     SDL_SetRelativeMouseMode(SDL_TRUE);
     running = true;
 
@@ -80,7 +80,6 @@ void Game::update_width(int w) {
     this->width = w;
     free(scene_pixels);
     scene_pixels = new Uint32[width * (2 * width / 3)];
-    SDL_RenderSetLogicalSize(renderer, width, 2 * width / 3);
     SDL_DestroyTexture(scene);
     scene = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width, (2 * width / 3));
     SDL_SetTextureBlendMode(scene, SDL_BLENDMODE_BLEND);

@@ -156,8 +156,8 @@ void Player::draw() {
 
 
 void Player::pathfind() {
-    for (int i=0; i<MAP_WIDTH; i++) {
-        for (int j=0; j<MAP_WIDTH; j++) {
+    for (int i=0; i<64; i++) {
+        for (int j=0; j<64; j++) {
             game->map.map[i][j].dir = 0;
         }
     }
@@ -180,7 +180,7 @@ void Player::pathfind() {
             queue.push({a,b});
         }
         a = i+1, b = j;
-        if (a<MAP_WIDTH && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
+        if (a<64 && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
             game->map.map[a][b].dir = 1;
             queue.push({a,b});
         }
@@ -190,7 +190,7 @@ void Player::pathfind() {
             queue.push({a,b});
         }
         a = i, b = j+1;
-        if (b<MAP_WIDTH && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
+        if (b<64 && !game->map.map[a][b].is_wall && game->map.map[a][b].dir == 0) {
             game->map.map[a][b].dir = 2;
             queue.push({a,b});
         }

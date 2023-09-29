@@ -2,8 +2,6 @@
 
 constexpr int WINDOW_HEIGHT = 720;
 constexpr int WINDOW_WIDTH = 1080;
-constexpr int MAP_HEIGHT = 64;
-constexpr int MAP_WIDTH = 64;
 
 typedef enum game_state_ {
     PAUSED,
