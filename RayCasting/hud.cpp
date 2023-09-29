@@ -81,7 +81,44 @@ std::array<SDL_Rect, 10> Hud::big_numbers = {
     SDL_Rect{134, 33, 14, 16}
 };
 
-std::array<SDL_Rect, 26> Hud::letters = {
+std::array<SDL_Rect, 96> Hud::letters = {
+    SDL_Rect{232, 58, 6, 7},
+    SDL_Rect{87, 66, 4, 7},
+    SDL_Rect{170, 66, 7, 7},
+    SDL_Rect{178, 66, 7, 7},
+    SDL_Rect{186, 66, 7, 8},
+    SDL_Rect{194, 66, 9, 7},
+    SDL_Rect{50, 66, 8, 7},
+    SDL_Rect{99, 66, 4, 7},
+    SDL_Rect{2, 66, 7, 7},
+    SDL_Rect{10, 66, 7, 7},
+    SDL_Rect{18, 66, 7, 7},
+    SDL_Rect{151, 66, 7, 7},
+    SDL_Rect{104, 66, 4, 7},
+    SDL_Rect{92, 66, 6, 7},
+    SDL_Rect{109, 66, 4, 7},
+    SDL_Rect{26, 66, 7, 7},
+
+    // 0-9
+    SDL_Rect{2, 50, 8, 7},
+    SDL_Rect{11, 50, 5, 7},
+    SDL_Rect{17, 50, 8, 7},
+    SDL_Rect{26, 50, 8, 7},
+    SDL_Rect{35, 50, 7, 7},
+    SDL_Rect{43, 50, 7, 7},
+    SDL_Rect{51, 50, 8, 7},
+    SDL_Rect{60, 50, 8, 7},
+    SDL_Rect{69, 50, 8, 7},
+    SDL_Rect{78, 50, 8, 7},
+    SDL_Rect{114, 66, 4, 7},
+    SDL_Rect{119, 66, 4, 7},
+    SDL_Rect{158, 66, 5, 7},
+    SDL_Rect{145, 66, 7, 7},
+    SDL_Rect{164, 66, 5, 7},
+    SDL_Rect{78, 66, 7, 7},
+
+    // @
+    SDL_Rect{59, 66, 9, 8},
     SDL_Rect{2, 58, 8, 7},
     SDL_Rect{11, 58, 8, 7},
     SDL_Rect{20, 58, 8, 7},
@@ -97,6 +134,8 @@ std::array<SDL_Rect, 26> Hud::letters = {
     SDL_Rect{106, 58, 9, 7},
     SDL_Rect{116, 58, 8, 7},
     SDL_Rect{125, 58, 8, 7},
+
+    // P
     SDL_Rect{134, 58, 8, 7},
     SDL_Rect{143, 58, 8, 8},
     SDL_Rect{152, 58, 8, 7},
@@ -107,7 +146,48 @@ std::array<SDL_Rect, 26> Hud::letters = {
     SDL_Rect{195, 58, 9, 7},
     SDL_Rect{205, 58, 9, 7},
     SDL_Rect{215, 58, 8, 7},
-    SDL_Rect{224, 58, 7, 7}
+    SDL_Rect{224, 58, 7, 7},
+    SDL_Rect{134, 66, 5, 7},
+    SDL_Rect{34, 66, 7, 7},
+    SDL_Rect{140, 66, 5, 7},
+    SDL_Rect{42, 66, 7, 7},
+    SDL_Rect{69, 66, 8, 7},
+
+    // `
+    SDL_Rect{99, 66, 4, 7},
+    SDL_Rect{2, 58, 8, 7},
+    SDL_Rect{11, 58, 8, 7},
+    SDL_Rect{20, 58, 8, 7},
+    SDL_Rect{29, 58, 8, 7},
+    SDL_Rect{38, 58, 8, 7},
+    SDL_Rect{47, 58, 8, 7},
+    SDL_Rect{56, 58, 8, 7},
+    SDL_Rect{65, 58, 8, 7},
+    SDL_Rect{74, 58, 4, 7},
+    SDL_Rect{79, 58, 8, 7},
+    SDL_Rect{88, 58, 8, 7},
+    SDL_Rect{97, 58, 8, 7},
+    SDL_Rect{106, 58, 9, 7},
+    SDL_Rect{116, 58, 8, 7},
+    SDL_Rect{125, 58, 8, 7},
+
+    // p
+    SDL_Rect{134, 58, 8, 7},
+    SDL_Rect{143, 58, 8, 8},
+    SDL_Rect{152, 58, 8, 7},
+    SDL_Rect{161, 58, 7, 7},
+    SDL_Rect{169, 58, 8, 7},
+    SDL_Rect{178, 58, 8, 7},
+    SDL_Rect{187, 58, 7, 7},
+    SDL_Rect{195, 58, 9, 7},
+    SDL_Rect{205, 58, 9, 7},
+    SDL_Rect{215, 58, 8, 7},
+    SDL_Rect{224, 58, 7, 7},
+    SDL_Rect{158, 66, 5, 7},
+    SDL_Rect{129, 66, 4, 7},
+    SDL_Rect{164, 66, 5, 7},
+    SDL_Rect{232, 58, 6, 7},
+    SDL_Rect{232, 58, 6, 7}
 };
 
 
@@ -203,8 +283,7 @@ void Hud::draw_text(SDL_Renderer* renderer, std::string text, int x, int y, int 
     SDL_Rect dst = {x,y,0,h};
     SDL_Rect* src;
     while (text[i] != '\0') {
-        if (text[i] == ' ') {dst.x += dst.w; i++; continue;}
-        src = &letters[std::tolower(text[i]) - 'a'];
+        src = &letters[text[i] - ' '];
         dst.w = src->w * h / src->h;
         SDL_RenderCopy(renderer, texture, src, &dst);
         dst.x += dst.w + h / 5;

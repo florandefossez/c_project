@@ -31,7 +31,7 @@ private:
     static std::array<SDL_Rect, 8> faces4_rects;
     static std::array<SDL_Rect, 8> faces5_rects;
     static std::array<SDL_Rect, 10> big_numbers;
-    static std::array<SDL_Rect, 26> letters;
+    static std::array<SDL_Rect, 96> letters;
     
     int menu_index;
     int face;
