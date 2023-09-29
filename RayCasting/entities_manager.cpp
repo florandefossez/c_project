@@ -23,7 +23,7 @@ SDL_Surface* Object_manager::getSurface(std::string name) {
     } else {
         SDL_Surface* new_surface = IMG_Load(name.c_str());
         SDL_Surface* new_formated_surface = new SDL_Surface();
-        new_formated_surface = SDL_ConvertSurfaceFormat(new_surface, SDL_PIXELFORMAT_ABGR8888, 0);
+        new_formated_surface = SDL_ConvertSurfaceFormat(new_surface, SDL_PIXELFORMAT_RGBA8888, 0);
         SDL_FreeSurface(new_surface);
         
         surfaces[name] = new_formated_surface;
@@ -176,7 +176,7 @@ void Entity::draw(Game* game, SDL_Rect& rect) {
 
 
 Barrel::Barrel(float x, float y) : Entity(x,y,1.f,1.f) {
-    surface = Object_manager::getSurface("ressources/barrel.png");
+    surface = Object_manager::getSurface("ressources/entities/barrel.png");
 }
 
 
@@ -331,7 +331,7 @@ void Enemy::update(Game* game) {
 
 
 Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7f,50.f,4.f) {
-    surface = Object_manager::getSurface("ressources/soldier_1.png");
+    surface = Object_manager::getSurface("ressources/entities/soldier_1.png");
     status = WAIT;
 }
 

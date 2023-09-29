@@ -25,18 +25,14 @@ void Map::start(int level_id) {
 
     for (unsigned int i = 0; i < MAP_WIDTH; i++) {
         for (unsigned int j = 0; j < MAP_WIDTH; j++) {
-            map[i][j] = {false, false, 0};
+            map[i][j] = {false, false, 0, 0};
         }
     }
 
     switch (level_id) {
     case 1:
         map_surface = IMG_Load("ressources/map.png");
-        sky_texture = IMG_LoadTexture(game->renderer, "ressources/sky.png");
-        map[11][41].is_door = true;
-        map[11][41].is_wall = true;
-        map[4][57].is_wall = true;
-        map[4][57].is_door = true;
+        sky_texture = IMG_LoadTexture(game->renderer, "ressources/sky/sky1.png");
         break;
     
     default:
@@ -47,15 +43,27 @@ void Map::start(int level_id) {
     for (unsigned int i = 0; i < MAP_WIDTH; i++) {
         for (unsigned int j = 0; j < MAP_WIDTH; j++) {
             Uint8* p = (Uint8*)map_surface->pixels + j * map_surface->pitch + i * 4;
-            if (p[3] == 255) {
-                this->map[i][j].is_wall = true;
+            
+            // type
+            switch (p[0]) {
+            case 0x00:
+                // wall
+                map[i][j].is_wall = true;
+                break;
+            case 0xF0:
+                // door
+                map[i][j].is_wall = true;
+                map[i][j].is_door = true;
+                break;
+            case 0x40:
+                // floor
+                break;
             }
+
+            // texture
+            map[i][j].texture_id = p[1];
         }
     }
-    map[11][41].is_door = true;
-    map[11][41].is_wall = true;
-    map[4][57].is_wall = true;
-    map[4][57].is_door = true;
 }
 
 bool Map::collide(float x, float y) {
@@ -64,11 +72,7 @@ bool Map::collide(float x, float y) {
 }
 
 bool Map::collide(int x, int y) {
-    if (x<0 || x>=64 || y<0 || y>=64) {
-        std::cout << x << " " << y << std::endl;
-        return true;
-    }
-    return (map[x][y].is_wall);
+    return (x<0 || x>=64 || y<0 || y>=64 || map[x][y].is_wall);
 }
 
 void Map::update() {

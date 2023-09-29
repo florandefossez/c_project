@@ -15,17 +15,16 @@ Raycaster::Raycaster(Game* game) : game(game) {}
 
 
 void Raycaster::load() {
-    SDL_Surface* tmp = IMG_Load("ressources/redbrick.png");
-    brick_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_ABGR8888, 0);
-    SDL_FreeSurface(tmp);
 
-    tmp = IMG_Load("ressources/mossy.png");
-    mosse_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_ABGR8888, 0);
-    SDL_FreeSurface(tmp);
+    char file_name[30];
+    SDL_Surface* tmp;
 
-    tmp = IMG_Load("ressources/greystone.png");
-    stone_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_ABGR8888, 0);
-    SDL_FreeSurface(tmp);
+    for (int i=0; i<10; i++) {
+        sprintf(file_name, "ressources/textures/%d.png", i);
+        tmp = IMG_Load(file_name);
+        textures[i] = (Uint32*) SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_RGBA8888, 0)->pixels;
+        SDL_FreeSurface(tmp);
+    }
 
     rays_lenght = new float[game->width];
 
@@ -62,9 +61,6 @@ void Raycaster::draw() {
 
 void Raycaster::draw_floor() {
 
-    Uint32* mosse_pixels = (Uint32*) mosse_surface->pixels;
-    Uint32* stone_pixels = (Uint32*) stone_surface->pixels;
-
     // again we use rays to find the coordinate of the floor
     float left_ray_x = game->player.dir_x - game->player.plane_x;
     float left_ray_y = game->player.dir_y - game->player.plane_y;
@@ -93,6 +89,18 @@ void Raycaster::draw_floor() {
             int current_cell_x = (int)(floor_x);
             int current_cell_y = (int)(floor_y);
 
+            if (
+                current_cell_x<0 || current_cell_x>=64 ||
+                current_cell_y<0 || current_cell_y>=64 ||
+                (
+                    game->map.map[current_cell_x][current_cell_y].is_wall &&
+                    !game->map.map[current_cell_x][current_cell_y].is_door
+                )) {
+                floor_x += floor_step_x;
+                floor_y += floor_step_y;
+                continue;
+            }
+
             // get the texture coordinate from the fractional part
             int tx = (int) std::abs(64.f * (floor_x - current_cell_x));
             int ty = (int) std::abs(64.f * (floor_y - current_cell_y));
@@ -101,11 +109,9 @@ void Raycaster::draw_floor() {
             floor_y += floor_step_y;
 
             // choose texture and draw the pixel on the image
-            if ((current_cell_x + current_cell_y)%2 == 1) {
-                game->scene_pixels[x + (p-1) * game->width + height/2 * game->width ] = mosse_pixels[tx + 64*ty];
-            } else {
-                game->scene_pixels[x + (p-1) * game->width + height/2 * game->width ] = stone_pixels[tx + 64*ty];
-            }
+            game->scene_pixels[x + (p-1) * game->width + height/2 * game->width ] = textures[
+                game->map.map[current_cell_x][current_cell_y].texture_id
+            ][tx + 64*ty];
 
         }
     }
@@ -114,14 +120,14 @@ void Raycaster::draw_floor() {
 
 void Raycaster::draw_wall() {
 
-    Uint32* brick_pixels = (Uint32*) brick_surface->pixels;
-
     int height = 2 * game->width / 3;
     char collision_side;
     float perp_rays_lenght;
     float texture_offset;
 
     for (int r=0; r<game->width; r++) {
+
+        int texture_id;
 
         // direction step
         int step_x;
@@ -201,6 +207,8 @@ raycast_label:
             targeted_wall_y = current_cell_y;
         }
 
+        texture_id = game->map.map[current_cell_x][current_cell_y].texture_id;
+
         // we don't use the real ray length to avoid fisheye effect
         if (collision_side == 'x') {
             perp_rays_lenght = x_ray_length - x_ray_unit_length;
@@ -212,10 +220,11 @@ raycast_label:
                     texture_offset = cell_y - floor(cell_y);
                     if (opening_state > 0 && current_cell_x == opening_door_x && current_cell_y == opening_door_y && texture_offset > opening_state) {
                         goto raycast_label;
-                    } else {
-                        perp_rays_lenght += std::abs(0.4f/ray_dir_x);
                     }
+                    perp_rays_lenght += std::abs(0.4f/ray_dir_x);
+                    texture_id = 9;
                 } else {
+                    texture_id = game->map.map[current_cell_x][current_cell_y-1].texture_id;
                     ray_length = y_ray_length;
                     y_ray_length += y_ray_unit_length;
 
@@ -236,10 +245,11 @@ raycast_label:
                     texture_offset = cell_x - floor(cell_x);
                     if (opening_state > 0 && current_cell_x == opening_door_x && current_cell_y == opening_door_y && texture_offset > opening_state) {
                         goto raycast_label;
-                    } else {
-                        perp_rays_lenght += std::abs(0.4f/ray_dir_y);
                     }
+                    perp_rays_lenght += std::abs(0.4f/ray_dir_y);
+                    texture_id = 9;
                 } else {
+                    texture_id = game->map.map[current_cell_x-1][current_cell_y].texture_id;
                     ray_length = x_ray_length;
                     x_ray_length += x_ray_unit_length;
 
@@ -273,8 +283,8 @@ raycast_label:
         for (int y=start; y<end; y++) {
             int texY = (int)texPos & (64 - 1);
             texPos += step;
-            Uint32 color = brick_pixels[static_cast<unsigned int>(64.f * texY + texture_offset*64.f)];
-            game->scene_pixels[r + y * game->width] = color;
+            game->scene_pixels[r + y * game->width] = textures[texture_id]
+            [static_cast<unsigned int>(64.f * texY + texture_offset*64.f)];
         }
     }
 }

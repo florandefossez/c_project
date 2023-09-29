@@ -27,12 +27,8 @@ private:
 
     Game* game;
 
-    // floor
-    SDL_Surface* stone_surface;
-    SDL_Surface* mosse_surface;
-
-    // wall
-    SDL_Surface* brick_surface;
+    // textures
+    Uint32* textures[20]; 
 
     int opening_door_x;
     int opening_door_y;

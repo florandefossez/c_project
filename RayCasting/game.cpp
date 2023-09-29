@@ -24,7 +24,7 @@ Game::Game() : width(1024), state(MENU), map(this), player(this), raycaster(this
 
     scene_pixels = new Uint32[width * (2 * width / 3)];
 
-    scene = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width, (2 * width / 3));
+    scene = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width, (2 * width / 3));
     SDL_SetTextureBlendMode(scene, SDL_BLENDMODE_BLEND);
 
     delta_time = 1;
