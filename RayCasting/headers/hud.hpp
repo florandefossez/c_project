@@ -36,5 +36,4 @@ private:
     int menu_index;
     int face;
     int option_index;
-    int health;
 };

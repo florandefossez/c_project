@@ -12,7 +12,7 @@
 #include "headers/game.hpp"
 
 
-Player::Player(Game* game) : game(game), weapon(nullptr) {}
+Player::Player(Game* game) : weapon(nullptr), game(game) {}
 
 void Player::load() {
     weapons[0] = new Hands(game->renderer);

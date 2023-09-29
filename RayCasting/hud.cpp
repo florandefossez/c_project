@@ -9,6 +9,7 @@
 #include "headers/hud.hpp"
 #include "headers/map.hpp"
 #include "headers/player.hpp"
+#include "headers/weapon.hpp"
 #include "headers/entities_manager.hpp"
 #include "headers/game.hpp"
 
@@ -192,7 +193,7 @@ std::array<SDL_Rect, 96> Hud::letters = {
 
 
 
-Hud::Hud(Game* game) : game(game), menu_index(0), face(1), health(100) {}
+Hud::Hud(Game* game) : game(game), menu_index(0), face(1) {}
 
 void Hud::load(SDL_Renderer* renderer) {
     texture = IMG_LoadTexture(renderer, "ressources/hud.png");
@@ -221,25 +222,18 @@ void Hud::update(bool tick, Player* player) {
         break;
     }
 
-    health = static_cast<int>(player->health);
-    if (health < 0) health = 0;
 }
 
 void Hud::draw(SDL_Renderer* renderer) {
-    int width, height;
-    SDL_RenderGetLogicalSize(renderer, &width, &height);
     // base layer
-    static SDL_Rect src_base_layer = {0,0,319,32};
-    SDL_Rect dst = {
-        0,
-        height - (32 * width / 319),
-        width,
-        32 * width / 319
-    };
-    SDL_RenderCopy(renderer, texture, &src_base_layer, &dst);
+    static SDL_Rect src_base_layer = {0, 0, 319, 32};
+    static SDL_Rect dst_base_layer = {0, 612, 1080, 108};
+    SDL_RenderCopy(renderer, texture, &src_base_layer, &dst_base_layer);
     
     // marine's face
     std::array<SDL_Rect, 8>* rect_array;
+    int health = static_cast<int>(game->player.health);
+    if (health < 0) health = 0;
     
     if (health > 79) {
         rect_array = &faces1_rects;
@@ -252,11 +246,11 @@ void Hud::draw(SDL_Renderer* renderer) {
     } else {
         rect_array = &faces5_rects;
     }
-    dst = {
-        width / 2 - (*rect_array)[face].w * width / 638,
-        height - (32 * width / 638) - ((*rect_array)[face].h * width / 638),
-        (*rect_array)[face].w * width / 319,
-        (*rect_array)[face].h * width / 319
+    SDL_Rect dst = {
+        540 - (*rect_array)[face].w * 1080 / 638,
+        666 - ((*rect_array)[face].h * 1080 / 638),
+        (*rect_array)[face].w * 1080 / 319,
+        (*rect_array)[face].h * 1080 / 319
     };
     SDL_RenderCopy(renderer, texture, &(*rect_array)[face], &dst);
 
@@ -267,14 +261,30 @@ void Hud::draw(SDL_Renderer* renderer) {
         if (b && !digit[i]) continue;
         b = false;
         dst = {
-            width * (55+i*14) / 319,
-            height - (27 * width / 319),
-            width * big_numbers[digit[i]].w / 319,
-            width * big_numbers[digit[i]].h / 319
+            1080 * (55+i*14) / 319,
+            629,
+            1080 * big_numbers[digit[i]].w / 319,
+            1080 * big_numbers[digit[i]].h / 319
         };
         SDL_RenderCopy(renderer, texture, &big_numbers[digit[i]], &dst);
     }
-    
+
+    //ammo
+    digit[0] = game->player.weapon->munitions/100;
+    digit[1] = game->player.weapon->munitions/10%10;
+    digit[2] = game->player.weapon->munitions%10;
+    b = true;
+    for (int i = 0; i<3; i++) {
+        if (b && !digit[i]) continue;
+        b = false;
+        dst = {
+            1080 * (3+i*14) / 319,
+            629,
+            1080 * big_numbers[digit[i]].w / 319,
+            1080 * big_numbers[digit[i]].h / 319
+        };
+        SDL_RenderCopy(renderer, texture, &big_numbers[digit[i]], &dst);
+    }   
 }
 
 

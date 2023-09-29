@@ -21,8 +21,8 @@ class Weapon {
     virtual void draw(SDL_Renderer* renderer) = 0;
     virtual void update(bool tick) = 0;
     virtual void shoot() = 0;
+    virtual bool can_shoot() = 0;
 
-    bool can_shoot() {return cooldown == 0;};
 };
 
 
@@ -37,6 +37,7 @@ class ShotGun : public Weapon {
     void draw(SDL_Renderer* renderer) override;
     void update(bool tick) override;
     void shoot() override;
+    bool can_shoot() override;
 };
 
 
@@ -52,4 +53,5 @@ class Hands : public Weapon {
     void draw(SDL_Renderer* renderer) override;
     void update(bool tick) override;
     void shoot() override;
+    bool can_shoot() override;
 };

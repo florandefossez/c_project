@@ -17,8 +17,6 @@ typedef enum player_state_ {
 
 class Game;
 class Weapon;
-class ShotGun;
-class Hud;
 
 class Player {
 
@@ -47,12 +45,12 @@ public:
 
     player_state_t state;
 
+    Weapon* weapon;
+    Weapon* weapons[6];
+
 private:
 
     Game* game;
-    Weapon* weapon;
-    Weapon* weapons[6];
     unsigned int state_change_cooldown;
     void pathfind();
-
 };

@@ -38,7 +38,7 @@ std::array<SDL_Rect, 6> ShotGun::shoot_rects = {
     SDL_Rect{430, 0, 79, 168}
 };
 
-ShotGun::ShotGun(SDL_Renderer* renderer) : Weapon(30.f, 100) {
+ShotGun::ShotGun(SDL_Renderer* renderer) : Weapon(30.f, 10) {
     texture = IMG_LoadTexture(renderer, "ressources/weapons/shotgun.png");
 }
 
@@ -54,6 +54,11 @@ void ShotGun::draw(SDL_Renderer* renderer) {
 
 void ShotGun::shoot() {
     cooldown = 11;
+    munitions--;
+}
+
+bool ShotGun::can_shoot() {
+    return (cooldown == 0 && munitions > 0);
 }
 
 
@@ -85,4 +90,8 @@ void Hands::draw(SDL_Renderer* renderer) {
 
 void Hands::shoot() {
     cooldown = 11;
+}
+
+bool Hands::can_shoot() {
+    return (cooldown == 0);
 }
