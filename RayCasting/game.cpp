@@ -141,6 +141,9 @@ void Game::update() {
     switch (state) {
     case MENU:
         break;
+
+    case OPTIONS:
+        break;
     
     default:
         map.update();
