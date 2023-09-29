@@ -14,10 +14,12 @@
 
 Player::Player(Game* game) : game(game), weapon(nullptr) {}
 
-void Player::load() {}
+void Player::load() {
+    weapons[0] = new Hands(game->renderer);
+    weapons[1] = new ShotGun(game->renderer);
+}
 
 void Player::start(int level_id) {
-    delete weapon;
     switch (level_id) {
     case 1:
         position_x = 5.5;
@@ -32,7 +34,7 @@ void Player::start(int level_id) {
 
         health = 100.f;
         state_change_cooldown = 0;
-        weapon = new ShotGun(game->renderer);
+        weapon = weapons[0];
         break;
     
     default:

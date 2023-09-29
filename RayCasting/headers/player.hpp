@@ -51,6 +51,7 @@ private:
 
     Game* game;
     Weapon* weapon;
+    Weapon* weapons[6];
     unsigned int state_change_cooldown;
     void pathfind();
 
