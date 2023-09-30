@@ -131,3 +131,109 @@ void MachineGun::draw(SDL_Renderer* renderer) {
     if (cooldown < 10 && cooldown > 0) frame = cooldown%2;
     Weapon::draw(renderer, &MachineGun::shoot_rects[frame]);
 }
+
+
+
+
+
+
+
+
+
+std::array<SDL_Rect, 5> RocketLauncher::shoot_rects = {
+    SDL_Rect{0, 0, 87, 119},
+    SDL_Rect{405, 0, 101, 119},
+    SDL_Rect{297, 0, 101, 119},
+    SDL_Rect{186, 0, 101, 119},
+    SDL_Rect{93, 0, 87, 119},    
+};
+
+RocketLauncher::RocketLauncher(SDL_Renderer* renderer) : Weapon(20.f, 0) {
+    texture = IMG_LoadTexture(renderer, "ressources/weapons/rocketLauncher.png");
+}
+
+bool RocketLauncher::update(bool tick, bool fire) {
+    if (fire && cooldown==0) {
+        cooldown = 4;
+        return true;
+    }
+    if (tick && cooldown) {
+        cooldown--;
+        return false;
+    }
+    return false;
+}
+
+void RocketLauncher::draw(SDL_Renderer* renderer) {
+    Weapon::draw(renderer, &RocketLauncher::shoot_rects[cooldown]);
+}
+
+
+
+
+
+
+std::array<SDL_Rect, 4> PlasmaGun::shoot_rects = {
+    SDL_Rect{196, 0, 84, 111},
+    SDL_Rect{282, 0, 85, 111},   
+    SDL_Rect{0, 0, 83, 111},
+    SDL_Rect{86, 0, 104, 111},
+};
+
+PlasmaGun::PlasmaGun(SDL_Renderer* renderer) : Weapon(20.f, 0) {
+    texture = IMG_LoadTexture(renderer, "ressources/weapons/plasmaGun.png");
+}
+
+bool PlasmaGun::update(bool tick, bool fire) {
+    if (tick && fire && cooldown>=10) {
+        cooldown = 10 + (cooldown+1)%6;
+        return true;
+    }
+    if (fire && cooldown==0) {
+        cooldown = 10;
+        return false;
+    }
+    if (tick && cooldown) {
+        cooldown--;
+        return false;
+    }
+    return false;
+}
+
+void PlasmaGun::draw(SDL_Renderer* renderer) {
+    int frame;
+    if (cooldown == 0) frame = 2;
+    if (cooldown>0 && cooldown<10) frame = 3; 
+    if (cooldown>=10) frame = (cooldown-10)/3;
+    Weapon::draw(renderer, &PlasmaGun::shoot_rects[frame]);
+}
+
+
+
+
+
+
+
+std::array<SDL_Rect, 4> ChainSaw::shoot_rects = {
+    SDL_Rect{0, 0, 140, 89},
+    SDL_Rect{143, 0, 140, 89},   
+    SDL_Rect{286, 0, 153, 89},
+    SDL_Rect{442, 0, 154, 89},
+};
+
+ChainSaw::ChainSaw(SDL_Renderer* renderer) : Weapon(20.f, 0) {
+    texture = IMG_LoadTexture(renderer, "ressources/weapons/chainSaw.png");
+}
+
+bool ChainSaw::update(bool tick, bool fire) {
+    if (fire && tick) {
+        cooldown = 2 + (cooldown+1)%2;
+        return true;
+    }
+    if (tick) cooldown = (cooldown+1)%2;
+    return false;
+}
+
+void ChainSaw::draw(SDL_Renderer* renderer) {
+    Weapon::draw(renderer, &ChainSaw::shoot_rects[cooldown]);
+}

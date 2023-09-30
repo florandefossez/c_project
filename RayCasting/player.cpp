@@ -18,9 +18,9 @@ void Player::load() {
     weapons[0] = new Hands(game->renderer);
     weapons[1] = new ShotGun(game->renderer);
     weapons[2] = new MachineGun(game->renderer);
-    weapons[3] = new ShotGun(game->renderer);
-    weapons[4] = new ShotGun(game->renderer);
-    weapons[5] = new ShotGun(game->renderer);
+    weapons[3] = new RocketLauncher(game->renderer);
+    weapons[4] = new PlasmaGun(game->renderer);
+    weapons[5] = new ChainSaw(game->renderer);
 }
 
 void Player::start(int level_id) {

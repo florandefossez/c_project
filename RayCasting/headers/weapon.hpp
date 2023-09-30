@@ -64,3 +64,40 @@ class MachineGun : public Weapon {
 };
 
 
+class RocketLauncher : public Weapon {
+    public:
+
+    RocketLauncher(SDL_Renderer* renderer);
+    ~RocketLauncher() override {};
+
+    static std::array<SDL_Rect, 5> shoot_rects;
+
+    void draw(SDL_Renderer* renderer) override;
+    bool update(bool tick, bool fire) override;
+};
+
+
+class PlasmaGun : public Weapon {
+    public:
+
+    PlasmaGun(SDL_Renderer* renderer);
+    ~PlasmaGun() override {};
+
+    static std::array<SDL_Rect, 4> shoot_rects;
+
+    void draw(SDL_Renderer* renderer) override;
+    bool update(bool tick, bool fire) override;
+};
+
+
+class ChainSaw : public Weapon {
+    public:
+
+    ChainSaw(SDL_Renderer* renderer);
+    ~ChainSaw() override {};
+
+    static std::array<SDL_Rect, 4> shoot_rects;
+
+    void draw(SDL_Renderer* renderer) override;
+    bool update(bool tick, bool fire) override;
+};
