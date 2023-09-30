@@ -113,7 +113,7 @@ void Game::handleEvents() {
             }
 #endif
             if (event.type != SDL_KEYDOWN) continue;
-            if (event.key.keysym.sym == shoot) player.shoot();
+            if (event.key.keysym.sym == switch_weapon) player.switch_weapon();
             if (event.key.keysym.sym == interact) raycaster.trigger();
             if (event.key.keysym.sym == SDLK_ESCAPE) state = MENU;
             break;

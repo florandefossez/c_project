@@ -82,6 +82,33 @@ std::array<SDL_Rect, 10> Hud::big_numbers = {
     SDL_Rect{134, 33, 14, 16}
 };
 
+
+std::array<SDL_Rect, 10> Hud::grey_little_numbers = {
+    SDL_Rect{176, 34, 4, 6},
+    SDL_Rect{181, 34, 4, 6},
+    SDL_Rect{186, 34, 4, 6},
+    SDL_Rect{191, 34, 4, 6},
+    SDL_Rect{196, 34, 4, 6},
+    SDL_Rect{201, 34, 4, 6},
+    SDL_Rect{206, 34, 4, 6},
+    SDL_Rect{211, 34, 4, 6},
+    SDL_Rect{216, 34, 4, 6},
+    SDL_Rect{221, 34, 4, 6},
+};
+
+std::array<SDL_Rect, 10> Hud::yellow_little_numbers = {
+    SDL_Rect{176, 41, 4, 6},
+    SDL_Rect{181, 41, 4, 6},
+    SDL_Rect{186, 41, 4, 6},
+    SDL_Rect{191, 41, 4, 6},
+    SDL_Rect{196, 41, 4, 6},
+    SDL_Rect{201, 41, 4, 6},
+    SDL_Rect{206, 41, 4, 6},
+    SDL_Rect{211, 41, 4, 6},
+    SDL_Rect{216, 41, 4, 6},
+    SDL_Rect{221, 41, 4, 6},
+};
+
 std::array<SDL_Rect, 96> Hud::letters = {
     SDL_Rect{232, 58, 6, 7},
     SDL_Rect{87, 66, 4, 7},
@@ -270,12 +297,12 @@ void Hud::draw(SDL_Renderer* renderer) {
     }
 
     //ammo
-    digit[0] = game->player.weapon->munitions/100;
-    digit[1] = game->player.weapon->munitions/10%10;
-    digit[2] = game->player.weapon->munitions%10;
+    digit[0] = game->player.weapons[game->player.weapon]->munitions/100;
+    digit[1] = game->player.weapons[game->player.weapon]->munitions/10%10;
+    digit[2] = game->player.weapons[game->player.weapon]->munitions%10;
     b = true;
     for (int i = 0; i<3; i++) {
-        if (b && !digit[i]) continue;
+        if (b && !digit[i] && i!=2) continue;
         b = false;
         dst = {
             1080 * (3+i*14) / 319,
@@ -284,7 +311,25 @@ void Hud::draw(SDL_Renderer* renderer) {
             1080 * big_numbers[digit[i]].h / 319
         };
         SDL_RenderCopy(renderer, texture, &big_numbers[digit[i]], &dst);
-    }   
+    }
+
+    //weapon numbers
+    for (int line=0; line<2; line++) {
+        for (int row=0; row<3; row++) {
+            dst = {
+                1080 * (12*row + 242) / 319,
+                625 + 33*line,
+                13,
+                20
+            };
+            SDL_RenderCopy(
+                renderer,
+                texture,
+                game->player.weapons[3*line+row]->available ? &yellow_little_numbers[3*line+row+1] : &grey_little_numbers[3*line+row+1],
+                &dst
+            );
+        }
+    }
 }
 
 

@@ -24,12 +24,12 @@ public:
     Player(Game* game);
     void draw();
     void update();
-    void shoot();
     void load();
     void start(int level_id);
     void rotate(float relative_mov);
     float get_angle();
     void damage(float value);
+    void switch_weapon();
 
     float position_x;
     float position_y;
@@ -45,7 +45,7 @@ public:
 
     player_state_t state;
 
-    Weapon* weapon;
+    int weapon;
     Weapon* weapons[6];
 
 private:

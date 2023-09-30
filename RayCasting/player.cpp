@@ -12,14 +12,23 @@
 #include "headers/game.hpp"
 
 
-Player::Player(Game* game) : weapon(nullptr), game(game) {}
+Player::Player(Game* game) : weapon(0), game(game) {}
 
 void Player::load() {
     weapons[0] = new Hands(game->renderer);
     weapons[1] = new ShotGun(game->renderer);
+    weapons[2] = new MachineGun(game->renderer);
+    weapons[3] = new ShotGun(game->renderer);
+    weapons[4] = new ShotGun(game->renderer);
+    weapons[5] = new ShotGun(game->renderer);
 }
 
 void Player::start(int level_id) {
+    for (auto weap : weapons) {
+        weap->munitions = 20;
+        weap->cooldown = 0;
+        weap->available = true;
+    }
     switch (level_id) {
     case 1:
         position_x = 5.5;
@@ -34,7 +43,7 @@ void Player::start(int level_id) {
 
         health = 100.f;
         state_change_cooldown = 0;
-        weapon = weapons[0];
+        weapon = 0;
         break;
     
     default:
@@ -111,7 +120,16 @@ void Player::update() {
 #endif
 
     pathfind();
-    weapon->update(game->animation);
+    if (weapons[weapon]->update(game->animation, SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromKey(game->shoot)])) {
+        if (game->entities_manager.targeted_entity) {
+            game->entities_manager.targeted_entity->damage(weapons[weapon]->damage);
+            if (state_change_cooldown == 0) {
+                state_change_cooldown = 20;
+                state = player_state_t::SCREAM;
+            }
+        }
+    }
+
     if (state_change_cooldown == 0) {
         state = player_state_t::CALM;
     }
@@ -133,24 +151,15 @@ void Player::rotate(float relative_mov) {
 }
 
 
-
-void Player::shoot() {
-    if (!weapon->can_shoot()) {return;}
-    weapon->shoot();
-    if (game->entities_manager.targeted_entity) {
-        auto iter = std::find(game->entities_manager.entities.begin(), game->entities_manager.entities.end(), game->entities_manager.targeted_entity);
-        if (iter != game->entities_manager.entities.end()) {
-            (*iter)->damage(weapon->damage);
-            if (state_change_cooldown == 0) {
-                state_change_cooldown = 20;
-                state = player_state_t::SCREAM;
-            }
-        }
-    }
+void Player::switch_weapon() {
+    do {
+        weapon = (weapon + 1) % 6;
+    } while (!weapons[weapon]->available);
 }
 
+
 void Player::draw() {
-    weapon->draw(game->renderer);
+    weapons[weapon]->draw(game->renderer);
 }
 
 

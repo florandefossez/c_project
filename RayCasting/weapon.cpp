@@ -42,24 +42,23 @@ ShotGun::ShotGun(SDL_Renderer* renderer) : Weapon(30.f, 10) {
     texture = IMG_LoadTexture(renderer, "ressources/weapons/shotgun.png");
 }
 
-void ShotGun::update(bool tick) {
+bool ShotGun::update(bool tick, bool fire) {
     if (tick && cooldown) {
         cooldown--;
+        return false;
     }
+    if (fire && !cooldown) {
+        cooldown = 11;
+        munitions--;
+        return true;
+    }
+    return false;
 }
 
 void ShotGun::draw(SDL_Renderer* renderer) {
     Weapon::draw(renderer, &ShotGun::shoot_rects[cooldown/2]);
 }
 
-void ShotGun::shoot() {
-    cooldown = 11;
-    munitions--;
-}
-
-bool ShotGun::can_shoot() {
-    return (cooldown == 0 && munitions > 0);
-}
 
 
 
@@ -78,20 +77,57 @@ Hands::Hands(SDL_Renderer* renderer) : Weapon(20.f, 0) {
     texture = IMG_LoadTexture(renderer, "ressources/weapons/hands.png");
 }
 
-void Hands::update(bool tick) {
+bool Hands::update(bool tick, bool fire) {
     if (tick && cooldown) {
         cooldown--;
+        return false;
     }
+    if (!cooldown && fire) {
+        cooldown = 11;
+        return true;
+    }
+    return false;
 }
 
 void Hands::draw(SDL_Renderer* renderer) {
     Weapon::draw(renderer, &Hands::shoot_rects[cooldown/2]);
 }
 
-void Hands::shoot() {
-    cooldown = 11;
+
+
+
+
+
+std::array<SDL_Rect, 4> MachineGun::shoot_rects = {
+    SDL_Rect{0, 0, 114, 103},
+    SDL_Rect{117, 0, 114, 103},
+    SDL_Rect{246, 0, 114, 103},
+    SDL_Rect{363, 0, 114, 103},
+};
+
+MachineGun::MachineGun(SDL_Renderer* renderer) : Weapon(20.f, 0) {
+    texture = IMG_LoadTexture(renderer, "ressources/weapons/machineGun.png");
 }
 
-bool Hands::can_shoot() {
-    return (cooldown == 0);
+bool MachineGun::update(bool tick, bool fire) {
+    if (tick && fire && cooldown<10) {
+        cooldown++;
+        return false;
+    }
+    if (tick && fire && cooldown) {
+        cooldown = 10 + (cooldown+1)%2;
+        return true;
+    }
+    if (tick && !fire && cooldown>0) {
+        cooldown--;
+        return false;
+    }
+    return false;
+}
+
+void MachineGun::draw(SDL_Renderer* renderer) {
+    int frame = 0;
+    if (cooldown >= 10) frame = 2+cooldown%2;
+    if (cooldown < 10 && cooldown > 0) frame = cooldown%2;
+    Weapon::draw(renderer, &MachineGun::shoot_rects[frame]);
 }
