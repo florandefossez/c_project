@@ -1,6 +1,6 @@
 CFLAGS = -Wall -Wextra
 CC = g++
-LDFLAGS = -lSDL2 -lSDL2_image
+LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_mixer
 TARGET:rayCasting.exe
 
 OBJS = game.o map.o player.o raycaster.o entities_manager.o weapon.o hud.o
@@ -43,5 +43,5 @@ run:
 	./rayCasting.exe
 
 emcc:
-	em++ --bind main.cpp game.cpp map.cpp player.cpp raycaster.cpp entities_manager.cpp weapon.cpp hud.cpp -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s ALLOW_MEMORY_GROWTH=1 -s STACK_SIZE=10000000 --preload-file ressources -o index.html -std=c++17 -fsanitize=undefined
+	em++ --bind main.cpp game.cpp map.cpp player.cpp raycaster.cpp entities_manager.cpp weapon.cpp hud.cpp -s USE_SDL=2 -s USE_SDL_MIXER=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s ALLOW_MEMORY_GROWTH=1 -s STACK_SIZE=10000000 --preload-file ressources -o index.html -std=c++17 -fsanitize=undefined
 	python3 -m http.server

@@ -40,6 +40,7 @@ std::array<SDL_Rect, 6> ShotGun::shoot_rects = {
 
 ShotGun::ShotGun(SDL_Renderer* renderer) : Weapon(30.f, 10) {
     texture = IMG_LoadTexture(renderer, "ressources/weapons/shotgun.png");
+    shoot_sound = Mix_LoadWAV("ressources/sounds/shotgun.wav");
 }
 
 bool ShotGun::update(bool tick, bool fire) {
@@ -47,7 +48,8 @@ bool ShotGun::update(bool tick, bool fire) {
         cooldown--;
         return false;
     }
-    if (fire && !cooldown) {
+    if (fire && !cooldown && munitions) {
+        Mix_PlayChannel(-1, shoot_sound, 0);
         cooldown = 11;
         munitions--;
         return true;
@@ -107,10 +109,16 @@ std::array<SDL_Rect, 4> MachineGun::shoot_rects = {
 
 MachineGun::MachineGun(SDL_Renderer* renderer) : Weapon(20.f, 0) {
     texture = IMG_LoadTexture(renderer, "ressources/weapons/machineGun.png");
+    spin_up = Mix_LoadWAV("ressources/sounds/minigun_spin_up.wav");
+    spin_down = Mix_LoadWAV("ressources/sounds/minigun_spin_down.wav");
+    shoot_sound = Mix_LoadWAV("ressources/sounds/minigun_fire.wav");
 }
 
 bool MachineGun::update(bool tick, bool fire) {
+    static int channel;
     if (tick && fire && cooldown<10) {
+        if (cooldown == 0) Mix_PlayChannel(-1, spin_up, 0);
+        if (cooldown == 9) channel = Mix_PlayChannel(-1, shoot_sound, -1);
         cooldown++;
         return false;
     }
@@ -119,6 +127,11 @@ bool MachineGun::update(bool tick, bool fire) {
         return true;
     }
     if (tick && !fire && cooldown>0) {
+        if (cooldown>=10) {
+            Mix_HaltChannel(channel);
+            Mix_PlayChannel(-1, spin_down, 0);
+            cooldown = 10;
+        }
         cooldown--;
         return false;
     }

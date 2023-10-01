@@ -148,7 +148,7 @@ void Entity::draw(Game* game, SDL_Rect& rect) {
     float texture_step_x = (float) rect.w / (float) sprite_width;
     float texture_step_y = (float) rect.h / (float) sprite_height;
 
-    if ((2*pixel_x - sprite_width < game->width) && (2*pixel_x + sprite_width > game->width)) {
+    if ((2*pixel_x - sprite_width < game->width) && (2*pixel_x + sprite_width > game->width) && (camera_y < game->raycaster.rays_lenght[game->width/2])) {
         game->entities_manager.targeted_entity = this;
     }
 

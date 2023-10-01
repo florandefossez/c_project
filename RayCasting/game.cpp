@@ -15,7 +15,12 @@
 #include "headers/game.hpp"
 
 Game::Game() : width(1024), state(MENU), map(this), player(this), raycaster(this), entities_manager(this), hud(this) {
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
+
+    game_music = Mix_LoadWAV("ressources/sounds/game_music.wav");
+    menu_music = Mix_LoadWAV("ressources/sounds/menu_music.wav");
+
     window = SDL_CreateWindow("Ray casting !", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, 0);
     SDL_RenderSetLogicalSize(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -42,6 +47,8 @@ Game::Game() : width(1024), state(MENU), map(this), player(this), raycaster(this
     shoot = SDLK_SPACE;
     interact = SDLK_u;
     switch_weapon = SDLK_k;
+
+    Mix_PlayChannel(0, menu_music, -1);
 }
 
 Game::~Game() {
@@ -115,7 +122,11 @@ void Game::handleEvents() {
             if (event.type != SDL_KEYDOWN) continue;
             if (event.key.keysym.sym == switch_weapon) player.switch_weapon();
             if (event.key.keysym.sym == interact) raycaster.trigger();
-            if (event.key.keysym.sym == SDLK_ESCAPE) state = MENU;
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                Mix_HaltChannel(0);
+                Mix_PlayChannel(0, menu_music, -1);
+                state = MENU;
+            };
             break;
         }
 
@@ -188,6 +199,8 @@ void Game::render() {
 
 
 void Game::start_level() {
+    Mix_HaltChannel(0);
+    Mix_PlayChannel(0, game_music, -1);
     state = LEVEL1;
     map.start(1);
     player.start(1);

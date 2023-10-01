@@ -2,6 +2,8 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <SDL2/SDL_mixer.h>
+
 
 class Game;
 
@@ -48,6 +50,10 @@ class ShotGun : public Weapon {
 
     void draw(SDL_Renderer* renderer) override;
     bool update(bool tick, bool fire) override;
+
+    private:
+
+    Mix_Chunk* shoot_sound;
 };
 
 
@@ -61,6 +67,12 @@ class MachineGun : public Weapon {
 
     void draw(SDL_Renderer* renderer) override;
     bool update(bool tick, bool fire) override;
+
+    private:
+
+    Mix_Chunk* spin_up;
+    Mix_Chunk* spin_down;
+    Mix_Chunk* shoot_sound;
 };
 
 
