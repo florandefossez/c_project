@@ -1,8 +1,9 @@
 #pragma once
 
-#include <vector>
+#include <list>
 #include <map>
 #include <string>
+#include <SDL2/SDL_mixer.h>
 
 typedef enum npc_status_ {
     WALK,
@@ -16,7 +17,7 @@ class Game;
 
 class Entity {
 public:
-    Entity(float x, float y, float size, float health) : position_x(x), position_y(y), size(size), health(health) {};
+    Entity(float x, float y, float size, float health, bool transparent) : position_x(x), position_y(y), size(size), health(health), transparent(transparent) {};
     virtual ~Entity() {};
 
     float position_x;
@@ -28,9 +29,11 @@ public:
     float size;
     float health;
 
+    bool transparent;
+
     void draw(Game* game, SDL_Rect& rect);
     virtual void draw(Game* game);
-    virtual void update(Game* game) = 0;
+    virtual bool update(Game* game) = 0;
     virtual void damage(float value) = 0;
 
 protected:
@@ -39,22 +42,38 @@ protected:
 
 };
 
+
+class FireBall : public Entity {
+public:
+    float v_x;
+    float v_y;
+    FireBall(float x, float y, float v_x, float v_y);
+    ~FireBall() {};
+    void draw(Game* game) override;
+    bool update(Game* game) override;
+    void damage(float value) override {(void)value;};
+private:
+    int cooldown;
+    static std::array<SDL_Rect, 5> balls_rects;
+    static Mix_Chunk* explode;
+};
+
 class Barrel : public Entity {
 public:
     Barrel(float x, float y);
     ~Barrel() {};
     void draw(Game* game) override {Entity::draw(game);};
-    void update(Game* game) override {(void)game;};
+    bool update(Game* game) override {(void)game; return false;};
     void damage(float value) override {(void)value;};
 };
 
 class Enemy : public Entity {
 public:
     Enemy(float x, float y, float size, float health, float weapon_damage) :
-        Entity(x,y,size,health), animation_cooldown(0), velocity(2), weapon_damage(weapon_damage) {};
+        Entity(x,y,size,health, false), animation_cooldown(0), velocity(2), weapon_damage(weapon_damage) {};
     virtual ~Enemy() {};
     
-    void update(Game* game) override;
+    bool update(Game* game) override;
     virtual void death() = 0;
 
     unsigned int animation_cooldown;
@@ -75,7 +94,7 @@ public:
     Soldier1(float x, float y);
     ~Soldier1() {};
 
-    void update(Game* game) override;
+    bool update(Game* game) override;
     void draw(Game* game) override;
     void damage(float value) override;
 
@@ -111,7 +130,7 @@ public:
 
     static SDL_Surface* getSurface(std::string name);
 
-    std::vector<Entity*> entities;
+    std::list<Entity*> entities;
     Entity* targeted_entity;
 
 private:

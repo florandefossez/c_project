@@ -62,8 +62,18 @@ std::array<SDL_Rect, 9> Soldier1::death1 = {
 
 };
 
+std::array<SDL_Rect, 5> FireBall::balls_rects = {
+    SDL_Rect{8, 42, 16, 16},
+    SDL_Rect{27, 43, 15, 15},
+    SDL_Rect{144, 6, 56, 56},
+    SDL_Rect{93, 12, 50, 50},
+    SDL_Rect{44, 10, 48, 48}
+};
 
-Object_manager::Object_manager(Game* game) : targeted_entity(nullptr), game(game) {
+Mix_Chunk* FireBall::explode = nullptr;
+
+
+Object_manager::Object_manager(Game* game) : targeted_entity(nullptr),  game(game) {
     entities.clear();
 }
 
@@ -96,18 +106,23 @@ void Object_manager::update() {
 
     float inv_det = 1.0 / (game->player.plane_x * game->player.dir_y - game->player.dir_x * game->player.plane_y);
 
-    for (Entity* entity : entities) {
-        float sprite_x = entity->position_x - game->player.position_x;
-        float sprite_y = entity->position_y - game->player.position_y;
+    for (auto entity = entities.begin(); entity != entities.end();) {
+        float sprite_x = (*entity)->position_x - game->player.position_x;
+        float sprite_y = (*entity)->position_y - game->player.position_y;
 
         // coordinate in the camera space: from world coords to camera coords
-        entity->camera_x = inv_det * (game->player.dir_y * sprite_x - game->player.dir_x * sprite_y);
-        entity->camera_y = inv_det * (-game->player.plane_y * sprite_x + game->player.plane_x * sprite_y); // this is actually the depth inside the screen
-        entity->update(game);
+        (*entity)->camera_x = inv_det * (game->player.dir_y * sprite_x - game->player.dir_x * sprite_y);
+        (*entity)->camera_y = inv_det * (-game->player.plane_y * sprite_x + game->player.plane_x * sprite_y); // this is actually the depth inside the screen
+        if ((*entity)->update(game)) {
+            entity = entities.erase(entity);
+        } else {
+            ++entity;
+        }
     }
 
     // sort the entities to display the furthest before the closest
-    std::sort(entities.begin(), entities.end(), [] (Entity* a, Entity* b) {return a->camera_y > b->camera_y;});
+    // std::sort(entities.begin(), entities.end(),);
+    entities.sort([] (Entity* a, Entity* b) {return a->camera_y > b->camera_y;});
 
     targeted_entity = nullptr;
 }
@@ -148,7 +163,7 @@ void Entity::draw(Game* game, SDL_Rect& rect) {
     float texture_step_x = (float) rect.w / (float) sprite_width;
     float texture_step_y = (float) rect.h / (float) sprite_height;
 
-    if ((2*pixel_x - sprite_width < game->width) && (2*pixel_x + sprite_width > game->width) && (camera_y < game->raycaster.rays_lenght[game->width/2])) {
+    if ((2*pixel_x - sprite_width < game->width) && (2*pixel_x + sprite_width > game->width) && (camera_y < game->raycaster.rays_lenght[game->width/2]) && !transparent) {
         game->entities_manager.targeted_entity = this;
     }
 
@@ -175,14 +190,66 @@ void Entity::draw(Game* game, SDL_Rect& rect) {
 }
 
 
-Barrel::Barrel(float x, float y) : Entity(x,y,1.f,1.f) {
+Barrel::Barrel(float x, float y) : Entity(x, y, 1.f, 1.f, false) {
     surface = Object_manager::getSurface("ressources/entities/barrel.png");
 }
 
 
 
 
-void Enemy::update(Game* game) {
+
+FireBall::FireBall(float x, float y, float v_x, float v_y) : Entity(x, y, 0.35f, 1.f, true), v_x(v_x), v_y(v_y), cooldown(-1) {
+    surface = Object_manager::getSurface("ressources/entities/fire_ball.png");
+    if (!FireBall::explode) {
+        FireBall::explode = Mix_LoadWAV("ressources/sounds/rocket_explosion.wav");
+    }
+}
+    
+
+bool FireBall::update(Game* game) {
+    if (cooldown==0) {
+        return true;
+    }
+    if (cooldown>0) {
+        if (game->animation) cooldown--;
+        return false;
+    };
+
+    float x = position_x + v_x*game->delta_time;
+    float y = position_y + v_y*game->delta_time;
+    if (game->map.collide(x, y)) {
+        cooldown = 5;
+        Mix_PlayChannel(-1, explode, 0);
+        size = 1.f;
+        return false;
+    } else {
+        position_x = x;
+        position_y = y;
+    }
+    for (auto entity : game->entities_manager.entities) {
+        if (!entity->transparent && ((*entity).position_x - position_x)*((*entity).position_x - position_x) + ((*entity).position_y - position_y)*((*entity).position_y - position_y) < entity->size*size) {
+            entity->damage(20.f);
+            cooldown = 5;
+            Mix_PlayChannel(-1, explode, 0);
+            size = 1.f;
+            break;
+        }
+    }
+    return false;
+}
+
+void FireBall::draw(Game* game) {
+    if (cooldown==-1) {
+        Entity::draw(game, balls_rects[0]);
+    } else {
+        Entity::draw(game, balls_rects[2+cooldown/2]);
+    }
+}
+
+
+
+
+bool Enemy::update(Game* game) {
 
     // figure out if enemy has a direct view to the player, cast a ray from player to enemy
     float dist = hypotf(position_x - game->player.position_x, position_y - game->player.position_y);
@@ -263,7 +330,7 @@ void Enemy::update(Game* game) {
                 int a = game->map.map[static_cast<int>(position_x)][static_cast<int>(position_y)].dir;
                 if (a==0) {
                     status = npc_status_t::WAIT;
-                    return;
+                    return false;
                 }
                 if (a%2) {
                     move_x = a-2;
@@ -286,15 +353,6 @@ void Enemy::update(Game* game) {
             break;
         case npc_status_t::DIYING:
             if (animation_cooldown >= 9) {
-                for ( auto it = game->entities_manager.entities.begin(); it != game->entities_manager.entities.end(); ) {
-                    if( (*it)==this ) {
-                        delete *it;  
-                        it = game->entities_manager.entities.erase(it);
-                        break;
-                    } else {
-                        ++it;
-                    }
-                }
                 int x = rand()%64;
                 int y = rand()%64;
                 while (game->map.collide(x,y)) {
@@ -302,6 +360,7 @@ void Enemy::update(Game* game) {
                     y = rand()%64;
                 }
                 game->entities_manager.entities.push_back(new Soldier1(x+0.5, y+0.5));
+                return true;
             }
             break;
     }
@@ -327,6 +386,8 @@ void Enemy::update(Game* game) {
 
     position_x += move_x;
     position_y += move_y;
+
+    return false;
 }
 
 
@@ -335,8 +396,8 @@ Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7f,50.f,4.f) {
     status = WAIT;
 }
 
-void Soldier1::update(Game* game) {
-    Enemy::update(game);
+bool Soldier1::update(Game* game) {
+    return Enemy::update(game);
 }
 
 void Soldier1::draw(Game* game) {
@@ -384,6 +445,6 @@ void Soldier1::damage(float value) {
     }
 }
 
-void Soldier1:: death() {
+void Soldier1::death() {
     status = npc_status_t::DIYING;
 }

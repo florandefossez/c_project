@@ -16,13 +16,17 @@ class Weapon {
     bool available;
     SDL_Texture* texture;
 
-    Weapon(float damage, unsigned int munitions) : damage(damage), munitions(munitions), cooldown(0), available(false) {};
+    Weapon(Game* game, float damage, unsigned int munitions) : damage(damage), munitions(munitions), cooldown(0), available(false), game(game) {};
     virtual ~Weapon() {SDL_DestroyTexture(texture);};
 
-    void draw(SDL_Renderer* renderer, SDL_Rect* rect);
+    void draw(SDL_Rect* rect);
 
-    virtual void draw(SDL_Renderer* renderer) = 0;
+    virtual void draw() = 0;
     virtual bool update(bool tick, bool fire) = 0;
+
+    protected:
+
+    Game* game;
 };
 
 
@@ -30,12 +34,12 @@ class Weapon {
 class Hands : public Weapon {
     public:
 
-    Hands(SDL_Renderer* renderer);
+    Hands(Game* game);
     ~Hands() override {};
 
     static std::array<SDL_Rect, 6> shoot_rects;
 
-    void draw(SDL_Renderer* renderer) override;
+    void draw() override;
     bool update(bool tick, bool fire) override;
 };
 
@@ -43,12 +47,12 @@ class Hands : public Weapon {
 class ShotGun : public Weapon {
     public:
 
-    ShotGun(SDL_Renderer* renderer);
-    ~ShotGun() override {};
+    ShotGun(Game* game);
+    ~ShotGun() override {Mix_FreeChunk(shoot_sound);};
 
     static std::array<SDL_Rect, 6> shoot_rects;
 
-    void draw(SDL_Renderer* renderer) override;
+    void draw() override;
     bool update(bool tick, bool fire) override;
 
     private:
@@ -60,12 +64,16 @@ class ShotGun : public Weapon {
 class MachineGun : public Weapon {
     public:
 
-    MachineGun(SDL_Renderer* renderer);
-    ~MachineGun() override {};
+    MachineGun(Game* game);
+    ~MachineGun() override {
+        Mix_FreeChunk(spin_up);
+        Mix_FreeChunk(spin_down);
+        Mix_FreeChunk(shoot_sound);
+    };
 
     static std::array<SDL_Rect, 4> shoot_rects;
 
-    void draw(SDL_Renderer* renderer) override;
+    void draw() override;
     bool update(bool tick, bool fire) override;
 
     private:
@@ -79,25 +87,29 @@ class MachineGun : public Weapon {
 class RocketLauncher : public Weapon {
     public:
 
-    RocketLauncher(SDL_Renderer* renderer);
-    ~RocketLauncher() override {};
+    RocketLauncher(Game* game);
+    ~RocketLauncher() override {Mix_FreeChunk(rocket_launch);};
 
     static std::array<SDL_Rect, 5> shoot_rects;
 
-    void draw(SDL_Renderer* renderer) override;
+    void draw() override;
     bool update(bool tick, bool fire) override;
+
+    private:
+
+    Mix_Chunk* rocket_launch;
 };
 
 
 class PlasmaGun : public Weapon {
     public:
 
-    PlasmaGun(SDL_Renderer* renderer);
+    PlasmaGun(Game* game);
     ~PlasmaGun() override {};
 
     static std::array<SDL_Rect, 4> shoot_rects;
 
-    void draw(SDL_Renderer* renderer) override;
+    void draw() override;
     bool update(bool tick, bool fire) override;
 };
 
@@ -105,11 +117,11 @@ class PlasmaGun : public Weapon {
 class ChainSaw : public Weapon {
     public:
 
-    ChainSaw(SDL_Renderer* renderer);
+    ChainSaw(Game* game);
     ~ChainSaw() override {};
 
     static std::array<SDL_Rect, 4> shoot_rects;
 
-    void draw(SDL_Renderer* renderer) override;
+    void draw() override;
     bool update(bool tick, bool fire) override;
 };

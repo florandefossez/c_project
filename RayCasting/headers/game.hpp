@@ -60,6 +60,6 @@ private:
     bool running;
     Uint32 prev_ticks;
 
-    Mix_Chunk* menu_music;
-    Mix_Chunk* game_music;
+    Mix_Music* menu_music;
+    Mix_Music* game_music;
 };

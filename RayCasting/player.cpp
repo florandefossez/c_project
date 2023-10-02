@@ -15,12 +15,12 @@
 Player::Player(Game* game) : weapon(0), game(game) {}
 
 void Player::load() {
-    weapons[0] = new Hands(game->renderer);
-    weapons[1] = new ShotGun(game->renderer);
-    weapons[2] = new MachineGun(game->renderer);
-    weapons[3] = new RocketLauncher(game->renderer);
-    weapons[4] = new PlasmaGun(game->renderer);
-    weapons[5] = new ChainSaw(game->renderer);
+    weapons[0] = new Hands(game);
+    weapons[1] = new ShotGun(game);
+    weapons[2] = new MachineGun(game);
+    weapons[3] = new RocketLauncher(game);
+    weapons[4] = new PlasmaGun(game);
+    weapons[5] = new ChainSaw(game);
 }
 
 void Player::start(int level_id) {
@@ -159,7 +159,7 @@ void Player::switch_weapon() {
 
 
 void Player::draw() {
-    weapons[weapon]->draw(game->renderer);
+    weapons[weapon]->draw();
 }
 
 

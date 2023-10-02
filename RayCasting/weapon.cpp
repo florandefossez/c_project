@@ -14,16 +14,16 @@
 #include "headers/weapon.hpp"
 
 
-void Weapon::draw(SDL_Renderer* renderer, SDL_Rect* rect) {
+void Weapon::draw(SDL_Rect* rect) {
     int width, height;
-    SDL_RenderGetLogicalSize(renderer, &width, &height);
+    SDL_RenderGetLogicalSize(game->renderer, &width, &height);
     SDL_Rect dst = {
         width / 2 - rect->w * height / 672,
         542 * width / 957 - rect->h * height / 336,
         rect->w * height / 336,
         rect->h * height / 336
     };
-    SDL_RenderCopy(renderer, texture, rect, &dst);
+    SDL_RenderCopy(game->renderer, texture, rect, &dst);
 }
 
 
@@ -38,8 +38,8 @@ std::array<SDL_Rect, 6> ShotGun::shoot_rects = {
     SDL_Rect{430, 0, 79, 168}
 };
 
-ShotGun::ShotGun(SDL_Renderer* renderer) : Weapon(30.f, 10) {
-    texture = IMG_LoadTexture(renderer, "ressources/weapons/shotgun.png");
+ShotGun::ShotGun(Game* game) : Weapon(game, 30.f, 10) {
+    texture = IMG_LoadTexture(game->renderer, "ressources/weapons/shotgun.png");
     shoot_sound = Mix_LoadWAV("ressources/sounds/shotgun.wav");
 }
 
@@ -57,8 +57,8 @@ bool ShotGun::update(bool tick, bool fire) {
     return false;
 }
 
-void ShotGun::draw(SDL_Renderer* renderer) {
-    Weapon::draw(renderer, &ShotGun::shoot_rects[cooldown/2]);
+void ShotGun::draw() {
+    Weapon::draw(&ShotGun::shoot_rects[cooldown/2]);
 }
 
 
@@ -75,8 +75,8 @@ std::array<SDL_Rect, 6> Hands::shoot_rects = {
     SDL_Rect{117, 0, 80, 75},
 };
 
-Hands::Hands(SDL_Renderer* renderer) : Weapon(20.f, 0) {
-    texture = IMG_LoadTexture(renderer, "ressources/weapons/hands.png");
+Hands::Hands(Game* game) : Weapon(game, 20.f, 0) {
+    texture = IMG_LoadTexture(game->renderer, "ressources/weapons/hands.png");
 }
 
 bool Hands::update(bool tick, bool fire) {
@@ -91,8 +91,8 @@ bool Hands::update(bool tick, bool fire) {
     return false;
 }
 
-void Hands::draw(SDL_Renderer* renderer) {
-    Weapon::draw(renderer, &Hands::shoot_rects[cooldown/2]);
+void Hands::draw() {
+    Weapon::draw(&Hands::shoot_rects[cooldown/2]);
 }
 
 
@@ -107,8 +107,8 @@ std::array<SDL_Rect, 4> MachineGun::shoot_rects = {
     SDL_Rect{363, 0, 114, 103},
 };
 
-MachineGun::MachineGun(SDL_Renderer* renderer) : Weapon(20.f, 0) {
-    texture = IMG_LoadTexture(renderer, "ressources/weapons/machineGun.png");
+MachineGun::MachineGun(Game* game) : Weapon(game, 20.f, 0) {
+    texture = IMG_LoadTexture(game->renderer, "ressources/weapons/machineGun.png");
     spin_up = Mix_LoadWAV("ressources/sounds/minigun_spin_up.wav");
     spin_down = Mix_LoadWAV("ressources/sounds/minigun_spin_down.wav");
     shoot_sound = Mix_LoadWAV("ressources/sounds/minigun_fire.wav");
@@ -138,11 +138,11 @@ bool MachineGun::update(bool tick, bool fire) {
     return false;
 }
 
-void MachineGun::draw(SDL_Renderer* renderer) {
+void MachineGun::draw() {
     int frame = 0;
     if (cooldown >= 10) frame = 2+cooldown%2;
     if (cooldown < 10 && cooldown > 0) frame = cooldown%2;
-    Weapon::draw(renderer, &MachineGun::shoot_rects[frame]);
+    Weapon::draw(&MachineGun::shoot_rects[frame]);
 }
 
 
@@ -161,14 +161,19 @@ std::array<SDL_Rect, 5> RocketLauncher::shoot_rects = {
     SDL_Rect{93, 0, 87, 119},    
 };
 
-RocketLauncher::RocketLauncher(SDL_Renderer* renderer) : Weapon(20.f, 0) {
-    texture = IMG_LoadTexture(renderer, "ressources/weapons/rocketLauncher.png");
+RocketLauncher::RocketLauncher(Game* game) : Weapon(game, 20.f, 0) {
+    texture = IMG_LoadTexture(game->renderer, "ressources/weapons/rocketLauncher.png");
+    rocket_launch = Mix_LoadWAV("ressources/sounds/rocket_launch.wav");
 }
 
 bool RocketLauncher::update(bool tick, bool fire) {
     if (fire && cooldown==0) {
         cooldown = 4;
-        return true;
+        Mix_PlayChannel(-1, rocket_launch, 0);
+        game->entities_manager.entities.push_back(
+            new FireBall(game->player.position_x, game->player.position_y, game->player.dir_x*10.f, game->player.dir_y*10.f)
+        );
+        return false;
     }
     if (tick && cooldown) {
         cooldown--;
@@ -177,8 +182,8 @@ bool RocketLauncher::update(bool tick, bool fire) {
     return false;
 }
 
-void RocketLauncher::draw(SDL_Renderer* renderer) {
-    Weapon::draw(renderer, &RocketLauncher::shoot_rects[cooldown]);
+void RocketLauncher::draw() {
+    Weapon::draw(&RocketLauncher::shoot_rects[cooldown]);
 }
 
 
@@ -193,8 +198,8 @@ std::array<SDL_Rect, 4> PlasmaGun::shoot_rects = {
     SDL_Rect{86, 0, 104, 111},
 };
 
-PlasmaGun::PlasmaGun(SDL_Renderer* renderer) : Weapon(20.f, 0) {
-    texture = IMG_LoadTexture(renderer, "ressources/weapons/plasmaGun.png");
+PlasmaGun::PlasmaGun(Game* game) : Weapon(game, 20.f, 0) {
+    texture = IMG_LoadTexture(game->renderer, "ressources/weapons/plasmaGun.png");
 }
 
 bool PlasmaGun::update(bool tick, bool fire) {
@@ -213,12 +218,12 @@ bool PlasmaGun::update(bool tick, bool fire) {
     return false;
 }
 
-void PlasmaGun::draw(SDL_Renderer* renderer) {
+void PlasmaGun::draw() {
     int frame;
     if (cooldown == 0) frame = 2;
     if (cooldown>0 && cooldown<10) frame = 3; 
     if (cooldown>=10) frame = (cooldown-10)/3;
-    Weapon::draw(renderer, &PlasmaGun::shoot_rects[frame]);
+    Weapon::draw(&PlasmaGun::shoot_rects[frame]);
 }
 
 
@@ -234,8 +239,8 @@ std::array<SDL_Rect, 4> ChainSaw::shoot_rects = {
     SDL_Rect{442, 0, 154, 89},
 };
 
-ChainSaw::ChainSaw(SDL_Renderer* renderer) : Weapon(20.f, 0) {
-    texture = IMG_LoadTexture(renderer, "ressources/weapons/chainSaw.png");
+ChainSaw::ChainSaw(Game* game) : Weapon(game, 20.f, 0) {
+    texture = IMG_LoadTexture(game->renderer, "ressources/weapons/chainSaw.png");
 }
 
 bool ChainSaw::update(bool tick, bool fire) {
@@ -247,6 +252,6 @@ bool ChainSaw::update(bool tick, bool fire) {
     return false;
 }
 
-void ChainSaw::draw(SDL_Renderer* renderer) {
-    Weapon::draw(renderer, &ChainSaw::shoot_rects[cooldown]);
+void ChainSaw::draw() {
+    Weapon::draw(&ChainSaw::shoot_rects[cooldown]);
 }
