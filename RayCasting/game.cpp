@@ -124,6 +124,7 @@ void Game::handleEvents() {
             if (event.key.keysym.sym == interact) raycaster.trigger();
             if (event.key.keysym.sym == SDLK_ESCAPE) {
                 Mix_PlayMusic(menu_music, -1);
+                Mix_HaltChannel(1);
                 state = MENU;
             };
             break;

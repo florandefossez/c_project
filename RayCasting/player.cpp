@@ -152,6 +152,7 @@ void Player::rotate(float relative_mov) {
 
 
 void Player::switch_weapon() {
+    Mix_HaltChannel(1);
     do {
         weapon = (weapon + 1) % 6;
     } while (!weapons[weapon]->available);

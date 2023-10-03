@@ -41,6 +41,10 @@ class Hands : public Weapon {
 
     void draw() override;
     bool update(bool tick, bool fire) override;
+
+    private:
+
+    Mix_Chunk* punch;
 };
 
 
@@ -111,6 +115,10 @@ class PlasmaGun : public Weapon {
 
     void draw() override;
     bool update(bool tick, bool fire) override;
+
+    private:
+
+    Mix_Chunk* shot;
 };
 
 
@@ -124,4 +132,9 @@ class ChainSaw : public Weapon {
 
     void draw() override;
     bool update(bool tick, bool fire) override;
+
+    private:
+
+    Mix_Chunk* idle;
+    Mix_Chunk* sawing;
 };
