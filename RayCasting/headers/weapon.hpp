@@ -23,6 +23,7 @@ class Weapon {
 
     virtual void draw() = 0;
     virtual bool update(bool tick, bool fire) = 0;
+    virtual float getdamage(float distance) = 0;
 
     protected:
 
@@ -41,6 +42,7 @@ class Hands : public Weapon {
 
     void draw() override;
     bool update(bool tick, bool fire) override;
+    float getdamage(float distance) override;
 
     private:
 
@@ -58,6 +60,7 @@ class ShotGun : public Weapon {
 
     void draw() override;
     bool update(bool tick, bool fire) override;
+    float getdamage(float distance) override;
 
     private:
 
@@ -79,6 +82,7 @@ class MachineGun : public Weapon {
 
     void draw() override;
     bool update(bool tick, bool fire) override;
+    float getdamage(float distance) override;
 
     private:
 
@@ -98,6 +102,7 @@ class RocketLauncher : public Weapon {
 
     void draw() override;
     bool update(bool tick, bool fire) override;
+    float getdamage(float distance) override;
 
     private:
 
@@ -115,6 +120,7 @@ class PlasmaGun : public Weapon {
 
     void draw() override;
     bool update(bool tick, bool fire) override;
+    float getdamage(float distance) override;
 
     private:
 
@@ -132,6 +138,7 @@ class ChainSaw : public Weapon {
 
     void draw() override;
     bool update(bool tick, bool fire) override;
+    float getdamage(float distance) override;
 
     private:
 

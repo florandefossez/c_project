@@ -146,6 +146,7 @@ public:
 
     std::list<Entity*> entities;
     Entity* targeted_entity;
+    float targeted_entity_distance;
 
 private:
 

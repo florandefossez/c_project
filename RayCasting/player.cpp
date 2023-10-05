@@ -122,7 +122,7 @@ void Player::update() {
     pathfind();
     if (weapons[weapon]->update(game->animation, SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromKey(game->shoot)])) {
         if (game->entities_manager.targeted_entity) {
-            game->entities_manager.targeted_entity->damage(weapons[weapon]->damage);
+            game->entities_manager.targeted_entity->damage(weapons[weapon]->getdamage(game->entities_manager.targeted_entity_distance));
             if (state_change_cooldown == 0) {
                 state_change_cooldown = 20;
                 state = player_state_t::SCREAM;

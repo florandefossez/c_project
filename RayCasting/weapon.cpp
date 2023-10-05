@@ -61,6 +61,10 @@ void ShotGun::draw() {
     Weapon::draw(&ShotGun::shoot_rects[cooldown/2]);
 }
 
+float ShotGun::getdamage(float distance) {
+    (void) distance;
+    return damage;
+}
 
 
 
@@ -95,6 +99,10 @@ bool Hands::update(bool tick, bool fire) {
 
 void Hands::draw() {
     Weapon::draw(&Hands::shoot_rects[cooldown/2]);
+}
+
+float Hands::getdamage(float distance) {
+    return distance < 1.f ? damage : 0.f;
 }
 
 
@@ -146,6 +154,10 @@ void MachineGun::draw() {
     Weapon::draw(&MachineGun::shoot_rects[frame]);
 }
 
+float MachineGun::getdamage(float distance) {
+    (void) distance;
+    return damage;
+}
 
 
 
@@ -185,6 +197,11 @@ bool RocketLauncher::update(bool tick, bool fire) {
 
 void RocketLauncher::draw() {
     Weapon::draw(&RocketLauncher::shoot_rects[cooldown]);
+}
+
+float RocketLauncher::getdamage(float distance) {
+    (void) distance;
+    return 0.f;
 }
 
 
@@ -235,7 +252,10 @@ void PlasmaGun::draw() {
     Weapon::draw(&PlasmaGun::shoot_rects[frame]);
 }
 
-
+float PlasmaGun::getdamage(float distance) {
+    (void) distance;
+    return 0.f;
+}
 
 
 
@@ -275,4 +295,8 @@ bool ChainSaw::update(bool tick, bool fire) {
 
 void ChainSaw::draw() {
     Weapon::draw(&ChainSaw::shoot_rects[cooldown]);
+}
+
+float ChainSaw::getdamage(float distance) {
+    return distance < 1.f ? damage : 0.f;
 }

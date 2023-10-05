@@ -80,7 +80,7 @@ std::array<SDL_Rect, 4> PlasmaBall::balls_rects = {
 };
 
 
-Object_manager::Object_manager(Game* game) : targeted_entity(nullptr),  game(game) {
+Object_manager::Object_manager(Game* game) : targeted_entity(nullptr), game(game) {
     entities.clear();
 }
 
@@ -91,6 +91,7 @@ void Object_manager::start(int level_id) {
 
     entities.clear();
     targeted_entity = nullptr;
+    targeted_entity_distance = 100.f;
     
     switch (level_id) {
     case 1:
@@ -132,6 +133,7 @@ void Object_manager::update() {
     entities.sort([] (Entity* a, Entity* b) {return a->camera_y > b->camera_y;});
 
     targeted_entity = nullptr;
+    targeted_entity_distance = 100.f;
 }
 
 
@@ -172,6 +174,7 @@ void Entity::draw(Game* game, SDL_Rect& rect) {
 
     if ((2*pixel_x - sprite_width < game->width) && (2*pixel_x + sprite_width > game->width) && (camera_y < game->raycaster.rays_lenght[game->width/2]) && !transparent) {
         game->entities_manager.targeted_entity = this;
+        game->entities_manager.targeted_entity_distance = camera_y; 
     }
 
     for (int i=0; i < sprite_width; i++) {
@@ -490,6 +493,7 @@ void Soldier1::draw(Game* game) {
 
 void Soldier1::damage(float value) {
     if (status == npc_status_t::DIYING) return;
+    if (value == 0) return;
     status = npc_status_t::PAIN;
     animation_cooldown = 0;
     health -= value;
