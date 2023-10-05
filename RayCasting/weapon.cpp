@@ -207,8 +207,14 @@ PlasmaGun::PlasmaGun(Game* game) : Weapon(game, 20.f, 0) {
 bool PlasmaGun::update(bool tick, bool fire) {
     if (cooldown == 15) Mix_PlayChannel(1, shot, 0);
     if (tick && fire && cooldown>=10) {
+        if (cooldown%3==0) {
+                game->entities_manager.entities.push_back(
+            new PlasmaBall(game->player.position_x, game->player.position_y, game->player.dir_x*10.f, game->player.dir_y*10.f)
+            );
+        }
+       
         cooldown = 10 + (cooldown+1)%6;
-        return true;
+        return false;
     }
     if (fire && cooldown==0) {
         cooldown = 10;

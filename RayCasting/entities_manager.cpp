@@ -72,6 +72,13 @@ std::array<SDL_Rect, 5> FireBall::balls_rects = {
 
 Mix_Chunk* FireBall::explode = nullptr;
 
+std::array<SDL_Rect, 4> PlasmaBall::balls_rects = {
+    SDL_Rect{0, 18, 23, 23},
+    SDL_Rect{25, 0, 41, 41},
+    SDL_Rect{66, 0, 41, 41},
+    SDL_Rect{107, 0, 41, 41}
+};
+
 
 Object_manager::Object_manager(Game* game) : targeted_entity(nullptr),  game(game) {
     entities.clear();
@@ -245,6 +252,52 @@ void FireBall::draw(Game* game) {
         Entity::draw(game, balls_rects[2+cooldown/2]);
     }
 }
+
+
+PlasmaBall::PlasmaBall(float x, float y, float v_x, float v_y) : Entity(x, y, 0.2f, 1.f, true), v_x(v_x), v_y(v_y), cooldown(-1) {
+    surface = Object_manager::getSurface("ressources/entities/plasma_ball.png");
+}
+    
+
+bool PlasmaBall::update(Game* game) {
+    if (cooldown==0) {
+        return true;
+    }
+    if (cooldown>0) {
+        if (game->animation) cooldown--;
+        return false;
+    };
+
+    float x = position_x + v_x*game->delta_time;
+    float y = position_y + v_y*game->delta_time;
+    if (game->map.collide(x, y)) {
+        cooldown = 5;
+        size = 1.f;
+        return false;
+    } else {
+        position_x = x;
+        position_y = y;
+    }
+    for (auto entity : game->entities_manager.entities) {
+        if (!entity->transparent && ((*entity).position_x - position_x)*((*entity).position_x - position_x) + ((*entity).position_y - position_y)*((*entity).position_y - position_y) < entity->size*size) {
+            entity->damage(5.f);
+            cooldown = 5;
+            size = 0.7f;
+            break;
+        }
+    }
+    return false;
+}
+
+void PlasmaBall::draw(Game* game) {
+    if (cooldown==-1) {
+        Entity::draw(game, balls_rects[0]);
+    } else {
+        Entity::draw(game, balls_rects[1+cooldown/2]);
+    }
+}
+
+
 
 
 

@@ -58,6 +58,20 @@ private:
     static Mix_Chunk* explode;
 };
 
+class PlasmaBall : public Entity {
+public:
+    float v_x;
+    float v_y;
+    PlasmaBall(float x, float y, float v_x, float v_y);
+    ~PlasmaBall() {};
+    void draw(Game* game) override;
+    bool update(Game* game) override;
+    void damage(float value) override {(void)value;};
+private:
+    int cooldown;
+    static std::array<SDL_Rect, 4> balls_rects;
+};
+
 class Barrel : public Entity {
 public:
     Barrel(float x, float y);
