@@ -227,11 +227,11 @@ void Hud::load(SDL_Renderer* renderer) {
     menu_background = IMG_LoadTexture(renderer, "ressources/menu_background.png");
 }
 
-void Hud::update(bool tick, Player* player) {
+void Hud::update(bool tick) {
     static unsigned int s;
     if (tick) s++;
     
-    switch (player->state) {
+    switch (game->player.state) {
     case player_state_t::CALM:
         face = (s/20)%3;
         break;
@@ -330,6 +330,10 @@ void Hud::draw(SDL_Renderer* renderer) {
             );
         }
     }
+
+    // game over
+    if (game->player.game_over)
+        draw_text(game->renderer, "Game Over", 100, 300, 70);
 }
 
 

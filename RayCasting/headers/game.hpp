@@ -41,6 +41,7 @@ public:
     void update_width(int w);
     void start_level();
     void stop_run();
+    void menu();
 
     uint32_t* scene_pixels;
 

@@ -15,7 +15,7 @@ public:
     void draw(SDL_Renderer* renderer);
     void draw_menu(SDL_Renderer* renderer);
     void draw_option(SDL_Renderer* renderer);
-    void update(bool tick, Player* player);
+    void update(bool tick);
     void handleEvents_menu(SDL_Event* event);
     void handleEvents_option(SDL_Event* event);
     void draw_text(SDL_Renderer* renderer, std::string text, int x, int y, int h);

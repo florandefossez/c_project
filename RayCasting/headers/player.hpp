@@ -44,6 +44,8 @@ public:
     float health;
 
     player_state_t state;
+    int blood_level;
+    int game_over;
 
     int weapon;
     Weapon* weapons[6];

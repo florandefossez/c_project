@@ -12,7 +12,7 @@
 #include "headers/game.hpp"
 
 
-Player::Player(Game* game) : weapon(0), game(game) {}
+Player::Player(Game* game) :  blood_level(0), weapon(0), game(game) {}
 
 void Player::load() {
     weapons[0] = new Hands(game);
@@ -24,6 +24,8 @@ void Player::load() {
 }
 
 void Player::start(int level_id) {
+    blood_level = 0;
+    game_over = 0;
     for (auto weap : weapons) {
         weap->munitions = 20;
         weap->cooldown = 0;
@@ -61,6 +63,7 @@ float Player::get_angle() {
 
 void Player::damage(float value) {
     health -= value;
+    blood_level += blood_level>100 ? 0 : 10;
     if (!state_change_cooldown) {
         state_change_cooldown = 20;
         state = player_state_t::CLENCH;
@@ -68,6 +71,14 @@ void Player::damage(float value) {
 }
 
 void Player::update() {
+
+    if (game_over) {
+        if (game->animation) game_over--;
+        if (!game_over) game->menu();
+        return;
+    }
+    if (health <= 0) game_over = 80;
+    if (blood_level && game->animation) blood_level--;
 
     float move_x = 0;
     float move_y = 0;
@@ -160,6 +171,10 @@ void Player::switch_weapon() {
 
 
 void Player::draw() {
+    if (blood_level) {
+        SDL_SetRenderDrawColor(game->renderer, 0xbb, 0x0a, 0x1e, blood_level);
+        SDL_RenderFillRect(game->renderer, nullptr);
+    }
     weapons[weapon]->draw();
 }
 

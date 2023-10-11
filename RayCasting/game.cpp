@@ -25,6 +25,7 @@ Game::Game() : width(1024), state(MENU), map(this), player(this), raycaster(this
     renderer = SDL_CreateRenderer(window, -1, 0);
     SDL_RenderSetLogicalSize(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
     SDL_SetRelativeMouseMode(SDL_TRUE);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     running = true;
 
     scene_pixels = new Uint32[width * (2 * width / 3)];
@@ -122,11 +123,7 @@ void Game::handleEvents() {
             if (event.type != SDL_KEYDOWN) continue;
             if (event.key.keysym.sym == switch_weapon) player.switch_weapon();
             if (event.key.keysym.sym == interact) raycaster.trigger();
-            if (event.key.keysym.sym == SDLK_ESCAPE) {
-                Mix_PlayMusic(menu_music, -1);
-                Mix_HaltChannel(1);
-                state = MENU;
-            };
+            if (event.key.keysym.sym == SDLK_ESCAPE) menu();
             break;
         }
 
@@ -158,7 +155,7 @@ void Game::update() {
     default:
         map.update();
         player.update();
-        hud.update(animation, &player);
+        hud.update(animation);
         raycaster.update();
         entities_manager.update();
         break;
@@ -206,6 +203,12 @@ void Game::start_level() {
     entities_manager.start(1);
     raycaster.start();
 }
+
+void Game::menu() {
+    Mix_PlayMusic(menu_music, -1);
+    Mix_HaltChannel(1);
+    state = MENU;
+};
 
 void Game::stop_run() {
     running = false;
