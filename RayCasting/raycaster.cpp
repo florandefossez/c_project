@@ -290,7 +290,7 @@ raycast_label:
 }
 
 void Raycaster::trigger() {
-    if (!game->map.map[targeted_wall_x][targeted_wall_y].is_door || rays_lenght[game->width/2]>1.f || opening_state!=0) return;
+    if (!game->map.map[targeted_wall_x][targeted_wall_y].is_door || rays_lenght[game->width/2]>1.5f || opening_state!=0) return;
     opening_door_x = targeted_wall_x;
     opening_door_y = targeted_wall_y;
     opening_state = 1.f;

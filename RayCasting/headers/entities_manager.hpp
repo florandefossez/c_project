@@ -33,7 +33,7 @@ public:
 
     void draw(Game* game, SDL_Rect& rect);
     virtual void draw(Game* game);
-    virtual bool update(Game* game) = 0;
+    virtual bool update(Game* game) = 0; // return true if the entity have to be deleted
     virtual void damage(float value) = 0;
 
 protected:
@@ -70,6 +70,19 @@ public:
 private:
     int cooldown;
     static std::array<SDL_Rect, 4> balls_rects;
+};
+
+class Ammos : public Entity {
+public:
+    Ammos(float x, float y, int quantity, int weapon_id);
+    ~Ammos() {};
+    void draw(Game* game) override;
+    bool update(Game* game) override;
+    void damage(float value) override {(void) value;};
+private:
+    int weapon_id;
+    int quantity;
+    static std::array<SDL_Rect, 4> ammos_rects;
 };
 
 class Barrel : public Entity {

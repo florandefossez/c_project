@@ -50,7 +50,7 @@ bool ShotGun::update(bool tick, bool fire) {
     }
     if (fire && !cooldown && munitions) {
         Mix_PlayChannel(1, shoot_sound, 0);
-        cooldown = 11;
+        cooldown = 10;
         munitions--;
         return true;
     }
@@ -91,7 +91,7 @@ bool Hands::update(bool tick, bool fire) {
     }
     if (!cooldown && fire) {
         Mix_PlayChannel(1, punch, 0);
-        cooldown = 11;
+        cooldown = 10;
         return true;
     }
     return false;
@@ -102,7 +102,7 @@ void Hands::draw() {
 }
 
 float Hands::getdamage(float distance) {
-    return distance < 1.f ? damage : 0.f;
+    return distance < 2.f ? damage : 0.f;
 }
 
 
@@ -117,7 +117,7 @@ std::array<SDL_Rect, 4> MachineGun::shoot_rects = {
     SDL_Rect{363, 0, 114, 103},
 };
 
-MachineGun::MachineGun(Game* game) : Weapon(game, 20.f, 0) {
+MachineGun::MachineGun(Game* game) : Weapon(game, 4.f, 100) {
     texture = IMG_LoadTexture(game->renderer, "ressources/weapons/machineGun.png");
     spin_up = Mix_LoadWAV("ressources/sounds/minigun_spin_up.wav");
     spin_down = Mix_LoadWAV("ressources/sounds/minigun_spin_down.wav");
@@ -127,13 +127,15 @@ MachineGun::MachineGun(Game* game) : Weapon(game, 20.f, 0) {
 bool MachineGun::update(bool tick, bool fire) {
     if (tick && fire && cooldown<10) {
         if (cooldown == 0) Mix_PlayChannel(1, spin_up, 0);
-        if (cooldown == 9) Mix_PlayChannel(1, shoot_sound, -1);
+        if (cooldown == 9 && munitions) Mix_PlayChannel(1, shoot_sound, -1);
         cooldown++;
         return false;
     }
     if (tick && fire && cooldown) {
         cooldown = 10 + (cooldown+1)%2;
-        return true;
+        if (cooldown%2 && munitions) munitions--;
+        if (!munitions) Mix_HaltChannel(1);
+        return munitions;
     }
     if (tick && !fire && cooldown>0) {
         if (cooldown>=10) {
@@ -149,8 +151,8 @@ bool MachineGun::update(bool tick, bool fire) {
 
 void MachineGun::draw() {
     int frame = 0;
-    if (cooldown >= 10) frame = 2+cooldown%2;
-    if (cooldown < 10 && cooldown > 0) frame = cooldown%2;
+    if (cooldown >= 10 && munitions) frame = 2+cooldown%2;
+    if ((cooldown < 10 && cooldown > 0) || (!munitions && cooldown)) frame = cooldown%2;
     Weapon::draw(&MachineGun::shoot_rects[frame]);
 }
 
@@ -174,14 +176,15 @@ std::array<SDL_Rect, 5> RocketLauncher::shoot_rects = {
     SDL_Rect{93, 0, 87, 119},    
 };
 
-RocketLauncher::RocketLauncher(Game* game) : Weapon(game, 20.f, 0) {
+RocketLauncher::RocketLauncher(Game* game) : Weapon(game, 20.f, 20) {
     texture = IMG_LoadTexture(game->renderer, "ressources/weapons/rocketLauncher.png");
     rocket_launch = Mix_LoadWAV("ressources/sounds/rocket_launch.wav");
 }
 
 bool RocketLauncher::update(bool tick, bool fire) {
-    if (fire && cooldown==0) {
-        cooldown = 4;
+    if (fire && cooldown==0 && munitions) {
+        munitions--;
+        cooldown = 6;
         Mix_PlayChannel(1, rocket_launch, 0);
         game->entities_manager.entities.push_back(
             new FireBall(game->player.position_x, game->player.position_y, game->player.dir_x*10.f, game->player.dir_y*10.f)
@@ -216,25 +219,30 @@ std::array<SDL_Rect, 4> PlasmaGun::shoot_rects = {
     SDL_Rect{86, 0, 104, 111},
 };
 
-PlasmaGun::PlasmaGun(Game* game) : Weapon(game, 20.f, 0) {
+PlasmaGun::PlasmaGun(Game* game) : Weapon(game, 20.f, 60) {
     texture = IMG_LoadTexture(game->renderer, "ressources/weapons/plasmaGun.png");
     shot = Mix_LoadWAV("ressources/sounds/plasma.wav");
 }
 
 bool PlasmaGun::update(bool tick, bool fire) {
-    if (cooldown == 15) Mix_PlayChannel(1, shot, 0);
-    if (tick && fire && cooldown>=10) {
-        if (cooldown%3==0) {
-                game->entities_manager.entities.push_back(
-            new PlasmaBall(game->player.position_x, game->player.position_y, game->player.dir_x*10.f, game->player.dir_y*10.f)
+    if (tick && fire && cooldown>=10 && munitions) {
+        if (cooldown == 13) {
+            Mix_PlayChannel(1, shot, 0);
+            game->entities_manager.entities.push_back(
+                new PlasmaBall(game->player.position_x, game->player.position_y, game->player.dir_x*10.f, game->player.dir_y*10.f)
             );
+            munitions--;
         }
-       
-        cooldown = 10 + (cooldown+1)%6;
+        cooldown = 10 + (cooldown+1)%4;
         return false;
     }
-    if (fire && cooldown==0) {
-        cooldown = 10;
+    if (fire && cooldown==0 && munitions) {
+        cooldown = 12;
+        Mix_PlayChannel(1, shot, 0);
+        game->entities_manager.entities.push_back(
+            new PlasmaBall(game->player.position_x, game->player.position_y, game->player.dir_x*10.f, game->player.dir_y*10.f)
+        );
+        munitions--;
         return false;
     }
     if (tick && cooldown) {
@@ -268,7 +276,7 @@ std::array<SDL_Rect, 4> ChainSaw::shoot_rects = {
     SDL_Rect{442, 0, 154, 89},
 };
 
-ChainSaw::ChainSaw(Game* game) : Weapon(game, 20.f, 0) {
+ChainSaw::ChainSaw(Game* game) : Weapon(game, 4.f, 0) {
     texture = IMG_LoadTexture(game->renderer, "ressources/weapons/chainSaw.png");
     sawing = Mix_LoadWAV("ressources/sounds/chainsaw.wav");
     idle = Mix_LoadWAV("ressources/sounds/chainsaw_idle.wav");
@@ -298,5 +306,5 @@ void ChainSaw::draw() {
 }
 
 float ChainSaw::getdamage(float distance) {
-    return distance < 1.f ? damage : 0.f;
+    return distance < 2.f ? damage : 0.f;
 }

@@ -6,6 +6,7 @@
 
 
 #include "headers/raycaster.hpp"
+#include "headers/weapon.hpp"
 #include "headers/map.hpp"
 #include "headers/player.hpp"
 #include "headers/entities_manager.hpp"
@@ -79,6 +80,13 @@ std::array<SDL_Rect, 4> PlasmaBall::balls_rects = {
     SDL_Rect{107, 0, 41, 41}
 };
 
+std::array<SDL_Rect, 4> Ammos::ammos_rects = {
+    SDL_Rect{0, 0, 15, 7},
+    SDL_Rect{16, 0, 28, 16},
+    SDL_Rect{45, 0, 54, 21},
+    SDL_Rect{100, 0, 32, 21} 
+};
+
 
 Object_manager::Object_manager(Game* game) : targeted_entity(nullptr), game(game) {
     entities.clear();
@@ -97,6 +105,10 @@ void Object_manager::start(int level_id) {
     case 1:
         entities.push_back(new Soldier1(4.5,44.0));
         entities.push_back(new Barrel(4.5,44.0));
+        entities.push_back(new Ammos(9.5,39.5,100,1));
+        entities.push_back(new Ammos(12,40,100,2));
+        entities.push_back(new Ammos(10,42,100,3));
+        entities.push_back(new Ammos(12,42,100,4));
         break;
     
     default:
@@ -164,10 +176,10 @@ void Entity::draw(Game* game, SDL_Rect& rect) {
 
     //calculate size of the sprite on screen, using 'camera_y' instead of the real distance to avoid fisheye
     //this is the dimension in pixel
-    int sprite_height = int(size * height / camera_y);
+    int sprite_height = int(size * height / camera_y * 15.f / 14.f);
     int sprite_width = sprite_height * rect.w / rect.h;
     
-    int y_offset = height / 2 - static_cast<int>((float) game->width * (size - 0.5) / (1.7f * camera_y));
+    int y_offset = height / 2 - static_cast<int>((float) height * (size - 0.5) / camera_y * 15.f / 14.f);
     
     float texture_step_x = (float) rect.w / (float) sprite_width;
     float texture_step_y = (float) rect.h / (float) sprite_height;
@@ -283,7 +295,7 @@ bool PlasmaBall::update(Game* game) {
     }
     for (auto entity : game->entities_manager.entities) {
         if (!entity->transparent && ((*entity).position_x - position_x)*((*entity).position_x - position_x) + ((*entity).position_y - position_y)*((*entity).position_y - position_y) < entity->size*size) {
-            entity->damage(5.f);
+            entity->damage(10.f);
             cooldown = 5;
             size = 0.7f;
             break;
@@ -301,6 +313,34 @@ void PlasmaBall::draw(Game* game) {
 }
 
 
+Ammos::Ammos(float x, float y, int quantity, int weapon_id) : Entity(x, y, 0.2f, 1, true), weapon_id(weapon_id), quantity(quantity) {
+    surface = Object_manager::getSurface("ressources/entities/ammos.png");
+}
+
+void Ammos::draw(Game* game) {
+    switch (weapon_id) {
+    case 1:
+        Entity::draw(game, Ammos::ammos_rects[0]);
+        break;
+    case 2:
+        Entity::draw(game, Ammos::ammos_rects[1]);
+        break;
+    case 3:
+        Entity::draw(game, Ammos::ammos_rects[2]);
+        break;
+    case 4:
+        Entity::draw(game, Ammos::ammos_rects[3]);
+        break;
+    }
+}
+
+bool Ammos::update(Game* game) {
+    if (game->player.weapons[weapon_id]->available && (camera_y*camera_y + camera_x*camera_x) < 0.9f) {
+        game->player.weapons[weapon_id]->munitions += quantity;
+        return true;
+    }
+    return false;
+}
 
 
 
@@ -497,7 +537,7 @@ void Soldier1::damage(float value) {
     status = npc_status_t::PAIN;
     animation_cooldown = 0;
     health -= value;
-    if (health < 0) {
+    if (health <= 0) {
         death();
     }
 }
