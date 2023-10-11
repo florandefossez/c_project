@@ -87,6 +87,14 @@ std::array<SDL_Rect, 4> Ammos::ammos_rects = {
     SDL_Rect{100, 0, 32, 21} 
 };
 
+std::array<SDL_Rect, 5> Weapons::weapons_rects = {
+    SDL_Rect{0, 0, 63, 12},
+    SDL_Rect{64, 0, 54, 16},
+    SDL_Rect{119, 0, 62, 16},
+    SDL_Rect{182, 0, 54, 16},
+    SDL_Rect{237, 0, 62, 24}
+};
+
 
 Object_manager::Object_manager(Game* game) : targeted_entity(nullptr), game(game) {
     entities.clear();
@@ -342,6 +350,25 @@ bool Ammos::update(Game* game) {
     return false;
 }
 
+
+
+
+Weapons::Weapons(float x, float y, int munitions, int weapon_id) : Entity(x, y, 0.2f, 1, true), weapon_id(weapon_id), munitions(munitions) {
+    surface = Object_manager::getSurface("ressources/entities/weapons.png");
+}
+
+void Weapons::draw(Game* game) {
+    Entity::draw(game, Weapons::weapons_rects[weapon_id-1]);
+}
+
+bool Weapons::update(Game* game) {
+    if ((camera_y*camera_y + camera_x*camera_x) < 0.9f) {
+        game->player.weapons[weapon_id]->munitions += munitions;
+        game->player.weapons[weapon_id]->available = true;
+        return true;
+    }
+    return false;
+}
 
 
 

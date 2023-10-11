@@ -85,6 +85,19 @@ private:
     static std::array<SDL_Rect, 4> ammos_rects;
 };
 
+class Weapons : public Entity {
+public:
+    Weapons(float x, float y, int munitions, int weapon_id);
+    ~Weapons() {};
+    void draw(Game* game) override;
+    bool update(Game* game) override;
+    void damage(float value) override {(void) value;};
+private:
+    int weapon_id;
+    int munitions;
+    static std::array<SDL_Rect, 5> weapons_rects;
+};
+
 class Barrel : public Entity {
 public:
     Barrel(float x, float y);
