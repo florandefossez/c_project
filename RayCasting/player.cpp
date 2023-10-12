@@ -12,7 +12,7 @@
 #include "headers/game.hpp"
 
 
-Player::Player(Game* game) :  blood_level(0), weapon(0), game(game) {}
+Player::Player(Game* game) : game(game) {}
 
 void Player::load() {
     weapons[0] = new Hands(game);
@@ -25,7 +25,11 @@ void Player::load() {
 
 void Player::start(int level_id) {
     blood_level = 0;
+    frag = 0;
     game_over = 0;
+    health = 100.f;
+    state_change_cooldown = 0;
+
     for (auto weap : weapons) {
         weap->munitions = 20;
         weap->cooldown = 0;
@@ -43,8 +47,6 @@ void Player::start(int level_id) {
         plane_x = -0.7*dir_y;
         plane_y = 0.7*dir_x;
 
-        health = 100.f;
-        state_change_cooldown = 0;
         weapon = 0;
         break;
     

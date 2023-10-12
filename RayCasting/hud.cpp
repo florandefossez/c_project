@@ -313,6 +313,23 @@ void Hud::draw(SDL_Renderer* renderer) {
         SDL_RenderCopy(renderer, texture, &big_numbers[digit[i]], &dst);
     }
 
+    //frag
+    digit[0] = game->player.frag/100;
+    digit[1] = game->player.frag/10%10;
+    digit[2] = game->player.frag%10;
+    b = true;
+    for (int i = 0; i<3; i++) {
+        if (b && !digit[i] && i!=2) continue;
+        b = false;
+        dst = {
+            1080 * (98+i*14) / 319,
+            629,
+            1080 * big_numbers[digit[i]].w / 319,
+            1080 * big_numbers[digit[i]].h / 319
+        };
+        SDL_RenderCopy(renderer, texture, &big_numbers[digit[i]], &dst);
+    }
+
     //weapon numbers
     for (int line=0; line<2; line++) {
         for (int row=0; row<3; row++) {

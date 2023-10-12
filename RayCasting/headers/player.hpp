@@ -42,6 +42,7 @@ public:
     float plane_y;
     
     float health;
+    int frag;
 
     player_state_t state;
     int blood_level;

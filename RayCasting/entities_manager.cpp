@@ -483,6 +483,7 @@ bool Enemy::update(Game* game) {
                     y = rand()%64;
                 }
                 game->entities_manager.entities.push_back(new Soldier1(x+0.5, y+0.5));
+                game->player.frag += 1;
                 return true;
             }
             break;
