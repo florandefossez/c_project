@@ -30,14 +30,16 @@ void Map::start(int level_id) {
     }
 
     switch (level_id) {
-    case 1:
-        map_surface = IMG_Load("ressources/map.png");
+    case 0:
+        map_surface = IMG_Load("ressources/maps/test.png");
         sky_texture = IMG_LoadTexture(game->renderer, "ressources/sky/sky1.png");
         break;
     
-    default:
-        return;
+    case 1:
+        map_surface = IMG_Load("ressources/maps/level1.png");
+        sky_texture = IMG_LoadTexture(game->renderer, "ressources/sky/sky1.png");
         break;
+
     }
 
     for (unsigned int i = 0; i < 64; i++) {

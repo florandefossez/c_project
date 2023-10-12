@@ -114,7 +114,12 @@ void Game::handleEvents() {
             hud.handleEvents_option(&event);
             break;
         
-        default:
+        case LEVEL_MENU:
+            if (event.type != SDL_KEYDOWN) continue;
+            hud.handleEvents_level_menu(&event);
+            break;
+        
+        case PLAY:
 #ifdef __EMSCRIPTEN__
             if (event.type == SDL_MOUSEMOTION) {
                 player.rotate((float) event.motion.xrel * 0.0015f);
@@ -145,19 +150,16 @@ void Game::update() {
         animation = true;
     }
 
-    switch (state) {
-    case MENU:
-        break;
-
-    case OPTIONS:
-        break;
-    
-    default:
+    switch (state) {    
+    case PLAY:
         map.update();
         player.update();
         hud.update(animation);
         raycaster.update();
         entities_manager.update();
+        break;
+    
+    default:
         break;
     }
 }
@@ -173,7 +175,11 @@ void Game::render() {
         hud.draw_option(renderer);
         break;
     
-    default:
+    case LEVEL_MENU:
+        hud.draw_level_menu();
+        break;
+    
+    case PLAY:
         std::fill(scene_pixels, scene_pixels + (width * (2*width/3)), 0);
         SDL_SetRenderDrawColor(renderer, 40,40,40,0);
         SDL_RenderClear(renderer);
@@ -195,12 +201,12 @@ void Game::render() {
 }
 
 
-void Game::start_level() {
+void Game::start_level(int level_id) {
     Mix_FadeInMusic(game_music, -1, 2000);
-    state = LEVEL1;
-    map.start(1);
-    player.start(1);
-    entities_manager.start(1);
+    state = PLAY;
+    map.start(level_id);
+    player.start(level_id);
+    entities_manager.start(level_id);
     raycaster.start();
 }
 

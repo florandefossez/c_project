@@ -7,8 +7,8 @@ constexpr int WINDOW_HEIGHT = 720;
 constexpr int WINDOW_WIDTH = 1080;
 
 typedef enum game_state_ {
-    PAUSED,
-    LEVEL1,
+    PLAY,
+    LEVEL_MENU,
     MENU,
     OPTIONS
 } game_state_t;
@@ -39,7 +39,7 @@ public:
     float delta_time;
     void toggleFullscreen();
     void update_width(int w);
-    void start_level();
+    void start_level(int level_id);
     void stop_run();
     void menu();
 

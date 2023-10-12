@@ -379,19 +379,32 @@ void Hud::draw_menu(SDL_Renderer* renderer) {
 }
 
 void Hud::handleEvents_menu(SDL_Event* event) {
-    if (event->key.keysym.sym == SDLK_RETURN) {
-        if (menu_index == 0) {
-            game->start_level();
-        }
-        if (menu_index == 1) {
+
+    switch (event->key.keysym.sym) {
+    case SDLK_RETURN:
+        switch (menu_index) {
+        case 0:
+            game->state = LEVEL_MENU;
+            break;
+        case 1:
             game->state = OPTIONS;
-            option_index = 0;
-            return;
+            menu_index = 0;
+            break;
+        case 2:
+            game->stop_run();
+            break;
         }
-        if (menu_index == 2) game->stop_run();
+        break;
+    
+    case SDLK_DOWN:
+        menu_index = (menu_index + 1)%3;
+        break;
+    
+    case SDLK_UP:
+        menu_index = (menu_index + 2)%3;
+        break;
+
     }
-    if (event->key.keysym.sym == SDLK_DOWN) menu_index = (menu_index + 1)%3;
-    if (event->key.keysym.sym == SDLK_UP) menu_index = (menu_index + 2)%3;
 }
 
 
@@ -418,29 +431,77 @@ void Hud::draw_option(SDL_Renderer* renderer) {
 
     draw_text(renderer, "press escape to exit", 150, 500, 20);
 
-    SDL_Rect dst = {110, 200 + 30*option_index, 20, 20};
+    SDL_Rect dst = {110, 200 + 30*menu_index, 20, 20};
     SDL_RenderCopy(renderer, texture, &Hud::faces1_rects[7], &dst);
 }
 
 void Hud::handleEvents_option(SDL_Event* event) {
     if (event->key.keysym.sym == SDLK_ESCAPE) {
         game->state = MENU;
+        menu_index = 0;
         return;
     };
-    if (option_index < 1) {
+    switch (menu_index) {
+    case 0:
         game->move_forward = event->key.keysym.sym;
-    } else if (option_index < 2) {
+        break;
+    case 1:
         game->move_backward = event->key.keysym.sym;
-    } else if (option_index < 3) {
+        break;
+    case 2:
         game->move_left = event->key.keysym.sym;
-    } else if (option_index < 4) {
+        break;
+    case 3:
         game->move_right = event->key.keysym.sym;
-    } else if (option_index < 5) {
+        break;
+    case 4:
         game->shoot = event->key.keysym.sym;
-    } else if (option_index < 6) {
+        break;
+    case 5:
         game->interact = event->key.keysym.sym;
-    } else if (option_index < 7) {
-        game->switch_weapon = event->key.keysym.sym;
+        break;
+    case 6:
+        game->switch_weapon = event->key.keysym.sym;  
+        break;
     }
-    option_index = (option_index + 1)%7;
+    menu_index = (menu_index + 1)%7;
+}
+
+
+void Hud::draw_level_menu() {
+    SDL_RenderCopy(game->renderer, menu_background, nullptr, nullptr);
+    draw_text(game->renderer, "Test area", 150, 300, 30);
+    draw_text(game->renderer, "Level 1", 150, 350, 30);
+    draw_text(game->renderer, "exit", 150, 400, 30);
+
+    SDL_Rect dst = {110, 300 + 50*menu_index, 30, 30};
+    SDL_RenderCopy(game->renderer, texture, &Hud::faces1_rects[7], &dst);
+}
+
+void Hud::handleEvents_level_menu(SDL_Event* event) {
+    switch (event->key.keysym.sym) {
+    case SDLK_RETURN:
+        switch (menu_index) {
+        case 0:
+            game->state = PLAY;
+            game->start_level(0);
+            break;
+        case 1:
+            game->state = PLAY;
+            game->start_level(1);
+            break;
+        case 2:
+            game->state = MENU;
+            break;
+        }
+        break;
+    
+    case SDLK_DOWN:
+        menu_index = (menu_index + 1)%3;
+        break;
+    
+    case SDLK_UP:
+        menu_index = (menu_index + 2)%3;
+        break;
+    }
 }

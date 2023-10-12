@@ -110,6 +110,22 @@ void Object_manager::start(int level_id) {
     targeted_entity_distance = 100.f;
     
     switch (level_id) {
+    case 0:
+        entities.push_back(new Soldier1(5,5));
+        entities.push_back(new Barrel(4.5,44.0));
+
+        entities.push_back(new Ammos(12,10,50,1));
+        entities.push_back(new Ammos(12,12,50,2));
+        entities.push_back(new Ammos(12,14,50,3));
+        entities.push_back(new Ammos(12,16,50,4));
+
+        entities.push_back(new Weapons(12,18,100,1));
+        entities.push_back(new Weapons(12,20,100,2));
+        entities.push_back(new Weapons(12,22,100,3));
+        entities.push_back(new Weapons(12,24,100,4));
+        entities.push_back(new Weapons(12,26,100,5));
+        break;
+
     case 1:
         entities.push_back(new Soldier1(4.5,44.0));
         entities.push_back(new Barrel(4.5,44.0));

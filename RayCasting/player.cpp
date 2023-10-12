@@ -31,28 +31,35 @@ void Player::start(int level_id) {
     state_change_cooldown = 0;
 
     for (auto weap : weapons) {
-        weap->munitions = 20;
+        weap->munitions = 0;
         weap->cooldown = 0;
-        weap->available = true;
+        weap->available = false;
     }
+    weapons[0]->available = true;
+
     switch (level_id) {
+    case 0:
+        position_x = 2;
+        position_y = 2;
+        position_z = 0.5;
+        dir_x = cos(95.f);
+        dir_y = sin(95.f);
+        weapon = 0;
+        break;
+    
     case 1:
         position_x = 5.5;
         position_y = 38.5;
         position_z = 0.5;
-
         dir_x = cos(-80.f);
         dir_y = sin(-80.f);
-
-        plane_x = -0.7*dir_y;
-        plane_y = 0.7*dir_x;
-
         weapon = 0;
         break;
-    
-    default:
-        break;
+
     }
+
+    plane_x = -0.7*dir_y;
+    plane_y = 0.7*dir_x;
 }
 
 
