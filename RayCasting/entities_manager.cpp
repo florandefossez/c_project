@@ -95,6 +95,12 @@ std::array<SDL_Rect, 5> Weapons::weapons_rects = {
     SDL_Rect{237, 0, 62, 24}
 };
 
+std::array<SDL_Rect, 3> HealthPack::health_pack_rects = {
+    SDL_Rect{0, 0, 14, 15},
+    SDL_Rect{44, 0, 28, 19},
+    SDL_Rect{15, 0, 28, 19}
+};
+
 
 Object_manager::Object_manager(Game* game) : targeted_entity(nullptr), game(game) {
     entities.clear();
@@ -124,6 +130,10 @@ void Object_manager::start(int level_id) {
         entities.push_back(new Weapons(12,22,100,3));
         entities.push_back(new Weapons(12,24,100,4));
         entities.push_back(new Weapons(12,26,100,5));
+
+        entities.push_back(new HealthPack(12,28,0));
+        entities.push_back(new HealthPack(12,30,1));
+        entities.push_back(new HealthPack(12,32,2));
         break;
 
     case 1:
@@ -386,6 +396,35 @@ bool Weapons::update(Game* game) {
     return false;
 }
 
+
+HealthPack::HealthPack(float x, float y, int pack_id) : Entity(x, y, 0.2f, 1, true), pack_id(pack_id) {
+    surface = Object_manager::getSurface("ressources/entities/health_pack.png");
+}
+
+void HealthPack::draw(Game* game) {
+    Entity::draw(game, HealthPack::health_pack_rects[pack_id]);
+}
+
+bool HealthPack::update(Game* game) {
+    if ((camera_y*camera_y + camera_x*camera_x) < 0.9f) {
+        game->player.blood_level = 0;
+        switch (pack_id) {
+        case 0:
+            game->player.health += 10;
+            if (game->player.health > 100) game->player.health = 100;
+            break;
+        case 1:
+            game->player.health += 25;
+            if (game->player.health > 100) game->player.health = 100;
+            break;
+        case 2:
+            game->player.health = 100;
+            break;
+        }
+        return true;
+    }
+    return false;
+}
 
 
 bool Enemy::update(Game* game) {

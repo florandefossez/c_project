@@ -98,6 +98,18 @@ private:
     static std::array<SDL_Rect, 5> weapons_rects;
 };
 
+class HealthPack : public Entity {
+public:
+    HealthPack(float x, float y, int pack_id);
+    ~HealthPack() {};
+    void draw(Game* game) override;
+    bool update(Game* game) override;
+    void damage(float value) override {(void) value;};
+private:
+    int pack_id;
+    static std::array<SDL_Rect, 3> health_pack_rects;
+};
+
 class Barrel : public Entity {
 public:
     Barrel(float x, float y);
