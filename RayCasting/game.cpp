@@ -12,6 +12,7 @@
 #include "headers/raycaster.hpp"
 #include "headers/entities_manager.hpp"
 #include "headers/hud.hpp"
+#include "headers/weapon.hpp"
 #include "headers/game.hpp"
 
 Game::Game() : width(1024), state(MENU), map(this), player(this), raycaster(this), entities_manager(this), hud(this) {
@@ -129,6 +130,7 @@ void Game::handleEvents() {
             if (event.key.keysym.sym == switch_weapon) player.switch_weapon();
             if (event.key.keysym.sym == interact) raycaster.trigger();
             if (event.key.keysym.sym == SDLK_ESCAPE) menu();
+            if (event.key.keysym.sym >= SDLK_1 && event.key.keysym.sym <= SDLK_6 && player.weapons[event.key.keysym.sym - SDLK_1]->available) player.weapon = event.key.keysym.sym - SDLK_1;
             break;
         }
 
