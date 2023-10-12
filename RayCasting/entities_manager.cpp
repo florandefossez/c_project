@@ -458,7 +458,7 @@ bool Enemy::update(Game* game) {
             if (direct_ray) {
                 status = npc_status_t::WALK;
             }
-            break;
+            return false;
         case npc_status_t::WALK:
             if (direct_ray && dist < 5) {
                 status = npc_status_t::SHOOT;
@@ -486,10 +486,10 @@ bool Enemy::update(Game* game) {
             } else if (game->animation) {
                 game->player.damage(weapon_damage / 20);
             }
-            break;
+            return false;
         case npc_status_t::PAIN:
             if (animation_cooldown >= 5) status = npc_status_t::WAIT;
-            break;
+            return false;
         case npc_status_t::DIYING:
             if (animation_cooldown >= 9) {
                 int x = rand()%64;
@@ -502,30 +502,26 @@ bool Enemy::update(Game* game) {
                 game->player.frag += 1;
                 return true;
             }
-            break;
+            return false;
     }
     
-
     move_x *= game->delta_time*velocity;
     move_y *= game->delta_time*velocity;
 
-    if (game->map.collide(move_x+position_x, position_y)) {
-        if (move_x>0) {
-            move_x = floor((position_x+move_x)) - position_x - 0.01;
-        } else if (move_x<0) {
-            move_x = ceil((position_x+move_x)) - position_x + 0.01;
-        }
-    }
-    if (game->map.collide(position_x, position_y+move_y)) {
-        if (move_y>0) {
-            move_y = floor((position_y+move_y)) - position_y - 0.01;
-        } else if (move_y<0) {
-            move_y = ceil((position_y+move_y)) - position_y + 0.01;
-        }
-    }
-
     position_x += move_x;
+    if (game->map.collide(position_x + 0.2f, position_y))
+        position_x = floor(position_x + 0.2f) - 0.2f;
+
+    if (game->map.collide(position_x - 0.2f, position_y))
+        position_x = ceil(position_x - 0.2f) + 0.2f;
+
+
     position_y += move_y;
+    if (game->map.collide(position_x, position_y + 0.2f))
+        position_y = floor(position_y + 0.2f) - 0.2f;
+    
+    if (game->map.collide(position_x, position_y - 0.2f))
+        position_y = ceil(position_y - 0.2f) + 0.2f;
 
     return false;
 }

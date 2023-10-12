@@ -117,22 +117,19 @@ void Player::update() {
     move_x *= game->delta_time;
     move_y *= game->delta_time;
 
-    if (game->map.collide(move_x+position_x, position_y)) {
-        if (move_x>0) {
-            move_x = floor((position_x+move_x)) - position_x - 0.01;
-        } else if (move_x<0) {
-            move_x = ceil((position_x+move_x)) - position_x + 0.01;
-        }
-    }
-    if (game->map.collide(position_x, position_y+move_y)) {
-        if (move_y>0) {
-            move_y = floor((position_y+move_y)) - position_y - 0.01;
-        } else if (move_y<0) {
-            move_y = ceil((position_y+move_y)) - position_y + 0.01;
-        }
-    }
     position_x += move_x;
+    if (game->map.collide(position_x + 0.1f, position_y))
+        position_x = floor(position_x + 0.1f) - 0.1f;
+
+    if (game->map.collide(position_x - 0.1f, position_y))
+        position_x = ceil(position_x - 0.1f) + 0.1f;
+
     position_y += move_y;
+    if (game->map.collide(position_x, position_y + 0.1f))
+        position_y = floor(position_y + 0.1f) - 0.1f;
+    
+    if (game->map.collide(position_x, position_y - 0.1f))
+        position_y = ceil(position_y - 0.1f) + 0.1f;
 
 #ifndef __EMSCRIPTEN__
     if (keyboardState[SDL_SCANCODE_RIGHT]) rotate(game->delta_time);
