@@ -216,6 +216,7 @@ void Game::menu() {
     Mix_PlayMusic(menu_music, -1);
     Mix_HaltChannel(1);
     state = MENU;
+    hud.menu_index = 0;
 };
 
 void Game::stop_run() {

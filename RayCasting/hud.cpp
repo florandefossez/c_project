@@ -220,7 +220,7 @@ std::array<SDL_Rect, 96> Hud::letters = {
 
 
 
-Hud::Hud(Game* game) : game(game), menu_index(0), face(1) {}
+Hud::Hud(Game* game) :  menu_index(0), game(game), face(1) {}
 
 void Hud::load(SDL_Renderer* renderer) {
     texture = IMG_LoadTexture(renderer, "ressources/hud.png");

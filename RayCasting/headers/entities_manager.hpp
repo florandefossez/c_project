@@ -119,6 +119,8 @@ public:
     void damage(float value) override {(void)value;};
 };
 
+
+
 class Enemy : public Entity {
 public:
     Enemy(float x, float y, float size, float health, float weapon_damage) :
@@ -126,7 +128,8 @@ public:
     virtual ~Enemy() {};
     
     bool update(Game* game) override;
-    virtual void death() = 0;
+    void damage(float value) override;
+    void death();
 
     unsigned int animation_cooldown;
     bool direct_ray;
@@ -145,24 +148,41 @@ class Soldier1 : public Enemy {
 public:
     Soldier1(float x, float y);
     ~Soldier1() {};
-
-    bool update(Game* game) override;
     void draw(Game* game) override;
-    void damage(float value) override;
-
-    void death() override;
 
 private:
-
     static std::array<SDL_Rect, 4> walk_front_rects;
     static std::array<SDL_Rect, 2> shoot_rects;
     static std::array<SDL_Rect, 1> pain_rect;
     static std::array<SDL_Rect, 9> death1;
-    // static std::array<sf::IntRect, 6> death2;
-    
 };
 
 
+class Soldier2 : public Enemy {
+public:
+    Soldier2(float x, float y);
+    ~Soldier2() {};
+    void draw(Game* game) override;
+
+private:
+    static std::array<SDL_Rect, 4> walk_front_rects;
+    static std::array<SDL_Rect, 2> shoot_rects;
+    static std::array<SDL_Rect, 1> pain_rect;
+    static std::array<SDL_Rect, 9> death1;
+};
+
+class Soldier3 : public Enemy {
+public:
+    Soldier3(float x, float y);
+    ~Soldier3() {};
+    void draw(Game* game) override;
+
+private:
+    static std::array<SDL_Rect, 4> walk_front_rects;
+    static std::array<SDL_Rect, 2> shoot_rects;
+    static std::array<SDL_Rect, 1> pain_rect;
+    static std::array<SDL_Rect, 9> death1;
+};
 
 
 

@@ -38,30 +38,77 @@ std::array<SDL_Rect, 4> Soldier1::walk_front_rects = {
     SDL_Rect{103, 12, 43, 55},
     SDL_Rect{151, 12, 43, 55}
 };
-
 std::array<SDL_Rect, 2> Soldier1::shoot_rects = {
     SDL_Rect{204, 14, 32, 55},
     SDL_Rect{256, 14, 32, 55}
 };
-
 std::array<SDL_Rect, 1> Soldier1::pain_rect = {
     SDL_Rect{301, 14, 32, 55}
 };
-
 std::array<SDL_Rect, 9> Soldier1::death1 = {
     SDL_Rect{9, 209, 35, 61},
     SDL_Rect{48, 209, 42, 61},
     SDL_Rect{94, 209, 48, 61},
-
     SDL_Rect{145, 209, 52, 61},
     SDL_Rect{201, 209, 54, 61},
     SDL_Rect{259, 209, 57, 61},
-
     SDL_Rect{319, 209, 56, 61},
     SDL_Rect{379, 209, 57, 61},
     SDL_Rect{439, 209, 57, 61}
-
 };
+
+
+std::array<SDL_Rect, 4> Soldier2::walk_front_rects = {
+    SDL_Rect{11, 5, 44, 55},
+    SDL_Rect{61, 5, 44, 55},
+    SDL_Rect{109, 5, 44, 55},
+    SDL_Rect{155, 5, 44, 55}
+};
+std::array<SDL_Rect, 2> Soldier2::shoot_rects = {
+    SDL_Rect{211, 5, 27, 55},
+    SDL_Rect{267, 5, 27, 55}
+};
+std::array<SDL_Rect, 1> Soldier2::pain_rect = {
+    SDL_Rect{318, 5, 44, 55}
+};
+std::array<SDL_Rect, 9> Soldier2::death1 = {
+    SDL_Rect{1, 250, 40, 61},
+    SDL_Rect{45, 250, 42, 61},
+    SDL_Rect{91, 250, 48, 61},
+    SDL_Rect{143, 250, 52, 61},
+    SDL_Rect{198, 250, 55, 61},
+    SDL_Rect{256, 250, 57, 61},
+    SDL_Rect{317, 250, 56, 61},
+    SDL_Rect{376, 250, 57, 61},
+    SDL_Rect{436, 250, 57, 61}
+};
+
+
+std::array<SDL_Rect, 4> Soldier3::walk_front_rects = {
+    SDL_Rect{5, 12, 45, 56},
+    SDL_Rect{61, 12, 45, 56},
+    SDL_Rect{113, 12, 45, 56},
+    SDL_Rect{163, 12, 45, 56}
+};
+std::array<SDL_Rect, 2> Soldier3::shoot_rects = {
+    SDL_Rect{221, 12, 26, 56},
+    SDL_Rect{279, 12, 26, 56}
+};
+std::array<SDL_Rect, 1> Soldier3::pain_rect = {
+    SDL_Rect{327, 5, 40, 56}
+};
+std::array<SDL_Rect, 9> Soldier3::death1 = {
+    SDL_Rect{5, 256, 38, 60},
+    SDL_Rect{46, 256, 44, 60},
+    SDL_Rect{93, 256, 48, 60},
+    SDL_Rect{144, 256, 53, 60},
+    SDL_Rect{200, 256, 55, 60},
+    SDL_Rect{258, 256, 57, 60},
+    SDL_Rect{318, 256, 57, 60},
+    SDL_Rect{379, 256, 56, 60},
+    SDL_Rect{438, 256, 57, 60}
+};
+
 
 std::array<SDL_Rect, 5> FireBall::balls_rects = {
     SDL_Rect{8, 42, 16, 16},
@@ -137,7 +184,7 @@ void Object_manager::start(int level_id) {
         break;
 
     case 1:
-        entities.push_back(new Soldier1(4.5,44.0));
+        entities.push_back(new Soldier3(4.5,44.0));
         entities.push_back(new Barrel(4.5,44.0));
         entities.push_back(new Ammos(9.5,39.5,100,1));
         entities.push_back(new Ammos(12,40,100,2));
@@ -565,14 +612,27 @@ bool Enemy::update(Game* game) {
     return false;
 }
 
+void Enemy::death() {
+    status = npc_status_t::DIYING;
+}
+
+void Enemy::damage(float value) {
+    if (status == npc_status_t::DIYING) return;
+    if (value == 0) return;
+    status = npc_status_t::PAIN;
+    animation_cooldown = 0;
+    health -= value;
+    if (health <= 0) {
+        death();
+    }
+}
+
+
+
 
 Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7f,50.f,4.f) {
     surface = Object_manager::getSurface("ressources/entities/soldier_1.png");
     status = WAIT;
-}
-
-bool Soldier1::update(Game* game) {
-    return Enemy::update(game);
 }
 
 void Soldier1::draw(Game* game) {
@@ -610,17 +670,86 @@ void Soldier1::draw(Game* game) {
     
 };
 
-void Soldier1::damage(float value) {
-    if (status == npc_status_t::DIYING) return;
-    if (value == 0) return;
-    status = npc_status_t::PAIN;
-    animation_cooldown = 0;
-    health -= value;
-    if (health <= 0) {
-        death();
-    }
+
+
+
+Soldier2::Soldier2(float x, float y) : Enemy(x,y,0.7f,50.f,4.f) {
+    surface = Object_manager::getSurface("ressources/entities/soldier_2.png");
+    status = WAIT;
 }
 
-void Soldier1::death() {
-    status = npc_status_t::DIYING;
+void Soldier2::draw(Game* game) {
+    int s = animation_cooldown;
+    switch (status) {
+    case npc_status_t::WAIT:
+        Entity::draw(game, Soldier2::walk_front_rects[0]);
+        break;
+    
+    case npc_status_t::WALK:
+        s /= 3;
+        s %= 4;
+        Entity::draw(game, Soldier2::walk_front_rects[s]);
+        break;
+    
+    case npc_status_t::SHOOT:
+        s /= 3;
+        s %= 2;
+        Entity::draw(game, Soldier2::shoot_rects[s]);
+        break;
+    
+    case npc_status_t::PAIN:
+        Entity::draw(game, Soldier2::pain_rect[0]);
+        break;
+    
+    case npc_status_t::DIYING:
+        s /= 1;
+        s %= 9;
+        Entity::draw(game, Soldier2::death1[s]);
+        break;
+    
+    default:
+        break;
+    }
+    
+};
+
+
+Soldier3::Soldier3(float x, float y) : Enemy(x,y,0.7f,50.f,4.f) {
+    surface = Object_manager::getSurface("ressources/entities/soldier_3.png");
+    status = WAIT;
 }
+
+void Soldier3::draw(Game* game) {
+    int s = animation_cooldown;
+    switch (status) {
+    case npc_status_t::WAIT:
+        Entity::draw(game, Soldier3::walk_front_rects[0]);
+        break;
+    
+    case npc_status_t::WALK:
+        s /= 3;
+        s %= 4;
+        Entity::draw(game, Soldier3::walk_front_rects[s]);
+        break;
+    
+    case npc_status_t::SHOOT:
+        s /= 3;
+        s %= 2;
+        Entity::draw(game, Soldier3::shoot_rects[s]);
+        break;
+    
+    case npc_status_t::PAIN:
+        Entity::draw(game, Soldier3::pain_rect[0]);
+        break;
+    
+    case npc_status_t::DIYING:
+        s /= 1;
+        s %= 9;
+        Entity::draw(game, Soldier3::death1[s]);
+        break;
+    
+    default:
+        break;
+    }
+    
+};

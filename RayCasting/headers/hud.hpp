@@ -22,6 +22,7 @@ public:
     void handleEvents_level_menu(SDL_Event* event);
     void draw_text(SDL_Renderer* renderer, std::string text, int x, int y, int h);
 
+    int menu_index;
 
 private:
     Game* game;
@@ -37,6 +38,5 @@ private:
     static std::array<SDL_Rect, 10> yellow_little_numbers;
     static std::array<SDL_Rect, 96> letters;
     
-    int menu_index;
     int face;
 };
