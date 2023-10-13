@@ -34,6 +34,13 @@ void Raycaster::start() {
     opening_state = 0;
     opening_door_x = 0;
     opening_door_y = 0;
+
+    // ABGR
+    fog_color[0] = 255;
+    fog_color[1] = 0x06;
+    fog_color[2] = 0x2c;
+    fog_color[3] = 0x3e;
+    
 }
 
 void Raycaster::update_width() {
@@ -83,6 +90,11 @@ void Raycaster::draw_floor() {
         float floor_step_x = floor_distance * (right_ray_x - left_ray_x) / game->width;
         float floor_step_y = floor_distance * (right_ray_y - left_ray_y) / game->width;
 
+        int d = (int) floor_distance;
+        if (d>32) d=32;
+        int weighted_fog[4] = {d * fog_color[0], d * fog_color[1], d * fog_color[2], d * fog_color[3]};
+        d = 32 - d;
+
         for (int x=0; x < game->width; x++) {
 
             // the cell coord is simply got from the integer parts of floorX and floorY
@@ -109,10 +121,15 @@ void Raycaster::draw_floor() {
             floor_y += floor_step_y;
 
             // choose texture and draw the pixel on the image
-            game->scene_pixels[x + (p-1) * game->width + height/2 * game->width ] = textures[
+            Uint8 *color = (Uint8 *) &textures[
                 game->map.map[current_cell_x][current_cell_y].texture_id
             ][tx + 64*ty];
-
+            Uint8 *target_color = (Uint8 *) &game->scene_pixels[x + (p-1) * game->width + height/2 * game->width];
+            
+            target_color[0] = 255;
+            target_color[1] = (color[1] * d + weighted_fog[1]) >> 5;
+            target_color[2] = (color[2] * d + weighted_fog[2]) >> 5;
+            target_color[3] = (color[3] * d + weighted_fog[3]) >> 5;
         }
     }
 }
@@ -279,12 +296,26 @@ raycast_label:
         float step = 64.f / wall_height;
         float texPos = (start + (wall_height - height) / 2) * step;
 
+        // fog
+        int d = (int) ray_length;
+        if (d>32) d=32;
+        int weighted_fog[4] = {d * fog_color[0], d * fog_color[1], d * fog_color[2], d * fog_color[3]};
+        d = 32 - d;
+
         // draw
         for (int y=start; y<end; y++) {
             int texY = (int)texPos & (64 - 1);
             texPos += step;
-            game->scene_pixels[r + y * game->width] = textures[texture_id]
-            [static_cast<unsigned int>(64.f * texY + texture_offset*64.f)];
+
+            Uint8 *color = (Uint8 *) &textures[texture_id][
+                static_cast<unsigned int>(64.f * texY + texture_offset*64.f)
+            ];
+            Uint8 *target_color = (Uint8 *) &game->scene_pixels[r + y * game->width];
+            
+            target_color[0] = 255;
+            target_color[1] = (color[1] * d + weighted_fog[1]) >> 5;
+            target_color[2] = (color[2] * d + weighted_fog[2]) >> 5;
+            target_color[3] = (color[3] * d + weighted_fog[3]) >> 5;
         }
     }
 }

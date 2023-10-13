@@ -20,6 +20,8 @@ public:
     int targeted_wall_x;
     int targeted_wall_y;
 
+    Uint8 fog_color[4];
+
 private:
 
     void draw_wall();

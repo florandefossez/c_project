@@ -90,7 +90,7 @@ void Game::update_width(int w) {
     free(scene_pixels);
     scene_pixels = new Uint32[width * (2 * width / 3)];
     SDL_DestroyTexture(scene);
-    scene = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width, (2 * width / 3));
+    scene = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width, (2 * width / 3));
     SDL_SetTextureBlendMode(scene, SDL_BLENDMODE_BLEND);
     raycaster.update_width();
 }
@@ -183,7 +183,7 @@ void Game::render() {
     
     case PLAY:
         std::fill(scene_pixels, scene_pixels + (width * (2*width/3)), 0);
-        SDL_SetRenderDrawColor(renderer, 40,40,40,0);
+        SDL_SetRenderDrawColor(renderer, raycaster.fog_color[3], raycaster.fog_color[2], raycaster.fog_color[1], 0);
         SDL_RenderClear(renderer);
 
         map.draw_sky();
