@@ -124,7 +124,7 @@ public:
 class Enemy : public Entity {
 public:
     Enemy(float x, float y, float size, float health, float weapon_damage) :
-        Entity(x,y,size,health, false), animation_cooldown(0), velocity(2), weapon_damage(weapon_damage) {};
+        Entity(x,y,size,health, false), animation_cooldown(0), death_cooldown(9), velocity(2), weapon_damage(weapon_damage) {};
     virtual ~Enemy() {};
     
     bool update(Game* game) override;
@@ -132,6 +132,7 @@ public:
     void death();
 
     unsigned int animation_cooldown;
+    unsigned int death_cooldown;
     bool direct_ray;
     float velocity;
     float weapon_damage;
@@ -184,7 +185,18 @@ private:
     static std::array<SDL_Rect, 9> death1;
 };
 
+class CyberDemon : public Enemy {
+public:
+    CyberDemon(float x, float y);
+    ~CyberDemon() {};
+    void draw(Game* game) override;
 
+private:
+    static std::array<SDL_Rect, 4> walk_front_rects;
+    static std::array<SDL_Rect, 2> shoot_rects;
+    static std::array<SDL_Rect, 1> pain_rect;
+    static std::array<SDL_Rect, 9> death1;
+};
 
 
 

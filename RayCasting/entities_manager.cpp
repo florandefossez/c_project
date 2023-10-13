@@ -110,6 +110,32 @@ std::array<SDL_Rect, 9> Soldier3::death1 = {
 };
 
 
+std::array<SDL_Rect, 4> CyberDemon::walk_front_rects = {
+    SDL_Rect{5, 32, 90, 110},
+    SDL_Rect{172, 32, 90, 110},
+    SDL_Rect{324, 32, 90, 110},
+    SDL_Rect{488, 32, 90, 110}
+};
+std::array<SDL_Rect, 2> CyberDemon::shoot_rects = {
+    SDL_Rect{642, 32, 100, 110},
+    SDL_Rect{838, 32, 100, 110}
+};
+std::array<SDL_Rect, 1> CyberDemon::pain_rect = {
+    SDL_Rect{1011, 32, 124, 110}
+};
+std::array<SDL_Rect, 9> CyberDemon::death1 = {
+    SDL_Rect{10, 424, 122, 134},
+    SDL_Rect{175, 424, 111, 134},
+    SDL_Rect{330, 424, 100, 134},
+    SDL_Rect{473, 424, 112, 134},
+    SDL_Rect{629, 424, 125, 134},
+    SDL_Rect{798, 424, 135, 134},
+    SDL_Rect{986, 424, 141, 134},
+    SDL_Rect{1170, 424, 139, 134},
+    SDL_Rect{1353, 424, 128, 134}
+};
+
+
 std::array<SDL_Rect, 5> FireBall::balls_rects = {
     SDL_Rect{8, 42, 16, 16},
     SDL_Rect{27, 43, 15, 15},
@@ -164,7 +190,7 @@ void Object_manager::start(int level_id) {
     
     switch (level_id) {
     case 0:
-        entities.push_back(new Soldier1(5,5));
+        entities.push_back(new CyberDemon(5,5));
         entities.push_back(new Barrel(4.5,44.0));
 
         entities.push_back(new Ammos(12,10,50,1));
@@ -577,14 +603,7 @@ bool Enemy::update(Game* game) {
             if (animation_cooldown >= 5) status = npc_status_t::WAIT;
             return false;
         case npc_status_t::DIYING:
-            if (animation_cooldown >= 9) {
-                int x = rand()%64;
-                int y = rand()%64;
-                while (game->map.collide(x,y)) {
-                    x = rand()%64;
-                    y = rand()%64;
-                }
-                game->entities_manager.entities.push_back(new Soldier1(x+0.5, y+0.5));
+            if (animation_cooldown >= death_cooldown) {
                 game->player.frag += 1;
                 return true;
             }
@@ -614,6 +633,7 @@ bool Enemy::update(Game* game) {
 
 void Enemy::death() {
     status = npc_status_t::DIYING;
+    transparent = true;
 }
 
 void Enemy::damage(float value) {
@@ -746,6 +766,49 @@ void Soldier3::draw(Game* game) {
         s /= 1;
         s %= 9;
         Entity::draw(game, Soldier3::death1[s]);
+        break;
+    
+    default:
+        break;
+    }
+    
+};
+
+
+
+CyberDemon::CyberDemon(float x, float y) : Enemy(x,y,0.7f,50.f,4.f) {
+    surface = Object_manager::getSurface("ressources/entities/cyberDemon.png");
+    status = WAIT;
+    death_cooldown = 27;
+}
+
+void CyberDemon::draw(Game* game) {
+    int s = animation_cooldown;
+    switch (status) {
+    case npc_status_t::WAIT:
+        Entity::draw(game, CyberDemon::walk_front_rects[0]);
+        break;
+    
+    case npc_status_t::WALK:
+        s /= 6;
+        s %= 4;
+        Entity::draw(game, CyberDemon::walk_front_rects[s]);
+        break;
+    
+    case npc_status_t::SHOOT:
+        s /= 3;
+        s %= 2;
+        Entity::draw(game, CyberDemon::shoot_rects[s]);
+        break;
+    
+    case npc_status_t::PAIN:
+        Entity::draw(game, CyberDemon::pain_rect[0]);
+        break;
+    
+    case npc_status_t::DIYING:
+        s /= 3;
+        s %= 9;
+        Entity::draw(game, CyberDemon::death1[s]);
         break;
     
     default:
