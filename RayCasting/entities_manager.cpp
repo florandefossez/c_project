@@ -174,6 +174,15 @@ std::array<SDL_Rect, 3> HealthPack::health_pack_rects = {
     SDL_Rect{15, 0, 28, 19}
 };
 
+std::array<SDL_Rect, 6> Armor::armor_rects = {
+    SDL_Rect{38, 0, 31, 17},
+    SDL_Rect{72, 0, 31, 17},
+    SDL_Rect{0, 0, 16, 15},
+    SDL_Rect{19, 0, 16, 15},
+    SDL_Rect{110, 0, 31, 17},
+    SDL_Rect{144, 0, 31, 17}
+};
+
 
 Object_manager::Object_manager(Game* game) : targeted_entity(nullptr), game(game) {
     entities.clear();
@@ -190,8 +199,8 @@ void Object_manager::start(int level_id) {
     
     switch (level_id) {
     case 0:
-        entities.push_back(new CyberDemon(5,5));
-        entities.push_back(new Barrel(4.5,44.0));
+        entities.push_back(new Barrel(5,5));
+        entities.push_back(new CyberDemon(4.5,44.0));
 
         entities.push_back(new Ammos(12,10,50,1));
         entities.push_back(new Ammos(12,12,50,2));
@@ -207,6 +216,10 @@ void Object_manager::start(int level_id) {
         entities.push_back(new HealthPack(12,28,0));
         entities.push_back(new HealthPack(12,30,1));
         entities.push_back(new HealthPack(12,32,2));
+
+        entities.push_back(new Armor(10,10,0));
+        entities.push_back(new Armor(10,12,1));
+        entities.push_back(new Armor(10,14,2));
         break;
 
     case 1:
@@ -498,6 +511,27 @@ bool HealthPack::update(Game* game) {
     }
     return false;
 }
+
+
+
+Armor::Armor(float x, float y, int armor_id) : Entity(x, y, 0.2f, 1, true), armor_id(armor_id) {
+    surface = Object_manager::getSurface("ressources/entities/items.png");
+}
+
+void Armor::draw(Game* game) {
+    static int s = 0;
+    if (game->animation) s++;
+    Entity::draw(game, Armor::armor_rects[2*armor_id]);
+}
+
+bool Armor::update(Game* game) {
+    if ((camera_y*camera_y + camera_x*camera_x) < 0.9f) {
+        game->player.armors[armor_id] = true;
+        return true;
+    }
+    return false;
+}
+
 
 
 bool Enemy::update(Game* game) {

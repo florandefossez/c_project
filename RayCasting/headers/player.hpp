@@ -42,6 +42,7 @@ public:
     float plane_y;
     
     float health;
+    float armor;
     int frag;
 
     player_state_t state;
@@ -50,6 +51,9 @@ public:
 
     int weapon;
     Weapon* weapons[6];
+
+    bool armors[3];
+    bool keys[3];
 
 private:
 

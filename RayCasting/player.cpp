@@ -29,6 +29,7 @@ void Player::start(int level_id) {
     game_over = 0;
     health = 100.f;
     state_change_cooldown = 0;
+    armor = 0.f;
 
     for (auto weap : weapons) {
         weap->munitions = 0;
@@ -36,6 +37,9 @@ void Player::start(int level_id) {
         weap->available = false;
     }
     weapons[0]->available = true;
+    
+    std::fill_n(armors, 3, false);
+    std::fill_n(keys, 3, false);
 
     switch (level_id) {
     case 0:
@@ -71,7 +75,14 @@ float Player::get_angle() {
 }
 
 void Player::damage(float value) {
-    health -= value;
+    if (armor >= value) {
+        armor -= value;
+    } else if (armor > 0) {
+        health -= value - armor;
+        armor = 0;
+    } else {
+        health -= value;
+    }
     blood_level += blood_level>100 ? 0 : 10;
     if (!state_change_cooldown) {
         state_change_cooldown = 20;
@@ -87,6 +98,7 @@ void Player::update() {
         return;
     }
     if (health <= 0) game_over = 80;
+    if (!blood_level && game->animation && armor < 10*(armors[0] + armors[1] + armors[2])) armor += 0.1;
     if (blood_level && game->animation) blood_level--;
 
     float move_x = 0;

@@ -330,6 +330,24 @@ void Hud::draw(SDL_Renderer* renderer) {
         SDL_RenderCopy(renderer, texture, &big_numbers[digit[i]], &dst);
     }
 
+    //armor
+    int armor = static_cast<int>(game->player.armor);
+    digit[0] = armor/100;
+    digit[1] = armor/10%10;
+    digit[2] = armor%10;
+    b = true;
+    for (int i = 0; i<3; i++) {
+        if (b && !digit[i] && i!=2) continue;
+        b = false;
+        dst = {
+            47*i + 612,
+            629,
+            1080 * big_numbers[digit[i]].w / 319,
+            1080 * big_numbers[digit[i]].h / 319
+        };
+        SDL_RenderCopy(renderer, texture, &big_numbers[digit[i]], &dst);
+    }
+
     //weapon numbers
     for (int line=0; line<2; line++) {
         for (int row=0; row<3; row++) {
@@ -346,6 +364,17 @@ void Hud::draw(SDL_Renderer* renderer) {
                 &dst
             );
         }
+    }
+
+    // items
+    SDL_Rect src = {227,34,10,7};
+    dst = {944, 619, 30, 26};
+    for (int i=0; i<3; i++) {
+        if (game->player.armors[i]) {
+            SDL_RenderCopy(game->renderer, texture, &src, &dst);
+        }
+        dst.x += 47;
+        src.x += 11;
     }
 
     // game over

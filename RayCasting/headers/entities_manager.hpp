@@ -110,6 +110,20 @@ private:
     static std::array<SDL_Rect, 3> health_pack_rects;
 };
 
+
+class Armor : public Entity {
+public:
+    Armor(float x, float y, int armor_id);
+    ~Armor() {};
+    void draw(Game* game) override;
+    bool update(Game* game) override;
+    void damage(float value) override {(void) value;};
+private:
+    int armor_id;
+    static std::array<SDL_Rect, 6> armor_rects;
+};
+
+
 class Barrel : public Entity {
 public:
     Barrel(float x, float y);
