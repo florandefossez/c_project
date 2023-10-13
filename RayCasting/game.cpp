@@ -167,6 +167,9 @@ void Game::update() {
 }
 
 void Game::render() {
+    // padding colors
+    SDL_SetRenderDrawColor(renderer, 0,0,0,0);
+    SDL_RenderClear(renderer);
 
     switch (state) {
     case MENU:
@@ -183,15 +186,15 @@ void Game::render() {
     
     case PLAY:
         std::fill(scene_pixels, scene_pixels + (width * (2*width/3)), 0);
-        SDL_SetRenderDrawColor(renderer, raycaster.fog_color[3], raycaster.fog_color[2], raycaster.fog_color[1], 0);
-        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, raycaster.fog_color[3], raycaster.fog_color[2], raycaster.fog_color[1], 255);
+        SDL_RenderFillRect(renderer, nullptr);
 
         map.draw_sky();
         raycaster.draw();
         entities_manager.draw();
 
         SDL_UpdateTexture(scene, nullptr, (void *) scene_pixels, width*4);
-        SDL_RenderCopy(renderer, scene, NULL, NULL);
+        SDL_RenderCopy(renderer, scene, nullptr, nullptr);
 
         player.draw();
         hud.draw(renderer);
