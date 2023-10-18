@@ -639,6 +639,7 @@ bool Enemy::update(Game* game) {
         case npc_status_t::DIYING:
             if (animation_cooldown >= death_cooldown) {
                 game->player.frag += 1;
+                if (final_enemy) game->player.game_won = 80;
                 return true;
             }
             return false;
@@ -684,7 +685,7 @@ void Enemy::damage(float value) {
 
 
 
-Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7f,50.f,4.f) {
+Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7f,50.f,4.f,false) {
     surface = Object_manager::getSurface("ressources/entities/soldier_1.png");
     status = WAIT;
 }
@@ -727,7 +728,7 @@ void Soldier1::draw(Game* game) {
 
 
 
-Soldier2::Soldier2(float x, float y) : Enemy(x,y,0.7f,50.f,4.f) {
+Soldier2::Soldier2(float x, float y) : Enemy(x,y,0.7f,50.f,4.f,false) {
     surface = Object_manager::getSurface("ressources/entities/soldier_2.png");
     status = WAIT;
 }
@@ -768,7 +769,7 @@ void Soldier2::draw(Game* game) {
 };
 
 
-Soldier3::Soldier3(float x, float y) : Enemy(x,y,0.7f,50.f,4.f) {
+Soldier3::Soldier3(float x, float y) : Enemy(x,y,0.7f,50.f,4.f,false) {
     surface = Object_manager::getSurface("ressources/entities/soldier_3.png");
     status = WAIT;
 }
@@ -810,7 +811,7 @@ void Soldier3::draw(Game* game) {
 
 
 
-CyberDemon::CyberDemon(float x, float y) : Enemy(x,y,0.7f,50.f,4.f) {
+CyberDemon::CyberDemon(float x, float y) : Enemy(x,y,0.7f,50.f,4.f,true) {
     surface = Object_manager::getSurface("ressources/entities/cyberDemon.png");
     status = WAIT;
     death_cooldown = 27;

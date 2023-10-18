@@ -48,6 +48,7 @@ public:
     player_state_t state;
     int blood_level;
     int game_over;
+    int game_won;
 
     int weapon;
     Weapon* weapons[6];

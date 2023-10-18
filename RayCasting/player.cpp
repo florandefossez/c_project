@@ -27,6 +27,7 @@ void Player::start(int level_id) {
     blood_level = 0;
     frag = 0;
     game_over = 0;
+    game_won = 0;
     health = 100.f;
     state_change_cooldown = 0;
     armor = 0.f;
@@ -92,14 +93,24 @@ void Player::damage(float value) {
 
 void Player::update() {
 
+    // game over
     if (game_over) {
         if (game->animation) game_over--;
         if (!game_over) game->menu();
         return;
     }
     if (health <= 0) game_over = 80;
+
+    // blood level
     if (!blood_level && game->animation && armor < 10*(armors[0] + armors[1] + armors[2])) armor += 0.1;
     if (blood_level && game->animation) blood_level--;
+
+    // win
+    if (game_won) {
+        if (game->animation) game_won--;
+        if (!game_won) game->menu();
+        return;
+    }
 
     float move_x = 0;
     float move_y = 0;

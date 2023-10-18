@@ -19,7 +19,7 @@ void Raycaster::load() {
     char file_name[30];
     SDL_Surface* tmp;
 
-    for (int i=0; i<10; i++) {
+    for (int i=0; i<11; i++) {
         sprintf(file_name, "ressources/textures/%d.png", i);
         tmp = IMG_Load(file_name);
         textures[i] = (Uint32*) SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_RGBA8888, 0)->pixels;
@@ -122,7 +122,7 @@ void Raycaster::draw_floor() {
 
             // choose texture and draw the pixel on the image
             Uint8 *color = (Uint8 *) &textures[
-                game->map.map[current_cell_x][current_cell_y].texture_id
+                game->map.map[current_cell_x][current_cell_y].texture_ids[4]
             ][tx + 64*ty];
             Uint8 *target_color = (Uint8 *) &game->scene_pixels[x + (p-1) * game->width + height/2 * game->width];
             
@@ -224,7 +224,22 @@ raycast_label:
             targeted_wall_y = current_cell_y;
         }
 
-        texture_id = game->map.map[current_cell_x][current_cell_y].texture_id;
+        int side_id;
+        if (collision_side == 'x') {
+            if (step_x == 1) {
+                side_id = 3;
+            } else {
+                side_id = 1;
+            }
+        } else {
+            if (step_y == 1) {
+                side_id = 0;
+            } else {
+                side_id = 2;
+            }
+        }
+
+        texture_id = game->map.map[current_cell_x][current_cell_y].texture_ids[side_id];
 
         // we don't use the real ray length to avoid fisheye effect
         if (collision_side == 'x') {
@@ -241,7 +256,7 @@ raycast_label:
                     perp_rays_lenght += std::abs(0.4f/ray_dir_x);
                     texture_id = 9;
                 } else {
-                    texture_id = game->map.map[current_cell_x][current_cell_y-1].texture_id;
+                    texture_id = game->map.map[current_cell_x][current_cell_y-1].texture_ids[side_id];
                     ray_length = y_ray_length;
                     y_ray_length += y_ray_unit_length;
 
@@ -266,7 +281,7 @@ raycast_label:
                     perp_rays_lenght += std::abs(0.4f/ray_dir_y);
                     texture_id = 9;
                 } else {
-                    texture_id = game->map.map[current_cell_x-1][current_cell_y].texture_id;
+                    texture_id = game->map.map[current_cell_x-1][current_cell_y].texture_ids[side_id];
                     ray_length = x_ray_length;
                     x_ray_length += x_ray_unit_length;
 

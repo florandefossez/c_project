@@ -377,9 +377,12 @@ void Hud::draw(SDL_Renderer* renderer) {
         src.x += 11;
     }
 
-    // game over
+    // game over/won
     if (game->player.game_over)
         draw_text(game->renderer, "Game Over", 100, 300, 70);
+    if (game->player.game_won)
+        draw_text(game->renderer, "You Win!", 180, 300, 70);
+       
 }
 
 

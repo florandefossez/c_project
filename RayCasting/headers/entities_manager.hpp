@@ -137,8 +137,8 @@ public:
 
 class Enemy : public Entity {
 public:
-    Enemy(float x, float y, float size, float health, float weapon_damage) :
-        Entity(x,y,size,health, false), animation_cooldown(0), death_cooldown(9), velocity(2), weapon_damage(weapon_damage) {};
+    Enemy(float x, float y, float size, float health, float weapon_damage, bool final_enemy) :
+        Entity(x,y,size,health, false), animation_cooldown(0), death_cooldown(9), velocity(2), weapon_damage(weapon_damage), final_enemy(final_enemy) {};
     virtual ~Enemy() {};
     
     bool update(Game* game) override;
@@ -150,6 +150,7 @@ public:
     bool direct_ray;
     float velocity;
     float weapon_damage;
+    bool final_enemy; 
 
     float dir_x;
     float dir_y;

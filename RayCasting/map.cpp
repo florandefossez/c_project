@@ -20,50 +20,34 @@ void Map::load() {
 
 
 void Map::start(int level_id) {
-    SDL_Surface* map_surface;
     if (sky_texture) SDL_DestroyTexture(sky_texture);
-
-    for (unsigned int i = 0; i < 64; i++) {
-        for (unsigned int j = 0; j < 64; j++) {
-            map[i][j] = {false, false, 0, 0};
-        }
-    }
+    char file_name[30];
 
     switch (level_id) {
     case 0:
-        map_surface = IMG_Load("ressources/maps/test.png");
         sky_texture = IMG_LoadTexture(game->renderer, "ressources/sky/sky1.png");
+        strcpy(file_name, "ressources/maps/test");
         break;
     
     case 1:
-        map_surface = IMG_Load("ressources/maps/level1.png");
         sky_texture = IMG_LoadTexture(game->renderer, "ressources/sky/sky1.png");
+        strcpy(file_name, "ressources/maps/level1");
         break;
-
     }
+
+
+    Uint8 data[64*64*6];
+    FILE *file;
+    file = fopen(file_name, "rb");
+    fread(data, 1, 64*64*6, file);
+    fclose(file);
 
     for (unsigned int i = 0; i < 64; i++) {
         for (unsigned int j = 0; j < 64; j++) {
-            Uint8* p = (Uint8*)map_surface->pixels + j * map_surface->pitch + i * 4;
-            
-            // type
-            switch (p[0]) {
-            case 0x00:
-                // wall
-                map[i][j].is_wall = true;
-                break;
-            case 0xF0:
-                // door
-                map[i][j].is_wall = true;
-                map[i][j].is_door = true;
-                break;
-            case 0x40:
-                // floor
-                break;
-            }
-
-            // texture
-            map[i][j].texture_id = p[1];
+            Uint8* p = data + 6*i + 64*6*j;
+            map[i][j].is_door = p[0] & 128;
+            map[i][j].is_wall = p[0] & 64;
+            memcpy(map[i][j].texture_ids, p + 1, 5);
         }
     }
 }

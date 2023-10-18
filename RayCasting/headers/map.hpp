@@ -7,7 +7,7 @@ typedef struct cell_ {
     bool is_wall;
     bool is_door;
     int dir;
-    int texture_id;
+    Uint8 texture_ids[5];
 } cell_t;
 
 class Game;

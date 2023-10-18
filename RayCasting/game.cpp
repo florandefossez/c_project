@@ -17,7 +17,7 @@
 
 Game::Game() : width(1024), state(MENU), map(this), player(this), raycaster(this), entities_manager(this), hud(this) {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 16384);
 
     game_music = Mix_LoadMUS("ressources/sounds/game_music.wav");
     menu_music = Mix_LoadMUS("ressources/sounds/menu_music.wav");
@@ -198,7 +198,7 @@ void Game::render() {
 
         player.draw();
         hud.draw(renderer);
-        map.draw();
+        // map.draw();
         break;
     }
 
@@ -207,7 +207,7 @@ void Game::render() {
 
 
 void Game::start_level(int level_id) {
-    Mix_FadeInMusic(game_music, -1, 2000);
+    Mix_PlayMusic(game_music, -1);
     state = PLAY;
     map.start(level_id);
     player.start(level_id);
