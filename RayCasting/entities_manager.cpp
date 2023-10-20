@@ -175,10 +175,10 @@ std::array<SDL_Rect, 3> HealthPack::health_pack_rects = {
 };
 
 std::array<SDL_Rect, 6> Armor::armor_rects = {
-    SDL_Rect{38, 0, 31, 17},
-    SDL_Rect{72, 0, 31, 17},
     SDL_Rect{0, 0, 16, 15},
     SDL_Rect{19, 0, 16, 15},
+    SDL_Rect{38, 0, 31, 17},
+    SDL_Rect{72, 0, 31, 17},
     SDL_Rect{110, 0, 31, 17},
     SDL_Rect{144, 0, 31, 17}
 };
@@ -223,12 +223,131 @@ void Object_manager::start(int level_id) {
         break;
 
     case 1:
-        entities.push_back(new Soldier3(4.5,44.0));
-        entities.push_back(new Barrel(4.5,44.0));
-        entities.push_back(new Ammos(9.5,39.5,100,1));
-        entities.push_back(new Ammos(12,40,100,2));
-        entities.push_back(new Ammos(10,42,100,3));
-        entities.push_back(new Ammos(12,42,100,4));
+        entities.push_back(new Weapons(12,40.5,20,1));
+        entities.push_back(new Armor(12,43.5,0));
+        entities.push_back(new Soldier1(1.5,53.5));
+
+        entities.push_back(new Soldier1(3,62));
+        entities.push_back(new Ammos(5,61,50,1));
+
+        entities.push_back(new Soldier1(10,62));
+        entities.push_back(new Soldier1(15,61));
+
+        entities.push_back(new Soldier1(25,55));
+        entities.push_back(new Soldier1(25,60));
+        entities.push_back(new Soldier2(28,58));
+        entities.push_back(new HealthPack(29,32,2));
+        entities.push_back(new Weapons(28,58,100,2));
+
+        entities.push_back(new Soldier1(10,47));
+        entities.push_back(new Soldier1(25.5,45.5));
+        entities.push_back(new Soldier1(25.5,41.5));
+
+        // right
+
+        entities.push_back(new Soldier1(49.5,35.5));
+        entities.push_back(new Soldier1(49.5,36.5));
+        entities.push_back(new Soldier1(51.5,36));
+        entities.push_back(new Soldier2(45.5,32.5));
+        entities.push_back(new Ammos(45.5,32.5,100,2));
+        entities.push_back(new Ammos(51.5,36,20,1));
+
+        entities.push_back(new Soldier1(38.5,43.5));
+        entities.push_back(new Soldier1(42.5,48.5));
+        entities.push_back(new Soldier1(41.5,53.5));
+        entities.push_back(new Soldier2(44.5,59.5));
+
+        entities.push_back(new Soldier2(32.5,56.5));
+        entities.push_back(new Soldier2(36.5,53.5));
+        entities.push_back(new Soldier2(32.5,53.5));
+        entities.push_back(new Soldier2(36.5,56.5));
+        entities.push_back(new Weapons(20,51,30,3));
+
+        entities.push_back(new Ammos(50.5,58.5,30,3));
+        entities.push_back(new Armor(56.5,58.5,1));
+        entities.push_back(new Soldier2(58.5,61.5));
+        entities.push_back(new Soldier2(59.5,62.5));
+
+        entities.push_back(new Soldier1(50.5,50.5));
+        entities.push_back(new Soldier1(50.5,48.5));
+        entities.push_back(new Soldier3(57.5,38.5));
+        entities.push_back(new Ammos(57.5,38.5,200,2));
+        entities.push_back(new Weapons(58,31,0,5));
+        entities.push_back(new HealthPack(51,23,1));
+
+        entities.push_back(new Soldier3(34.5,25.5));
+        entities.push_back(new Soldier2(32.5,21.5));
+        entities.push_back(new Soldier2(32.5,19.5));
+        entities.push_back(new Armor(31.5,20.5,2));
+
+        entities.push_back(new Soldier2(41.5,13.5));
+        entities.push_back(new Ammos(41.5,13.5,50,2));
+        entities.push_back(new Soldier2(41.5,18.5));
+        entities.push_back(new Ammos(41.5,18.5,20,3));
+
+        // left
+
+        entities.push_back(new Soldier1(15.5,35.5));
+        entities.push_back(new Soldier1(15.5,36.5));
+        entities.push_back(new Soldier1(15.5,36));
+        entities.push_back(new Soldier2(16,33.5));
+        entities.push_back(new Ammos(17.5,33.5,100,2));
+        entities.push_back(new Ammos(17.5,34.5,20,1));
+
+        entities.push_back(new Soldier1(10.5,26.5));
+        entities.push_back(new Soldier1(14.5,28.5));
+        entities.push_back(new Soldier1(16.5,26.5));
+        entities.push_back(new Soldier2(23.5,29.5));
+
+        entities.push_back(new Soldier2(27,22));
+        entities.push_back(new Soldier2(28,22));
+        entities.push_back(new Soldier2(20,20.5));
+        entities.push_back(new Soldier2(16,21));
+        entities.push_back(new Weapons(28.5,31.5,30,3));
+
+        entities.push_back(new Ammos(8.5,22.5,30,3));
+        entities.push_back(new Armor(2.5,24,1));
+        entities.push_back(new Soldier2(1.5,17.5));
+        entities.push_back(new Soldier2(3,12));
+
+        entities.push_back(new Soldier1(12.5,7.5));
+        entities.push_back(new Soldier1(16.5,7.5));
+        entities.push_back(new Soldier3(14.5,10.5));
+        entities.push_back(new Ammos(10.5,9.5,200,2));
+        entities.push_back(new Ammos(12.5,5.5,50,1));
+        entities.push_back(new Weapons(16.5,10.5,40,4));
+        entities.push_back(new HealthPack(14.5,10.5,2));
+
+        entities.push_back(new Soldier3(26.5,4.5));
+        entities.push_back(new Soldier2(34.5,4.5));
+        entities.push_back(new Soldier2(32.5,8.5));
+        entities.push_back(new Ammos(34.5,1.5,30,4));
+        entities.push_back(new Armor(32.5,5.5,2));
+        entities.push_back(new HealthPack(13,16,0));
+
+        entities.push_back(new Soldier2(25.5,17.5));
+        entities.push_back(new Soldier2(41.5,18.5));
+        entities.push_back(new Ammos(34.5,12.5,20,3));
+
+        entities.push_back(new Soldier1(59.3,3.5));
+        entities.push_back(new Soldier1(60.5,4.5));
+        entities.push_back(new Soldier2(61.5,5));
+
+        entities.push_back(new HealthPack(40,1,1));
+        entities.push_back(new Ammos(46.5,1.5,20,1));
+
+
+        // end
+
+        entities.push_back(new HealthPack(61.5,10.5,2));
+        entities.push_back(new CyberDemon(45.5,10.5));
+        entities.push_back(new Soldier2(51.5,7.5));
+        entities.push_back(new Soldier3(52,9));
+        entities.push_back(new Soldier2(51.5,13.5));
+        entities.push_back(new Soldier3(52,12));
+
+
+
         break;
     
     default:
@@ -521,7 +640,7 @@ Armor::Armor(float x, float y, int armor_id) : Entity(x, y, 0.2f, 1, true), armo
 void Armor::draw(Game* game) {
     static int s = 0;
     if (game->animation) s++;
-    Entity::draw(game, Armor::armor_rects[2*armor_id]);
+    Entity::draw(game, Armor::armor_rects[2*armor_id + s/5%2]);
 }
 
 bool Armor::update(Game* game) {
@@ -640,6 +759,8 @@ bool Enemy::update(Game* game) {
             if (animation_cooldown >= death_cooldown) {
                 game->player.frag += 1;
                 if (final_enemy) game->player.game_won = 80;
+                if (rand()%3 == 0)
+                    game->entities_manager.entities.push_back(new HealthPack(position_x, position_y, 0));
                 return true;
             }
             return false;
@@ -685,7 +806,7 @@ void Enemy::damage(float value) {
 
 
 
-Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7f,50.f,4.f,false) {
+Soldier1::Soldier1(float x, float y) : Enemy(x,y,0.7f,80.f,10.f,false) {
     surface = Object_manager::getSurface("ressources/entities/soldier_1.png");
     status = WAIT;
 }
@@ -728,7 +849,7 @@ void Soldier1::draw(Game* game) {
 
 
 
-Soldier2::Soldier2(float x, float y) : Enemy(x,y,0.7f,50.f,4.f,false) {
+Soldier2::Soldier2(float x, float y) : Enemy(x,y,0.7f,150.f,20.f,false) {
     surface = Object_manager::getSurface("ressources/entities/soldier_2.png");
     status = WAIT;
 }
@@ -769,7 +890,7 @@ void Soldier2::draw(Game* game) {
 };
 
 
-Soldier3::Soldier3(float x, float y) : Enemy(x,y,0.7f,50.f,4.f,false) {
+Soldier3::Soldier3(float x, float y) : Enemy(x,y,0.7f,200.f,40.f,false) {
     surface = Object_manager::getSurface("ressources/entities/soldier_3.png");
     status = WAIT;
 }
@@ -811,7 +932,7 @@ void Soldier3::draw(Game* game) {
 
 
 
-CyberDemon::CyberDemon(float x, float y) : Enemy(x,y,0.7f,50.f,4.f,true) {
+CyberDemon::CyberDemon(float x, float y) : Enemy(x,y,0.7f,500.f,50.f,true) {
     surface = Object_manager::getSurface("ressources/entities/cyberDemon.png");
     status = WAIT;
     death_cooldown = 27;

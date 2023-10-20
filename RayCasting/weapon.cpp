@@ -176,7 +176,7 @@ std::array<SDL_Rect, 5> RocketLauncher::shoot_rects = {
     SDL_Rect{93, 0, 87, 119},    
 };
 
-RocketLauncher::RocketLauncher(Game* game) : Weapon(game, 20.f, 20) {
+RocketLauncher::RocketLauncher(Game* game) : Weapon(game, 40.f, 20) {
     texture = IMG_LoadTexture(game->renderer, "ressources/weapons/rocketLauncher.png");
     rocket_launch = Mix_LoadWAV("ressources/sounds/rocket_launch.wav");
 }

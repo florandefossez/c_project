@@ -502,9 +502,9 @@ void Hud::handleEvents_option(SDL_Event* event) {
 
 void Hud::draw_level_menu() {
     SDL_RenderCopy(game->renderer, menu_background, nullptr, nullptr);
-    draw_text(game->renderer, "Test area", 150, 300, 30);
-    draw_text(game->renderer, "Level 1", 150, 350, 30);
-    draw_text(game->renderer, "exit", 150, 400, 30);
+    draw_text(game->renderer, "The death trenches", 150, 300, 30);
+    draw_text(game->renderer, "** test area **", 150, 350, 30);
+    draw_text(game->renderer, "back", 150, 400, 30);
 
     SDL_Rect dst = {110, 300 + 50*menu_index, 30, 30};
     SDL_RenderCopy(game->renderer, texture, &Hud::faces1_rects[7], &dst);
@@ -516,11 +516,11 @@ void Hud::handleEvents_level_menu(SDL_Event* event) {
         switch (menu_index) {
         case 0:
             game->state = PLAY;
-            game->start_level(0);
+            game->start_level(1);
             break;
         case 1:
             game->state = PLAY;
-            game->start_level(1);
+            game->start_level(0);
             break;
         case 2:
             game->state = MENU;
