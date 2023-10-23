@@ -350,6 +350,9 @@ void Object_manager::start(int level_id) {
 
         break;
     
+    case 2:
+        break;
+    
     default:
         break;
     }

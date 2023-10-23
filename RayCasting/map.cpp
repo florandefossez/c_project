@@ -33,6 +33,11 @@ void Map::start(int level_id) {
         sky_texture = IMG_LoadTexture(game->renderer, "ressources/sky/sky1.png");
         strcpy(file_name, "ressources/maps/level1");
         break;
+    
+    case 2:
+        sky_texture = IMG_LoadTexture(game->renderer, "ressources/sky/sky2.png");
+        strcpy(file_name, "ressources/maps/level2");
+        break;
     }
 
 

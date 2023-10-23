@@ -503,8 +503,9 @@ void Hud::handleEvents_option(SDL_Event* event) {
 void Hud::draw_level_menu() {
     SDL_RenderCopy(game->renderer, menu_background, nullptr, nullptr);
     draw_text(game->renderer, "The death trenches", 150, 300, 30);
-    draw_text(game->renderer, "** test area **", 150, 350, 30);
-    draw_text(game->renderer, "back", 150, 400, 30);
+    draw_text(game->renderer, "The hellfire maze", 150, 350, 30);
+    draw_text(game->renderer, "** test area **", 150, 400, 30);
+    draw_text(game->renderer, "back", 150, 450, 30);
 
     SDL_Rect dst = {110, 300 + 50*menu_index, 30, 30};
     SDL_RenderCopy(game->renderer, texture, &Hud::faces1_rects[7], &dst);
@@ -520,20 +521,24 @@ void Hud::handleEvents_level_menu(SDL_Event* event) {
             break;
         case 1:
             game->state = PLAY;
-            game->start_level(0);
+            game->start_level(2);
             break;
         case 2:
+            game->state = PLAY;
+            game->start_level(0);
+            break;
+        case 3:
             game->state = MENU;
             break;
         }
         break;
     
     case SDLK_DOWN:
-        menu_index = (menu_index + 1)%3;
+        menu_index = (menu_index + 1)%4;
         break;
     
     case SDLK_UP:
-        menu_index = (menu_index + 2)%3;
+        menu_index = (menu_index + 2)%4;
         break;
     }
 }

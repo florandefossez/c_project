@@ -31,6 +31,7 @@ void Player::start(int level_id) {
     health = 100.f;
     state_change_cooldown = 0;
     armor = 0.f;
+    weapon = 0;
 
     for (auto weap : weapons) {
         weap->munitions = 0;
@@ -49,7 +50,6 @@ void Player::start(int level_id) {
         position_z = 0.5;
         dir_x = cos(95.f);
         dir_y = sin(95.f);
-        weapon = 0;
         break;
     
     case 1:
@@ -58,7 +58,14 @@ void Player::start(int level_id) {
         position_z = 0.5;
         dir_x = cos(-80.f);
         dir_y = sin(-80.f);
-        weapon = 0;
+        break;
+
+    case 2:
+        position_x = 8.5;
+        position_y = 34.5;
+        position_z = 0.5;
+        dir_x = cos(3.14f);
+        dir_y = sin(3.14f);
         break;
 
     }

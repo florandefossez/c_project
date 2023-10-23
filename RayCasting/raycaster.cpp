@@ -19,7 +19,7 @@ void Raycaster::load() {
     char file_name[30];
     SDL_Surface* tmp;
 
-    for (int i=0; i<11; i++) {
+    for (int i=0; i<=23; i++) {
         sprintf(file_name, "ressources/textures/%d.png", i);
         tmp = IMG_Load(file_name);
         textures[i] = (Uint32*) SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_RGBA8888, 0)->pixels;
@@ -30,16 +30,40 @@ void Raycaster::load() {
 
 }
 
-void Raycaster::start() {
+void Raycaster::start(int level_id) {
     opening_state = 0;
     opening_door_x = 0;
     opening_door_y = 0;
 
-    // ABGR
-    fog_color[0] = 255;
-    fog_color[1] = 0x06;
-    fog_color[2] = 0x2c;
-    fog_color[3] = 0x3e;
+    switch (level_id) {
+    case 0:
+        // ABGR
+        fog_color[0] = 255;
+        fog_color[1] = 0x06;
+        fog_color[2] = 0x2c;
+        fog_color[3] = 0x3e;
+        break;
+    
+    case 1:
+        // ABGR
+        fog_color[0] = 255;
+        fog_color[1] = 0x06;
+        fog_color[2] = 0x2c;
+        fog_color[3] = 0x3e;
+        break;
+    
+    case 2:
+        // ABGR
+        fog_color[0] = 255;
+        fog_color[1] = 0x06;
+        fog_color[2] = 0x2c;
+        fog_color[3] = 0x3e;
+        break;
+    
+    default:
+        break;
+    }
+
     
 }
 
@@ -224,27 +248,11 @@ raycast_label:
             targeted_wall_y = current_cell_y;
         }
 
-        int side_id;
-        if (collision_side == 'x') {
-            if (step_x == 1) {
-                side_id = 3;
-            } else {
-                side_id = 1;
-            }
-        } else {
-            if (step_y == 1) {
-                side_id = 0;
-            } else {
-                side_id = 2;
-            }
-        }
-
-        texture_id = game->map.map[current_cell_x][current_cell_y].texture_ids[side_id];
-
         // we don't use the real ray length to avoid fisheye effect
         if (collision_side == 'x') {
             perp_rays_lenght = x_ray_length - x_ray_unit_length;
             texture_offset = game->player.position_y + ray_length * ray_dir_y - (float) current_cell_y;
+            texture_id = game->map.map[current_cell_x][current_cell_y].texture_ids[step_x+2];
 
             if (game->map.map[current_cell_x][current_cell_y].is_door) {
                 float cell_y = game->player.position_y + ray_length * ray_dir_y + std::abs(0.4f/ray_dir_x) * ray_dir_y;
@@ -256,7 +264,7 @@ raycast_label:
                     perp_rays_lenght += std::abs(0.4f/ray_dir_x);
                     texture_id = 9;
                 } else {
-                    texture_id = game->map.map[current_cell_x][current_cell_y-1].texture_ids[side_id];
+                    texture_id = game->map.map[current_cell_x][current_cell_y+step_y].texture_ids[1-step_y];
                     ray_length = y_ray_length;
                     y_ray_length += y_ray_unit_length;
 
@@ -270,6 +278,7 @@ raycast_label:
         } else {
             perp_rays_lenght = y_ray_length - y_ray_unit_length;
             texture_offset = game->player.position_x + ray_length * ray_dir_x - (float) current_cell_x;
+            texture_id = game->map.map[current_cell_x][current_cell_y].texture_ids[1-step_y];
 
             if (game->map.map[current_cell_x][current_cell_y].is_door) {
                 float cell_x = game->player.position_x + ray_length * ray_dir_x + std::abs(0.4f/ray_dir_y) * ray_dir_x;
@@ -281,7 +290,7 @@ raycast_label:
                     perp_rays_lenght += std::abs(0.4f/ray_dir_y);
                     texture_id = 9;
                 } else {
-                    texture_id = game->map.map[current_cell_x-1][current_cell_y].texture_ids[side_id];
+                    texture_id = game->map.map[current_cell_x+step_x][current_cell_y].texture_ids[2+step_x];
                     ray_length = x_ray_length;
                     x_ray_length += x_ray_unit_length;
 

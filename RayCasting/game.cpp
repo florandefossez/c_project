@@ -212,7 +212,7 @@ void Game::start_level(int level_id) {
     map.start(level_id);
     player.start(level_id);
     entities_manager.start(level_id);
-    raycaster.start();
+    raycaster.start(level_id);
 }
 
 void Game::menu() {

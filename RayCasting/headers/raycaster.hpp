@@ -12,7 +12,7 @@ public:
     float* rays_lenght;
 
     void load();
-    void start();
+    void start(int level_id);
     void update_width();
 
     void trigger();
@@ -30,7 +30,7 @@ private:
     Game* game;
 
     // textures
-    Uint32* textures[20]; 
+    Uint32* textures[24]; 
 
     int opening_door_x;
     int opening_door_y;
