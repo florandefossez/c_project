@@ -503,7 +503,7 @@ void Hud::handleEvents_option(SDL_Event* event) {
 void Hud::draw_level_menu() {
     SDL_RenderCopy(game->renderer, menu_background, nullptr, nullptr);
     draw_text(game->renderer, "The death trenches", 150, 300, 30);
-    draw_text(game->renderer, "The hellfire maze", 150, 350, 30);
+    draw_text(game->renderer, "The bunker", 150, 350, 30);
     draw_text(game->renderer, "** test area **", 150, 400, 30);
     draw_text(game->renderer, "back", 150, 450, 30);
 
@@ -529,6 +529,7 @@ void Hud::handleEvents_level_menu(SDL_Event* event) {
             break;
         case 3:
             game->state = MENU;
+            menu_index = 0;
             break;
         }
         break;

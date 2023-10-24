@@ -346,11 +346,123 @@ void Object_manager::start(int level_id) {
         entities.push_back(new Soldier2(51.5,13.5));
         entities.push_back(new Soldier3(52,12));
 
-
-
         break;
     
     case 2:
+        // corridor 1
+        entities.push_back(new HealthPack(9.5,34.5,1));
+        entities.push_back(new Soldier1(2,31));
+        entities.push_back(new Weapons(1.5,25.5,20,1));
+        entities.push_back(new Ammos(5.5,25.5,20,1));
+        entities.push_back(new Soldier1(6,16));
+        entities.push_back(new Soldier1(18.5,5.5));
+        entities.push_back(new Soldier1(19.5,6.5));
+        entities.push_back(new Soldier1(22.5,7.5));
+        entities.push_back(new Soldier2(39.5,6.5));
+        entities.push_back(new Soldier1(41.5,9.5));
+        entities.push_back(new Soldier1(51.5,8.5));
+        entities.push_back(new Soldier1(51.5,9.5));
+        entities.push_back(new Soldier1(48.5,9));
+        entities.push_back(new Ammos(52.5,5.5,10,1));
+        entities.push_back(new Soldier2(59.5,16.5));
+        entities.push_back(new Soldier1(61,20));
+        entities.push_back(new Weapons(55.5,19.5,100,2));
+        entities.push_back(new Soldier1(58,34));
+        entities.push_back(new Soldier1(60.5,34.5));
+        entities.push_back(new Soldier1(60.5,31.5));
+        entities.push_back(new Soldier1(58.5,27.5));
+        entities.push_back(new Ammos(60.5,35.5,50,2));
+
+        // corridor 2
+        entities.push_back(new Ammos(57.5,39.5,20,1));
+        entities.push_back(new Soldier1(62.5,38.5));
+        entities.push_back(new Soldier1(58.5,45.5));
+        entities.push_back(new Soldier1(57.5,44.5));
+        entities.push_back(new Soldier1(56.5,43.5));
+        entities.push_back(new Soldier2(60.5,58.5));
+        entities.push_back(new Soldier1(62.5,58.5));
+        entities.push_back(new Ammos(62.5,60.5,70,2));
+        entities.push_back(new HealthPack(49.5,55.5,1));
+        entities.push_back(new Soldier2(47.5,60.5));
+        entities.push_back(new Soldier1(36.5,60.5));
+        entities.push_back(new Soldier1(37.5,61.5));
+        entities.push_back(new Soldier1(37.5,59.5));
+        entities.push_back(new Armor(30.5,57.5,0));
+        entities.push_back(new Ammos(29.5,61.5,70,2));
+        entities.push_back(new Ammos(25.5,62.5,30,1));
+        entities.push_back(new Soldier3(2.5,45.5));
+        entities.push_back(new Soldier3(1.5,42.5));
+        entities.push_back(new Weapons(12.5,38.5,30,3));
+
+        // bunker 1
+        entities.push_back(new HealthPack(11.5,47.5,2));
+        entities.push_back(new Soldier2(12.5,42.5));
+        entities.push_back(new Armor(17,39,1));
+        entities.push_back(new Ammos(11,52,70,2));
+        entities.push_back(new Soldier2(14.5,55.5));
+        entities.push_back(new Soldier2(17.5,57.5));
+        entities.push_back(new Soldier1(24.5,58.5));
+        entities.push_back(new Soldier1(24.5,55.5));
+        entities.push_back(new HealthPack(27.5,52.5,0));
+        entities.push_back(new Ammos(24.5,47.5,30,1));
+        entities.push_back(new Soldier3(21.5,40.5));
+        entities.push_back(new Soldier1(28.5,40.5));
+        entities.push_back(new Ammos(30.5,36.5,20,3));
+        entities.push_back(new Ammos(37.5,38.5,70,2));
+        entities.push_back(new Soldier1(24.5,44.5));
+        entities.push_back(new Soldier1(25.5,45.5));
+        entities.push_back(new Soldier2(36.5,50.5));
+        entities.push_back(new Soldier2(40.5,48.5));
+        entities.push_back(new HealthPack(33.5,53.5,1));
+        entities.push_back(new Soldier3(45.5,49.5));
+        entities.push_back(new Soldier1(50.5,49.5));
+        entities.push_back(new Soldier1(48.5,48.5));
+        entities.push_back(new Weapons(57.5,51.5,50,4));
+        entities.push_back(new Soldier1(41.5,45.5));
+        entities.push_back(new Soldier1(53.5,45.5));
+        entities.push_back(new HealthPack(37,42,1));
+        entities.push_back(new Ammos(41.5,41.5,30,1));
+        entities.push_back(new Ammos(40.5,39.5,70,2));
+        entities.push_back(new Ammos(47.5,41.5,30,3));
+
+        // midle corridor
+        entities.push_back(new Soldier2(19.5,33.5));
+        entities.push_back(new Soldier2(18.5,34.5));
+        entities.push_back(new Soldier2(17.5,35.5));
+        entities.push_back(new Soldier2(15.5,34.5));
+        entities.push_back(new Ammos(11.5,34.5,70,2));
+
+        // bunker 2
+        entities.push_back(new Soldier1(8.5,23.5));
+        entities.push_back(new Soldier1(9.5,19.5));
+        entities.push_back(new Soldier1(13.5,19.5));
+        entities.push_back(new Armor(16.5,20.2,2));
+        entities.push_back(new Soldier3(11.5,11.5));
+        entities.push_back(new Ammos(17.5,9.5,70,2));
+        entities.push_back(new Soldier1(22.5,17.5));
+        entities.push_back(new Soldier1(22.5,15.5));
+        entities.push_back(new Ammos(28.5,15.5,30,1));
+        entities.push_back(new Weapons(21,13,0,5));
+        entities.push_back(new Soldier2(23,20));
+        entities.push_back(new Soldier2(20.5,19.5));
+        entities.push_back(new Soldier2(33.5,23.5));
+        entities.push_back(new Soldier1(37.5,18.5));
+        entities.push_back(new HealthPack(34.5,9.5,1));
+        entities.push_back(new Ammos(35.5,9.5,70,2));
+        entities.push_back(new Soldier3(44.5,17.5));
+        entities.push_back(new Soldier2(52.5,13.5));
+        entities.push_back(new Soldier1(56.5,9.5));
+        entities.push_back(new Ammos(56.5,31.5,30,4));
+        entities.push_back(new Soldier2(47.5,21.5));
+        entities.push_back(new Ammos(40.5,20.5,200,2));
+        entities.push_back(new HealthPack(39.5,26.5,2));
+
+        // final room
+        entities.push_back(new CyberDemon(19.5,28.5));
+        entities.push_back(new Soldier2(16.5,27.5));
+        entities.push_back(new Soldier2(16.5,28.5));
+        entities.push_back(new Soldier3(33.5,30.5));
+
         break;
     
     default:

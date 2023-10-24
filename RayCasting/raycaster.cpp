@@ -55,9 +55,9 @@ void Raycaster::start(int level_id) {
     case 2:
         // ABGR
         fog_color[0] = 255;
-        fog_color[1] = 0x06;
-        fog_color[2] = 0x2c;
-        fog_color[3] = 0x3e;
+        fog_color[1] = 0x48;
+        fog_color[2] = 0x61;
+        fog_color[3] = 0x56;
         break;
     
     default:
