@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/floran/c_projects/TinyRenderer/build",
+  "command": "/usr/bin/gcc   -g -o CMakeFiles/my_exc.dir/src/main.c.o -c /home/floran/c_projects/TinyRenderer/src/main.c",
+  "file": "/home/floran/c_projects/TinyRenderer/src/main.c"
+},
+{
+  "directory": "/home/floran/c_projects/TinyRenderer/build",
+  "command": "/usr/bin/gcc   -g -o CMakeFiles/my_exc.dir/src/glad.c.o -c /home/floran/c_projects/TinyRenderer/src/glad.c",
+  "file": "/home/floran/c_projects/TinyRenderer/src/glad.c"
+}
+]
