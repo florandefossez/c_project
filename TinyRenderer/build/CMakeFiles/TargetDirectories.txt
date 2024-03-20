@@ -1,3 +1,0 @@
-/home/floran/c_projects/TinyRenderer/build/CMakeFiles/my_exc.dir
-/home/floran/c_projects/TinyRenderer/build/CMakeFiles/edit_cache.dir
-/home/floran/c_projects/TinyRenderer/build/CMakeFiles/rebuild_cache.dir
