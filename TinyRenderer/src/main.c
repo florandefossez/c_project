@@ -5,6 +5,10 @@
 #include <math.h>
 
 #include "shader.h"
+#include "cglm/mat4.h"
+#include "cglm/common.h"
+#include "cglm/affine.h"
+#include "cglm/cam.h"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -68,24 +72,46 @@ int main(void)
 	// 	5, 4, 1 // Lower right triangle
 	// };
 
+    // // Vertices coordinates
+    // GLfloat vertices[] =
+    // { //     COORDINATES     /        COLORS      /   TexCoord  //
+    //     -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f,	0.0f, 0.0f, // Lower left corner
+    //     -0.5f,  0.5f, 0.0f,     0.0f, 1.0f, 0.0f,	0.0f, 1.0f, // Upper left corner
+    //     0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,	1.0f, 1.0f, // Upper right corner
+    //     0.5f, -0.5f, 0.0f,     1.0f, 1.0f, 1.0f,	1.0f, 0.0f  // Lower right corner
+    // };
+
+    // // Indices for vertices order
+    // GLuint indices[] =
+    // {
+    //     0, 2, 1, // Upper triangle
+    //     0, 3, 2 // Lower triangle
+    // };
+
     // Vertices coordinates
     GLfloat vertices[] =
     { //     COORDINATES     /        COLORS      /   TexCoord  //
-        -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f,	0.0f, 0.0f, // Lower left corner
-        -0.5f,  0.5f, 0.0f,     0.0f, 1.0f, 0.0f,	0.0f, 1.0f, // Upper left corner
-        0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,	1.0f, 1.0f, // Upper right corner
-        0.5f, -0.5f, 0.0f,     1.0f, 1.0f, 1.0f,	1.0f, 0.0f  // Lower right corner
+        -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
+        -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
+        0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
+        0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
+        0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	2.5f, 5.0f
     };
 
     // Indices for vertices order
     GLuint indices[] =
     {
-        0, 2, 1, // Upper triangle
-        0, 3, 2 // Lower triangle
+        0, 1, 2,
+        0, 2, 3,
+        0, 1, 4,
+        1, 2, 4,
+        2, 3, 4,
+        3, 0, 4
     };
 
     int imgW, imgH, colCh;
-    unsigned char* bytes = stbi_load("../resources/th.jpg", &imgW, &imgH, &colCh, 0);
+    stbi_set_flip_vertically_on_load(1);
+    unsigned char* bytes = stbi_load("../resources/R.png", &imgW, &imgH, &colCh, 3);
     GLuint texture;
     glGenTextures(1, &texture);
     glActiveTexture(GL_TEXTURE0);
@@ -94,7 +120,7 @@ int main(void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgW, imgH, 0, GL_RGB, GL_UNSIGNED_BYTE, bytes);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgW, imgH, 0, GL_RGB, GL_UNSIGNED_BYTE, bytes);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(bytes);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -128,9 +154,23 @@ int main(void)
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    GLuint uniformID = glGetUniformLocation(shaderProgram, "scale");
+    glEnable(GL_DEPTH_TEST);
 
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 proj = GLM_MAT4_IDENTITY_INIT;
+    glm_translated(view, (vec3){0.0f, -0.1f, -2.0f});
+    glm_perspective(glm_rad(45.f), 1.f, 0.1f, 100.f, proj);
+
+
+    GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
+    GLuint projLoc = glGetUniformLocation(shaderProgram, "proj");
+    GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
+
+    GLuint uniformID = glGetUniformLocation(shaderProgram, "scale");
     GLuint tex0 = glGetUniformLocation(shaderProgram, "tex0");
+
+    float lastTime = 0;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -138,20 +178,34 @@ int main(void)
         glClearColor(0.2f, 0.1f, 0.5f, 1.f);
 
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        glUniform1f(uniformID, 1.2);
-        glUniform1i(tex0, 0);
+        glUniform1f(uniformID, 1.0f);
+
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model[0]);
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, proj[0]);
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view[0]);
+
+        glm_rotate(model, 0.01f, (vec3) {0,1,0});
+
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glUniform1i(tex0, GL_TEXTURE0);
+
+        glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
         glfwPollEvents();
+
+        float currentTime = glfwGetTime();
+        float deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+        printf("%d\n", (int)(1 / deltaTime));
     }
 
     glDeleteVertexArrays(1, &VAO);
