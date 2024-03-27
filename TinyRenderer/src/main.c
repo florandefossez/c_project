@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "shader.h"
+#include "camera.h"
 #include "cglm/mat4.h"
 #include "cglm/common.h"
 #include "cglm/affine.h"
@@ -156,16 +157,21 @@ int main(void)
 
     glEnable(GL_DEPTH_TEST);
 
-    mat4 model = GLM_MAT4_IDENTITY_INIT;
-    mat4 view = GLM_MAT4_IDENTITY_INIT;
-    mat4 proj = GLM_MAT4_IDENTITY_INIT;
-    glm_translated(view, (vec3){0.0f, -0.1f, -2.0f});
-    glm_perspective(glm_rad(45.f), 1.f, 0.1f, 100.f, proj);
+    // mat4 model = GLM_MAT4_IDENTITY_INIT;
+    // mat4 view = GLM_MAT4_IDENTITY_INIT;
+    // mat4 proj = GLM_MAT4_IDENTITY_INIT;
+    // glm_translated(view, (vec3){0.0f, -0.1f, -2.0f});
+    // glm_perspective(glm_rad(45.f), 1.f, 0.1f, 100.f, proj);
 
 
-    GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
-    GLuint projLoc = glGetUniformLocation(shaderProgram, "proj");
-    GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
+    // GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
+    // GLuint projLoc = glGetUniformLocation(shaderProgram, "proj");
+    // GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
+
+    Camera camera;
+    init(&camera, 480, 480);
+
+
 
     GLuint uniformID = glGetUniformLocation(shaderProgram, "scale");
     GLuint tex0 = glGetUniformLocation(shaderProgram, "tex0");
@@ -184,11 +190,14 @@ int main(void)
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         glUniform1f(uniformID, 1.0f);
 
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model[0]);
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, proj[0]);
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view[0]);
+        camera_inputs(&camera, window);
 
-        glm_rotate(model, 0.01f, (vec3) {0,1,0});
+        export_matrix(&camera, 45.f, 0.1f, 100.f, shaderProgram, "camMatrix");
+        // glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model[0]);
+        // glUniformMatrix4fv(projLoc, 1, GL_FALSE, proj[0]);
+        // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view[0]);
+
+        // glm_rotate(model, 0.01f, (vec3) {0,1,0});
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -205,7 +214,7 @@ int main(void)
         float currentTime = glfwGetTime();
         float deltaTime = currentTime - lastTime;
         lastTime = currentTime;
-        printf("%d\n", (int)(1 / deltaTime));
+        // printf("%d\n", (int)(1 / deltaTime));
     }
 
     glDeleteVertexArrays(1, &VAO);
