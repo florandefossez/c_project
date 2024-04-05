@@ -4,9 +4,9 @@
 void init(Camera* camera, int width, int height) {
     camera->width = width;
     camera->height = height;
-    camera->firstClick = false;
-    camera->speed = 0.000000000001f;
-    camera->sensitivity = 1.f;
+    camera->firstClick = true;
+    camera->speed = 1.f;
+    camera->sensitivity = 10000.f;
 
     camera->Position[0] = 0.0f;
     camera->Position[1] = 0.0f;
@@ -39,42 +39,42 @@ void export_matrix(Camera* camera, float FOVdeg, float nearPlane, float farPlane
 
 
 
-void camera_inputs(Camera* camera, GLFWwindow* window) {
+void camera_inputs(Camera* camera, GLFWwindow* window, float deltaTime) {
     vec3 tmp;
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        glm_vec3_muladds(camera->Orientation, camera->speed, camera->Position);
+        glm_vec3_muladds(camera->Orientation, camera->speed*deltaTime, camera->Position);
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         glm_vec3_cross(camera->Orientation, camera->Up, tmp);
         glm_vec3_normalize(tmp);
-        glm_vec3_mulsubs(tmp, camera->speed, camera->Position);
+        glm_vec3_muladds(tmp, -camera->speed*deltaTime, camera->Position);
 		// camera->Position += camera.speed * -glm::normalize(glm::cross(Orientation, Up));
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        glm_vec3_mulsubs(camera->Orientation, camera->speed, camera->Position);
+        glm_vec3_muladds(camera->Orientation, -camera->speed*deltaTime, camera->Position);
 		// camera->Position += camera.speed * -Orientation;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         glm_vec3_cross(camera->Orientation, camera->Up, tmp);
         glm_vec3_normalize(tmp);
-        glm_vec3_muladds(tmp, camera->speed, camera->Position);
+        glm_vec3_muladds(tmp, camera->speed*deltaTime, camera->Position);
 		// camera->Position += camera.speed * glm::normalize(glm::cross(Orientation, Up));
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        glm_vec3_muladds(camera->Up, camera->speed, camera->Position);
+        glm_vec3_muladds(camera->Up, camera->speed*deltaTime, camera->Position);
 		// camera->Position += camera.speed * Up;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-        glm_vec3_mulsubs(camera->Up, camera->speed, camera->Position);
+        glm_vec3_muladds(camera->Up, -camera->speed*deltaTime, camera->Position);
 		// camera->Position += camera.speed * -Up;
 	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-		camera->speed = 0.4f;
-	}
-	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
-		camera->speed = 0.1f;
-	}
+	// if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+	// 	camera->speed = 0.4f;
+	// }
+	// else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
+	// 	camera->speed = 0.1f;
+	// }
 
 
 	// Handles mouse inputs
@@ -98,8 +98,8 @@ void camera_inputs(Camera* camera, GLFWwindow* window) {
 
 		// Normalizes and shifts the coordinates of the cursor such that they begin in the middle of the screen
 		// and then "transforms" them into degrees 
-		float rotX = camera->sensitivity * (float)(mouseY - (camera->height / 2)) / camera->height;
-		float rotY = camera->sensitivity * (float)(mouseX - (camera->width / 2)) / camera->width;
+		float rotX = camera->sensitivity * deltaTime * (float)(mouseY - (camera->height / 2)) / camera->height;
+		float rotY = camera->sensitivity * deltaTime * (float)(mouseX - (camera->width / 2)) / camera->width;
 
 		// Calculates upcoming vertical change in the Orientation
         glm_vec3_cross(camera->Orientation, camera->Up, tmp);

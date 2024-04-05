@@ -11,9 +11,13 @@
 #include "cglm/affine.h"
 #include "cglm/cam.h"
 
+#define HEIGHT 800
+#define WIDTH 1200
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    glViewport((width-480)/2, (height-480)/2, 480, 480);
+    (void) window;
+    glViewport((width-WIDTH)/2, (height-HEIGHT)/2, WIDTH, HEIGHT);
 }
 
 
@@ -34,7 +38,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(480, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -49,7 +53,7 @@ int main(void)
         return -1;
     }
 
-    glViewport(0,0,480,480);
+    glViewport(0,0,WIDTH,HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // use the shader program and delete the individual shaders
@@ -112,7 +116,7 @@ int main(void)
 
     int imgW, imgH, colCh;
     stbi_set_flip_vertically_on_load(1);
-    unsigned char* bytes = stbi_load("../resources/R.png", &imgW, &imgH, &colCh, 3);
+    unsigned char* bytes = stbi_load("resources/R.png", &imgW, &imgH, &colCh, 3);
     GLuint texture;
     glGenTextures(1, &texture);
     glActiveTexture(GL_TEXTURE0);
@@ -169,14 +173,14 @@ int main(void)
     // GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
 
     Camera camera;
-    init(&camera, 480, 480);
-
-
+    init(&camera, WIDTH, HEIGHT);
 
     GLuint uniformID = glGetUniformLocation(shaderProgram, "scale");
     GLuint tex0 = glGetUniformLocation(shaderProgram, "tex0");
 
     float lastTime = 0;
+    float deltaTime = 0.1f;
+    float currentTime = glfwGetTime();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -190,7 +194,7 @@ int main(void)
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         glUniform1f(uniformID, 1.0f);
 
-        camera_inputs(&camera, window);
+        camera_inputs(&camera, window, deltaTime);
 
         export_matrix(&camera, 45.f, 0.1f, 100.f, shaderProgram, "camMatrix");
         // glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model[0]);
@@ -211,8 +215,8 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
 
-        float currentTime = glfwGetTime();
-        float deltaTime = currentTime - lastTime;
+        currentTime = glfwGetTime();
+        deltaTime = currentTime - lastTime;
         lastTime = currentTime;
         // printf("%d\n", (int)(1 / deltaTime));
     }

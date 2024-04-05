@@ -34,6 +34,6 @@ typedef struct {
 
 void init(Camera* camera, int width, int height);
 void export_matrix(Camera* camera, float FOVdeg, float nearPlane, float farPlane, GLuint shader, const char* uniform);
-void camera_inputs(Camera* camera, GLFWwindow* window);
+void camera_inputs(Camera* camera, GLFWwindow* window, float deltaTime);
 
 #endif

@@ -1,5 +1,7 @@
 #include "shader.h"
 
+#define MAX_SHADER_LEN 1000
+
 
 const char *get_file_contents(const char *filename) {
     FILE *file = fopen(filename, "r");
@@ -8,28 +10,24 @@ const char *get_file_contents(const char *filename) {
         exit(EXIT_FAILURE);
     }
 
-    // find out the len of the file
-    fseek(file, 0, SEEK_END);
-    long taillefile = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    char *contenu = (char *)malloc(taillefile + 1);
-    if (contenu == NULL) {
+    char* content = (char*) malloc(MAX_SHADER_LEN);
+    if (content == NULL) {
         fprintf(stderr, "malloc failed.\n");
         fclose(file);
         exit(EXIT_FAILURE);
     }
 
-    size_t tailleLue = fread(contenu, 1, taillefile, file);
-    contenu[tailleLue] = '\0';
-    if (tailleLue != taillefile) {
-        fprintf(stderr, "File reading error\n");
+    size_t shader_len = fread(content, 1, MAX_SHADER_LEN, file);
+    fclose(file);
+
+    if (shader_len >= MAX_SHADER_LEN) {
+        fprintf(stderr, "shader program too big\n");
         fclose(file);
         exit(EXIT_FAILURE);
     }
+    content[shader_len] = '\0';
 
-    fclose(file);
-    return contenu;
+    return content;
 }
 
 
@@ -37,7 +35,7 @@ void compile_shader_from_file(const char* filename, GLuint shader) {
     int success;
     char infoLog[512];
 
-    const char * vertexShaderSource = get_file_contents(filename);
+    const char* vertexShaderSource = get_file_contents(filename);
     glShaderSource(shader, 1, &vertexShaderSource, NULL);
     glCompileShader(shader);
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -46,6 +44,7 @@ void compile_shader_from_file(const char* filename, GLuint shader) {
         printf("ERROR::SHADER::COMPILATION_FAILED\n");
         printf("%s\n", infoLog);
     }
+    free((void*) vertexShaderSource);
 }
 
 
@@ -55,8 +54,8 @@ GLuint get_shader_programme() {
 
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    compile_shader_from_file("../resources/default.vert", vertexShader);
-    compile_shader_from_file("../resources/default.frag", fragmentShader);
+    compile_shader_from_file("resources/default.vert", vertexShader);
+    compile_shader_from_file("resources/default.frag", fragmentShader);
 
     GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
