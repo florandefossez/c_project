@@ -3,9 +3,9 @@ LIBS=-lm -lcglm -lglfw3
 CC=gcc
 CFLAGS=-g -Wall -Wextra
 
-.PHONY: all default clean
+.PHONY: all default clean run
 
-default: $(TARGET)
+default: run
 all: default
 
 OBJECTS=$(patsubst src/%.c, build/%.o, $(wildcard src/*.c))
@@ -17,6 +17,10 @@ build/%.o: src/%.c
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) $(CFLAGS) $(LIBS) -o $@
+
+run: $(TARGET)
+	./build/app.exe
+
 
 clean:
 	@rm -rf build

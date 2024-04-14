@@ -12,12 +12,16 @@
 #include "cglm/affine.h"
 #include "cglm/cam.h"
 #include "cglm/mat4.h"
+#include "cglm/vec2.h"
 
 
 typedef struct {
-	vec3 Position;
-	vec3 Orientation;
-	vec3 Up;
+	vec3 position;
+	// vec3 direction;
+	// vec3 up;
+
+	float theta;
+	float phi;
 
 	// Prevents the camera from jumping around when first clicking left click
 	bool firstClick;
