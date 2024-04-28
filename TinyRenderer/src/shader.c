@@ -48,14 +48,18 @@ void compile_shader_from_file(const char* filename, GLuint shader) {
 }
 
 
-GLuint get_shader_programme() {
+GLuint get_shader_programme(const char* name) {
     int success;
     char infoLog[512];
 
+    char vertex_shader_file[30];
+    char frag_shader_file[30];
+    sprintf(vertex_shader_file, "resources/%s.vert", name);
+    sprintf(frag_shader_file, "resources/%s.frag", name);
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    compile_shader_from_file("resources/default.vert", vertexShader);
-    compile_shader_from_file("resources/default.frag", fragmentShader);
+    compile_shader_from_file(vertex_shader_file, vertexShader);
+    compile_shader_from_file(frag_shader_file, fragmentShader);
 
     GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);

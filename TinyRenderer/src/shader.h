@@ -10,6 +10,6 @@
 
 const char* get_file_contents(const char* filename);
 void compile_shader_from_file(const char* filename, GLuint shader);
-GLuint get_shader_programme();
+GLuint get_shader_programme(const char* name);
 
 #endif

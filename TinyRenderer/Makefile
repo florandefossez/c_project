@@ -1,5 +1,5 @@
 TARGET=build/app.exe
-LIBS=-lm -lcglm -lglfw3
+LIBS=-lm -lcglm -lglfw
 CC=gcc
 CFLAGS=-g -Wall -Wextra
 

@@ -6,10 +6,7 @@
 
 #include "shader.h"
 #include "camera.h"
-#include "cglm/mat4.h"
-#include "cglm/common.h"
-#include "cglm/affine.h"
-#include "cglm/cam.h"
+#include "cglm/cglm.h"
 
 #define HEIGHT 800
 #define WIDTH 1200
@@ -20,6 +17,70 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport((width-WIDTH)/2, (height-HEIGHT)/2, WIDTH, HEIGHT);
 }
 
+// Vertices coordinates
+GLfloat vertices[] =
+{ //     COORDINATES     /        COLORS          /    TexCoord   /        NORMALS       //
+	-0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+	 0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+
+	-0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
+	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
+	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,     -0.8f, 0.5f,  0.0f, // Left Side
+
+	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
+	 0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
+	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
+
+	 0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
+	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
+	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.8f, 0.5f,  0.0f, // Right side
+
+	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
+	-0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
+	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.0f, 0.5f,  0.8f  // Facing side
+};
+
+// Indices for vertices order
+GLuint indices[] =
+{
+	0, 1, 2, // Bottom side
+	0, 2, 3, // Bottom side
+	4, 6, 5, // Left side
+	7, 9, 8, // Non-facing side
+	10, 12, 11, // Right side
+	13, 15, 14 // Facing side
+};
+
+GLfloat lightVertices[] =
+{ //     COORDINATES     //
+	-0.1f, -0.1f,  0.1f,
+	-0.1f, -0.1f, -0.1f,
+	 0.1f, -0.1f, -0.1f,
+	 0.1f, -0.1f,  0.1f,
+	-0.1f,  0.1f,  0.1f,
+	-0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f,  0.1f
+};
+
+GLuint lightIndices[] =
+{
+	0, 1, 2,
+	0, 2, 3,
+	0, 4, 7,
+	0, 7, 3,
+	3, 7, 6,
+	3, 6, 2,
+	2, 6, 5,
+	2, 5, 1,
+	1, 5, 4,
+	1, 4, 0,
+	4, 5, 6,
+	4, 6, 7
+};
+
 
 
 
@@ -27,25 +88,20 @@ int main(void)
 {
     GLFWwindow* window;
 
-    /* Initialize the library */
-    if (!glfwInit())
+    if (!glfwInit()) {
         return -1;
+    }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-
-    //only use modern core functions
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", NULL, NULL);
-    if (!window)
-    {
+    if (!window) {
         glfwTerminate();
         return -1;
     }
 
-    /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -53,67 +109,57 @@ int main(void)
         return -1;
     }
 
-    glViewport(0,0,WIDTH,HEIGHT);
+    glViewport(0, 0, WIDTH, HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // use the shader program and delete the individual shaders
-    GLuint shaderProgram = get_shader_programme();
+
+    // Pyramide
+    GLuint shaderProgram = get_shader_programme("default");
     glUseProgram(shaderProgram);
+    GLuint VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) 0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) (3 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) (6 * sizeof(float)));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    // light
+    GLuint light_shaderProgram = get_shader_programme("light");
+    glUseProgram(light_shaderProgram);
+    GLuint light_VBO, light_VAO, light_EBO;
+    glGenVertexArrays(1, &light_VAO);
+    glGenBuffers(1, &light_VBO);
+    glGenBuffers(1, &light_EBO);
+    glBindVertexArray(light_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, light_VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, light_EBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(lightVertices), lightVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(lightIndices), lightIndices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	vec4 lightColor = {1.0f, 1.0f, 0.0f, 1.0f};
+	vec3 lightPos = {0.5f, 0.5f, 0.5f};
+	mat4 lightModel = GLM_MAT4_IDENTITY_INIT;
+	glUniformMatrix4fv(glGetUniformLocation(light_shaderProgram, "model"), 1, GL_FALSE, lightModel[0]);
+	glUniform4f(glGetUniformLocation(light_shaderProgram, "lightColor"), lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
 
 
-    // GLfloat vertices[] =    { //               COORDINATES                  /     COLORS           //
-    //     -0.5f, -0.5f * (float)sqrt(3) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f, // Lower left corner
-    //     0.5f, -0.5f * (float)sqrt(3) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f, // Lower right corner
-    //     0.0f,  0.5f * (float)sqrt(3) * 2 / 3, 0.0f,     1.0f, 0.6f,  0.32f, // Upper corner
-    //     -0.25f, 0.5f * (float)sqrt(3) * 1 / 6, 0.0f,     0.9f, 0.45f, 0.17f, // Inner left
-    //     0.25f, 0.5f * (float)sqrt(3) * 1 / 6, 0.0f,     0.9f, 0.45f, 0.17f, // Inner right
-    //     0.0f, -0.5f * (float)sqrt(3) * 1 / 3, 0.0f,     0.8f, 0.3f,  0.02f  // Inner down
-    // };
-
-	// // Indices for vertices order
-	// GLuint indices[] = {
-	// 	0, 3, 5, // Lower left triangle
-	// 	3, 2, 4, // Upper triangle
-	// 	5, 4, 1 // Lower right triangle
-	// };
-
-    // // Vertices coordinates
-    // GLfloat vertices[] =
-    // { //     COORDINATES     /        COLORS      /   TexCoord  //
-    //     -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f,	0.0f, 0.0f, // Lower left corner
-    //     -0.5f,  0.5f, 0.0f,     0.0f, 1.0f, 0.0f,	0.0f, 1.0f, // Upper left corner
-    //     0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,	1.0f, 1.0f, // Upper right corner
-    //     0.5f, -0.5f, 0.0f,     1.0f, 1.0f, 1.0f,	1.0f, 0.0f  // Lower right corner
-    // };
-
-    // // Indices for vertices order
-    // GLuint indices[] =
-    // {
-    //     0, 2, 1, // Upper triangle
-    //     0, 3, 2 // Lower triangle
-    // };
-
-    // Vertices coordinates
-    GLfloat vertices[] =
-    { //     COORDINATES     /        COLORS      /   TexCoord  //
-        -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
-        -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
-        0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
-        0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
-        0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	2.5f, 5.0f
-    };
-
-    // Indices for vertices order
-    GLuint indices[] =
-    {
-        0, 1, 2,
-        0, 2, 3,
-        0, 1, 4,
-        1, 2, 4,
-        2, 3, 4,
-        3, 0, 4
-    };
-
+    // Texture
     int imgW, imgH, colCh;
     stbi_set_flip_vertically_on_load(1);
     unsigned char* bytes = stbi_load("resources/R.png", &imgW, &imgH, &colCh, 3);
@@ -130,78 +176,30 @@ int main(void)
     stbi_image_free(bytes);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    GLuint VBO, VAO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-
-    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-    glBindBuffer(GL_ARRAY_BUFFER, 0); 
-
-    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    glBindVertexArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
     glEnable(GL_DEPTH_TEST);
-
-    // mat4 model = GLM_MAT4_IDENTITY_INIT;
-    // mat4 view = GLM_MAT4_IDENTITY_INIT;
-    // mat4 proj = GLM_MAT4_IDENTITY_INIT;
-    // glm_translated(view, (vec3){0.0f, -0.1f, -2.0f});
-    // glm_perspective(glm_rad(45.f), 1.f, 0.1f, 100.f, proj);
-
-
-    // GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
-    // GLuint projLoc = glGetUniformLocation(shaderProgram, "proj");
-    // GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
 
     Camera camera;
     init(&camera, WIDTH, HEIGHT);
 
-    GLuint uniformID = glGetUniformLocation(shaderProgram, "scale");
+    GLuint scale_uniform = glGetUniformLocation(shaderProgram, "scale");
     GLuint tex0 = glGetUniformLocation(shaderProgram, "tex0");
 
     float lastTime = 0;
     float deltaTime = 0.1f;
     float currentTime = glfwGetTime();
 
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window))
-    {
+    while (!glfwWindowShouldClose(window)) {
+
         glClearColor(0.2f, 0.1f, 0.5f, 1.f);
 
-        /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
-        glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        glUniform1f(uniformID, 1.0f);
+        glBindVertexArray(VAO);
+        glUniform1f(scale_uniform, 1.0f);
 
         camera_inputs(&camera, window, deltaTime);
-
         export_matrix(&camera, 45.f, 0.1f, 100.f, shaderProgram, "camMatrix");
-        // glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model[0]);
-        // glUniformMatrix4fv(projLoc, 1, GL_FALSE, proj[0]);
-        // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view[0]);
-
-        // glm_rotate(model, 0.01f, (vec3) {0,1,0});
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -209,16 +207,18 @@ int main(void)
 
         glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
 
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
+		glUseProgram(light_shaderProgram);
+        export_matrix(&camera, 45.f, 0.1f, 100.f, light_shaderProgram, "camMatrix");
+        glBindVertexArray(light_VAO);
+		glDrawElements(GL_TRIANGLES, sizeof(lightIndices) / sizeof(int), GL_UNSIGNED_INT, 0);
 
-        /* Poll for and process events */
+        glfwSwapBuffers(window);
         glfwPollEvents();
 
         currentTime = glfwGetTime();
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
-        // printf("%d\n", (int)(1 / deltaTime));
+
     }
 
     glDeleteVertexArrays(1, &VAO);

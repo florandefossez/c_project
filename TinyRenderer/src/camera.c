@@ -79,10 +79,22 @@ void camera_inputs(Camera* camera, GLFWwindow* window, float deltaTime) {
 		camera->position[1] -= camera->speed*deltaTime;
 	}
 
-
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		camera->theta -= camera->speed*deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		camera->theta += camera->speed*deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		camera->phi -= camera->speed*deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		camera->phi += camera->speed*deltaTime;
+	}
 
 	// Handles mouse inputs
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+
 		// Hides mouse cursor
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
@@ -93,44 +105,37 @@ void camera_inputs(Camera* camera, GLFWwindow* window, float deltaTime) {
 		}
 
 		// Stores the coordinates of the cursor
-		double mouseX;
-		double mouseY;
-		// Fetches the coordinates of the cursor
+		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
 
 		// Normalizes and shifts the coordinates of the cursor such that they begin in the middle of the screen
 		// and then "transforms" them into degrees 
-		float rotY = camera->sensitivity * deltaTime * (float)(mouseY - (camera->height / 2)) / camera->height;
-		float rotX = camera->sensitivity * deltaTime * (float)(mouseX - (camera->width / 2)) / camera->width;
-
-		
-		float angle_to_add = glm_rad(rotY);
-		camera->theta += angle_to_add;
-		while (camera->theta < 0) {
-			camera->theta += 2*GLM_PIf;
-		}
-		while (camera->theta > 2*GLM_PIf) {
-			camera->theta -= 2*GLM_PIf;
-		}
-
-		angle_to_add = glm_rad(rotX);
-		camera->phi += angle_to_add;
-		while (camera->phi < 0) {
-			camera->phi += 2*GLM_PIf;
-		}
-		while (camera->phi > 2*GLM_PIf) {
-			camera->phi -= 2*GLM_PIf;
-		}
-		
+		float rot = camera->sensitivity * deltaTime * (float)(mouseY - (camera->height / 2)) / camera->height;
+		camera->theta += glm_rad(rot);
+		rot = camera->sensitivity * deltaTime * (float)(mouseX - (camera->width / 2)) / camera->width;
+		camera->phi += glm_rad(rot);
 
 		// Sets mouse cursor to the middle of the screen so that it doesn't end up roaming around
 		glfwSetCursorPos(window, (camera->width / 2), (camera->height / 2));
-	}
-	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
-	{
+
+	} else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+
 		// Unhides cursor since camera is not looking around anymore
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		// Makes sure the next time the camera looks around it doesn't jump
 		camera->firstClick = true;
+	}
+
+	while (camera->theta < 0) {
+		camera->theta += 2*GLM_PIf;
+	}
+	while (camera->theta > 2*GLM_PIf) {
+		camera->theta -= 2*GLM_PIf;
+	}
+	while (camera->phi < 0) {
+		camera->phi += 2*GLM_PIf;
+	}
+	while (camera->phi > 2*GLM_PIf) {
+		camera->phi -= 2*GLM_PIf;
 	}
 }
