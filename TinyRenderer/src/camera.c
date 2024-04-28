@@ -55,7 +55,6 @@ void export_matrix(Camera* camera, float FOVdeg, float nearPlane, float farPlane
 
 
 void camera_inputs(Camera* camera, GLFWwindow* window, float deltaTime) {
-    vec3 tmp;
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		camera->position[0] += cosf(camera->phi)*camera->speed*deltaTime;
